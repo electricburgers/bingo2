@@ -1,0 +1,1788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0">
+<meta name="theme-color" content="#15171c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Bingo Caller v2.6</title>
+<style>
+  /* ============================================================
+     THEME TOKENS (overridable per theme / custom builder)
+     ============================================================ */
+  :root{
+    --bg:#15171c;
+    --surface:#1f232b;
+    --surface-2:#2a2f3a;
+    --line:#3a4150;
+    --text:#f2f5fa;
+    --muted:#9aa6b8;
+    --accent:#ffd23f;
+    --good:#3ddc84;
+    --warn:#ff6b6b;
+    --radius:16px;
+    --font-scale:1;
+    /* per-letter colors — rainbow, high contrast on dark */
+    --col-B:#ff595e;
+    --col-I:#ff924c;
+    --col-N:#ffca3a;
+    --col-G:#8ac926;
+    --col-O:#52a6f0;
+    --shadow:0 6px 24px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:calc(16px * var(--font-scale));
+    line-height:1.4;
+    -webkit-font-smoothing:antialiased;
+    overscroll-behavior-y:contain;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  button{font-family:inherit;cursor:pointer;color:var(--text)}
+  h1,h2,h3{margin:0;font-weight:800;letter-spacing:-.01em}
+  .muted{color:var(--muted)}
+  .mono{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+
+  /* ---------- App shell ---------- */
+  .app{max-width:1500px;margin:0 auto;padding:10px 12px 28px}
+  .topbar{
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    padding:6px 4px 12px;
+  }
+  .brand{display:flex;align-items:center;gap:10px;margin-right:auto;min-width:0}
+  .logo{
+    width:38px;height:38px;border-radius:50%;flex:0 0 auto;
+    background:
+      radial-gradient(circle at 32% 30%, #fff 0 14%, transparent 15%),
+      conic-gradient(from 0deg, var(--col-B), var(--col-I), var(--col-N), var(--col-G), var(--col-O), var(--col-B));
+    box-shadow:inset 0 0 0 3px rgba(0,0,0,.25), var(--shadow);
+  }
+  .brand h1{font-size:1.15rem;line-height:1}
+  .brand .sub{font-size:.72rem;color:var(--muted)}
+  .iconbtn{
+    background:var(--surface);border:1px solid var(--line);border-radius:12px;
+    padding:9px 11px;font-size:.9rem;font-weight:700;display:inline-flex;align-items:center;gap:6px;
+    min-height:44px;
+  }
+  .iconbtn:hover{background:var(--surface-2)}
+  .iconbtn.on{border-color:var(--accent);color:var(--accent)}
+
+  /* ---------- Layout grid ---------- */
+  .grid{display:grid;gap:14px;grid-template-columns:1fr}
+  @media(min-width:760px){ .grid{grid-template-columns:1fr 1fr} .col-call{grid-column:1} .col-board{grid-column:2} .col-audit{grid-column:1 / -1} }
+  @media(min-width:1140px){ .grid{grid-template-columns:minmax(320px,1fr) 1.4fr minmax(300px,1fr)} .col-call{grid-column:1} .col-board{grid-column:2} .col-audit{grid-column:3} }
+  /* Phone held sideways (e.g. iPhone landscape): keep the main board to the RIGHT of the controls,
+     regardless of exact width, and shrink the ball so it fits the short height. */
+  @media (orientation:landscape) and (max-height:560px){
+    .grid{grid-template-columns:minmax(220px,.92fr) 1.25fr;gap:10px}
+    .col-call{grid-column:1} .col-board{grid-column:2} .col-audit{grid-column:1 / -1}
+    .ball{width:min(30vh,150px);height:min(30vh,150px)}
+    .ball .num{font-size:clamp(2.2rem,12vh,3.4rem)}
+    .ball .letter{font-size:clamp(1.6rem,8vh,2.6rem)}
+    .call-btn{padding:13px;min-height:54px;font-size:1.15rem;margin-top:8px}
+    .app{padding-top:6px}
+  }
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+  .card h2{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px;justify-content:space-between}
+
+  /* ---------- Current ball ---------- */
+  .ball-wrap{display:flex;flex-direction:column;align-items:center;gap:6px}
+  .ball{
+    width:min(62vw,260px);height:min(62vw,260px);max-width:260px;border-radius:50%;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 34% 30%, rgba(255,255,255,.22), rgba(255,255,255,0) 42%), var(--surface-2);
+    border:3px solid var(--ball-color,var(--line));
+    box-shadow:var(--shadow);position:relative;
+    transition:transform .18s cubic-bezier(.2,1.4,.4,1);
+  }
+  .ball.pop{animation:pop .42s cubic-bezier(.2,1.4,.4,1)}
+  @keyframes pop{0%{transform:scale(.6) rotate(-8deg);opacity:.2}60%{transform:scale(1.08)}100%{transform:scale(1)}}
+  .ball .letter{font-size:clamp(2.6rem,16vw,4.6rem);font-weight:900;line-height:.9;color:var(--ball-color,var(--text))}
+  .ball .num{font-size:clamp(3.2rem,22vw,6.4rem);font-weight:900;line-height:.85;letter-spacing:-.03em}
+  .ball.empty{opacity:.6}
+  .ball.empty .num{font-size:1.3rem;font-weight:800}
+  .ball.empty .letter{display:none}
+  .callmeta{display:flex;gap:14px;justify-content:center;font-size:.82rem;color:var(--muted);margin-top:2px}
+  .callmeta b{color:var(--text)}
+  .drawscope{text-align:center;font-size:.74rem;color:var(--muted);margin-top:3px;min-height:14px;font-weight:600}
+
+  /* preview panel */
+  .preview-panel{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:10px}
+  .preview-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;gap:8px}
+  .preview-label{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:flex;align-items:center;gap:7px}
+  .preview-host-tag{font-size:.65rem;background:rgba(255,210,63,.15);color:var(--accent);border:1px solid rgba(255,210,63,.3);border-radius:5px;padding:1px 5px;font-weight:700;letter-spacing:.04em}
+  .preview-body{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .preview-ball-mini{font-weight:900;font-size:1.45rem;display:flex;align-items:baseline;gap:4px;min-width:56px}
+  .preview-ball-mini #previewLetter{font-size:1rem;font-weight:900;color:var(--preview-col,var(--muted))}
+  .preview-ball-mini #previewNum{color:var(--preview-col,var(--muted))}
+  .preview-callout-txt{font-size:.85rem;font-weight:700;color:var(--muted);font-style:italic;flex:1;min-width:120px;line-height:1.3}
+  .preview-panel.empty .preview-body{opacity:.4}
+  .preview-panel.hidden{display:none}
+  .callout{min-height:22px;text-align:center;font-weight:800;font-size:1.02rem;color:var(--accent);padding:0 6px;line-height:1.2}
+  .callout-row{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px;min-height:22px}
+  .callout-row:has(.callout:empty) .cyclebtn{display:none}
+  .cyclebtn{
+    flex:0 0 auto;border:1px solid var(--line);background:var(--surface-2);color:var(--muted);
+    border-radius:999px;width:26px;height:26px;font-size:.95rem;display:flex;align-items:center;justify-content:center;
+    line-height:1;padding:0;
+  }
+  .cyclebtn:hover{color:var(--accent);border-color:var(--accent)}
+  .cyclebtn:active{transform:scale(.92)}
+  .callout:empty{min-height:0}
+  .callout-row:has(.callout:empty){margin-top:0;min-height:0}
+  .bs-callout{font-weight:800;color:var(--accent);font-size:clamp(1.1rem,4.5vw,2.6rem);min-height:1.2em;padding:0 12px;text-align:center}
+  .collapser{cursor:pointer;user-select:none}
+  .caret{display:inline-block;transition:transform .2s;font-size:.85rem;color:var(--muted)}
+  .collapser.closed .caret{transform:rotate(-90deg)}
+  #patBody.closed{display:none}
+
+  /* ---------- Buttons ---------- */
+  .call-btn{
+    width:100%;margin-top:12px;border:none;border-radius:18px;
+    background:linear-gradient(180deg,var(--good),#2bbf6f);color:#06281a;
+    font-size:1.4rem;font-weight:900;letter-spacing:.01em;
+    padding:20px 16px;min-height:72px;box-shadow:var(--shadow);
+    display:flex;align-items:center;justify-content:center;gap:10px;
+  }
+  .call-btn:active{transform:translateY(1px)}
+  .call-btn:disabled{filter:grayscale(.7) brightness(.7);cursor:not-allowed}
+  .btn-row{display:flex;gap:8px;margin-top:8px}
+  .btn{
+    flex:1;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;
+    padding:12px;font-weight:700;font-size:.9rem;min-height:48px;display:flex;align-items:center;justify-content:center;gap:6px;
+  }
+  .btn:hover{background:var(--line)}
+  .btn.on{border-color:var(--accent);color:var(--accent)}
+  .btn.danger{color:var(--warn)}
+
+  /* ---------- Recent strip ---------- */
+  .recent{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;min-height:42px;align-items:center}
+  .chip{
+    display:inline-flex;align-items:baseline;gap:3px;padding:6px 11px;border-radius:999px;
+    background:var(--surface-2);border:1px solid var(--line);font-weight:800;font-size:.95rem;white-space:nowrap;
+  }
+  .chip .l{font-weight:900}
+  .chip.latest{outline:2px solid var(--accent);outline-offset:1px}
+
+  /* ---------- Auto-call ---------- */
+  .auto-bar{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+  .countdown{flex:1;min-width:120px}
+  .cd-track{height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+  .cd-fill{height:100%;width:0%;background:var(--accent);transition:width .25s linear}
+  .range{width:100%}
+  input[type=range]{accent-color:var(--accent)}
+  input[type=number],input[type=text],select{
+    background:var(--surface-2);border:1px solid var(--line);color:var(--text);border-radius:10px;
+    padding:9px 10px;font-size:.95rem;font-family:inherit;min-height:42px;
+  }
+  label.fld{display:flex;flex-direction:column;gap:5px;font-size:.8rem;color:var(--muted);font-weight:600}
+
+  /* ---------- Pattern selector ---------- */
+  .pat-head{display:flex;gap:10px;align-items:center}
+  .pat-head select{flex:1}
+  .pat-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:8px;max-height:228px;overflow:auto;padding:2px}
+  .ptile{display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 4px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);font-size:.66rem;font-weight:700;text-align:center;line-height:1.1}
+  .ptile:hover{border-color:var(--muted)}
+  .ptile.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+  .ptile .mini{width:46px;height:46px;gap:2px}
+  .ptile.add{justify-content:center;color:var(--accent);font-size:.74rem}
+  .mini{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;width:62px;height:62px;flex:0 0 auto}
+  .mini i{background:var(--surface-2);border-radius:3px}
+  .mini i.on{background:var(--accent)}
+  .mini i.free{background:repeating-linear-gradient(45deg,var(--accent),var(--accent) 3px,transparent 3px,transparent 6px)}
+  .pat-preview{display:flex;gap:14px;align-items:center;margin-top:12px}
+  .mini.big{width:118px;height:118px;gap:3px}
+  .mini.big i{border-radius:5px}
+  .pat-cap{font-size:.85rem;color:var(--muted)}
+  .pat-cap b{color:var(--text);font-size:.95rem;display:block;margin-bottom:2px}
+  .opt-mini{display:inline-grid;grid-template-columns:repeat(5,4px);gap:1px;vertical-align:middle}
+
+  /* custom pattern editor */
+  .editor{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;max-width:240px;margin:10px auto}
+  .editor b{aspect-ratio:1;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--muted)}
+  .editor b.on{background:var(--accent);border-color:var(--accent);color:#222}
+  .editor b.center{outline:2px dashed var(--muted)}
+
+  /* ---------- Master flashboard ---------- */
+  .board{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+  .bcol{display:flex;flex-direction:column;gap:5px;transition:opacity .2s}
+  .bcol.dim{opacity:.18}
+  .bhead{text-align:center;font-weight:900;font-size:1.2rem;padding:4px 0;border-radius:8px;background:var(--surface-2);color:var(--lc,var(--text))}
+  .cell{
+    text-align:center;font-weight:700;font-size:clamp(.7rem,2.4vw,1rem);padding:7px 2px;border-radius:8px;
+    background:var(--surface-2);color:var(--muted);border:1px solid transparent;font-variant-numeric:tabular-nums;
+    transition:background .15s,color .15s,transform .15s;cursor:pointer;user-select:none;
+  }
+  .cell.called{background:var(--lc,var(--accent));color:#10131a;border-color:rgba(255,255,255,.25);font-weight:900}
+  .cell.current{outline:3px solid #fff;outline-offset:1px;animation:pulse 1.1s ease-in-out infinite;transform:scale(1.04)}
+  .cell.found{outline:3px solid var(--accent);outline-offset:1px}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.5)}50%{box-shadow:0 0 0 6px rgba(255,255,255,0)}}
+  .board-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+  .search{display:flex;align-items:center;gap:6px}
+  .search input{width:92px}
+  .find-note{font-size:.82rem;color:var(--muted)}
+
+  /* ---------- Audit / log ---------- */
+  .stat-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+  .stat{flex:1;min-width:84px;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:9px 11px;text-align:center}
+  .stat .n{font-size:1.4rem;font-weight:900}
+  .stat .k{font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  .log{max-height:280px;overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+  .log table{width:100%;border-collapse:collapse;font-size:.85rem}
+  .log th{position:sticky;top:0;background:var(--surface);text-align:left;padding:7px 10px;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);z-index:1}
+  .log td{padding:7px 10px;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
+  .log tr.win td{background:rgba(61,220,132,.12);color:var(--good);font-weight:700}
+  .prob-bar{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:10px}
+  .winrec{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.85rem;padding:8px 10px;border:1px dashed var(--good);border-radius:10px;background:rgba(61,220,132,.07);margin-bottom:8px}
+  .winner-name{color:var(--good);font-size:1rem}
+  .congrats-banner{background:rgba(61,220,132,.13);border:1px solid var(--good);border-radius:10px;padding:9px 12px;font-size:.88rem;font-weight:700;margin-bottom:8px;color:var(--good)}
+  .prob-label{display:flex;justify-content:space-between;align-items:center;font-size:.82rem;font-weight:700;margin-bottom:6px;gap:10px;flex-wrap:wrap}
+  .prob-hint{font-size:.78rem;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:6px}
+  .prob-hint input{background:var(--surface);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:4px 6px;font-size:.82rem}
+  .prob-track{height:10px;background:var(--bg);border-radius:99px;overflow:hidden;border:1px solid var(--line);margin-bottom:5px}
+  .prob-fill{height:100%;width:0%;border-radius:99px;background:linear-gradient(90deg,var(--good),var(--accent));transition:width .4s ease}
+  .prob-nums{font-size:.8rem;color:var(--muted);font-weight:600;text-align:center}
+  .modal p{color:var(--muted);font-size:.92rem;margin:0 0 10px}
+  #modalExtra{margin-bottom:12px}
+  #modalExtra input{width:100%;margin-top:4px}
+
+  /* ---------- Drawer (settings) ---------- */
+  .scrim{position:fixed;inset:0;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity .2s;z-index:40}
+  .scrim.show{opacity:1;pointer-events:auto}
+  .drawer{
+    position:fixed;top:0;right:0;height:100%;width:min(420px,92vw);background:var(--surface);
+    border-left:1px solid var(--line);box-shadow:var(--shadow);z-index:50;
+    transform:translateX(102%);transition:transform .26s cubic-bezier(.3,.8,.3,1);
+    display:flex;flex-direction:column;
+  }
+  .drawer.show{transform:translateX(0)}
+  .drawer-head{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid var(--line)}
+  .drawer-body{overflow:auto;padding:16px;display:flex;flex-direction:column;gap:18px}
+  .sect{display:flex;flex-direction:column;gap:10px}
+  .sect>h3{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+  .swatch-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+  .swatch{display:flex;flex-direction:column;align-items:center;gap:4px;font-weight:800;font-size:.8rem}
+  .swatch input[type=color]{width:100%;height:40px;border:1px solid var(--line);border-radius:8px;background:none;padding:2px}
+  .theme-row{display:flex;gap:8px;flex-wrap:wrap}
+  .theme-chip{padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);font-weight:700;font-size:.85rem}
+  .theme-chip.on{border-color:var(--accent);color:var(--accent)}
+  .toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0}
+  .switch{position:relative;width:48px;height:28px;flex:0 0 auto}
+  .switch input{opacity:0;width:0;height:0}
+  .slider{position:absolute;inset:0;background:var(--surface-2);border:1px solid var(--line);border-radius:99px;transition:.2s}
+  .slider:before{content:"";position:absolute;width:20px;height:20px;left:3px;top:3px;background:var(--muted);border-radius:50%;transition:.2s}
+  .switch input:checked+.slider{background:var(--accent);border-color:var(--accent)}
+  .switch input:checked+.slider:before{transform:translateX(20px);background:#15171c}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+  /* ---------- Big screen mode ---------- */
+  .bigscreen{position:fixed;inset:0;background:var(--bg);z-index:60;display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center}
+  .bigscreen.show{display:flex}
+  .bs-ball .letter{font-size:clamp(5rem,22vw,18rem);font-weight:900;line-height:.85;color:var(--ball-color,var(--text))}
+  .bs-ball .num{font-size:clamp(7rem,40vw,30rem);font-weight:900;line-height:.8;letter-spacing:-.03em}
+  .bs-recent{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+  .bs-recent .chip{font-size:clamp(1rem,3vw,1.8rem);padding:8px 16px}
+  .bs-meta{color:var(--muted);font-size:clamp(1rem,3vw,1.6rem)}
+  .bs-exit{position:fixed;top:16px;right:16px;z-index:61}
+  .bs-tap{position:absolute;inset:0;background:transparent;border:none;cursor:pointer}
+
+  /* ---------- Modal confirm ---------- */
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:70;display:none;align-items:center;justify-content:center;padding:20px}
+  .modal.show{display:flex}
+  .modal .box{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;max-width:380px;width:100%;box-shadow:var(--shadow)}
+  .modal h3{margin-bottom:8px}
+  .modal p{color:var(--muted);font-size:.92rem;margin:0 0 16px}
+  .modal .btn-row .btn{padding:13px}
+
+  /* toast */
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--surface-2);border:1px solid var(--line);
+    padding:11px 16px;border-radius:12px;font-weight:700;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.25s;z-index:80;max-width:90vw;text-align:center}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  .hide{display:none !important}
+  details summary{cursor:pointer;font-weight:700}
+  .kbd{font-size:.72rem;border:1px solid var(--line);border-radius:5px;padding:1px 5px;background:var(--surface-2);color:var(--muted)}
+  @media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+  :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <h1>Bingo Caller</h1>
+        <div class="sub" id="sessionLabel">Host console</div>
+      </div>
+    </div>
+    <button class="iconbtn" id="bigBtn" title="Big screen mode (F)">⛶ Big screen</button>
+    <button class="iconbtn" id="settingsBtn" title="Settings">⚙ Settings</button>
+  </div>
+
+  <div class="grid">
+    <!-- ================= CALL COLUMN ================= -->
+    <section class="col-call" style="display:flex;flex-direction:column;gap:14px">
+      <div class="card">
+        <div class="ball-wrap">
+          <div class="ball empty" id="ball">
+            <div class="letter" id="ballLetter"></div>
+            <div class="num" id="ballNum">Ready</div>
+          </div>
+          <div class="callout-row" id="calloutRow">
+            <span class="callout" id="callout"></span>
+            <button class="cyclebtn" id="cycleBtn" title="Try another call-out for this number">↻</button>
+          </div>
+          <div class="callmeta">
+            <span>Call <b id="callIdx">0</b></span>
+            <span><b id="remainCount">75</b> in play</span>
+          </div>
+          <div class="drawscope" id="drawScope"></div>
+        </div>
+        <button class="call-btn" id="callBtn">🎱 Call Next Ball</button>
+        <div class="btn-row">
+          <button class="btn" id="undoBtn" title="Undo (U)">↩ Undo</button>
+          <button class="btn danger" id="resetBtn" title="New game (R)">⟲ New Game</button>
+        </div>
+
+        <div class="auto-bar">
+          <button class="btn" id="autoBtn" style="flex:0 0 auto;min-width:118px">▶ Auto Call</button>
+          <div class="countdown">
+            <div class="cd-track"><div class="cd-fill" id="cdFill"></div></div>
+          </div>
+        </div>
+        <div class="auto-bar">
+          <label class="fld" style="flex:1">Interval: <span id="intLabel" class="mono">10</span>s
+            <input type="range" id="intRange" min="3" max="60" value="10" class="range">
+          </label>
+        </div>
+
+        <div class="recent" id="recent"><span class="muted">Recent calls appear here…</span></div>
+
+        <!-- live preview panel -->
+        <div class="preview-panel" id="previewPanel">
+          <div class="preview-top">
+            <span class="preview-label">⏭ Next up <span class="preview-host-tag">host only</span></span>
+            <button class="btn" id="redrawBtn" style="flex:0 0 auto;font-size:.78rem;padding:4px 10px;min-height:32px">↻ Redraw</button>
+          </div>
+          <div class="preview-body">
+            <div class="preview-ball-mini" id="previewBallMini">
+              <span id="previewLetter"></span><span id="previewNum">—</span>
+            </div>
+            <span class="preview-callout-txt" id="previewCalloutTxt"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- pattern -->
+      <div class="card">
+        <h2 class="collapser" id="patHeader" role="button" tabindex="0">
+          <span style="display:flex;align-items:center;gap:8px;min-width:0">
+            <span class="caret" id="patCaret">▾</span><span>Play style</span>
+            <span class="muted" id="patHeaderName" style="text-transform:none;letter-spacing:0;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+          </span>
+          <span class="muted" id="freeTag" style="font-weight:600;text-transform:none;letter-spacing:0;flex:0 0 auto">free space on</span>
+        </h2>
+        <div id="patBody">
+          <div class="pat-tiles" id="patTiles"></div>
+          <div class="pat-preview">
+            <div class="mini big" id="patMini"></div>
+            <div class="pat-cap"><b id="patName">Any Line</b><span id="patCap"></span></div>
+          </div>
+          <div id="customEditor" class="hide">
+          <p class="pat-cap" style="margin:12px 0 0">Tap cells to define a pattern, then save it.</p>
+          <div class="editor" id="editorGrid"></div>
+          <div class="btn-row">
+            <input type="text" id="customName" placeholder="Pattern name" style="flex:1">
+            <button class="btn" id="saveCustom" style="flex:0 0 auto">Save</button>
+          </div>
+        </div><!-- /patBody -->
+        <button class="btn" id="markWinner" style="margin-top:12px;background:rgba(61,220,132,.12);border-color:var(--good);color:var(--good)">🏆 Mark Winner</button>
+      </div>
+    </section>
+
+    <!-- ================= BOARD COLUMN ================= -->
+    <section class="col-board">
+      <div class="card">
+        <h2>Main board <span id="boardCount" class="mono muted">0 / 75</span></h2>
+        <div class="board-tools">
+          <div class="search">
+            <input type="text" id="findInput" inputmode="numeric" placeholder="# called?">
+            <button class="btn" id="findBtn" style="flex:0 0 auto;min-width:64px">Find</button>
+          </div>
+          <button class="iconbtn on" id="patDimBtn" title="Dim columns not in pattern" style="min-height:42px">▦ Pattern dim</button>
+          <span class="find-note" id="findNote"></span>
+        </div>
+        <div class="board" id="board"></div>
+      </div>
+    </section>
+
+    <!-- ================= AUDIT COLUMN ================= -->
+    <section class="col-audit">
+      <div class="card">
+        <h2>Audit &amp; log
+          <span style="display:flex;gap:6px">
+            <button class="iconbtn" id="reportBtn" title="Night report" style="min-height:36px;padding:6px 9px">📋 Report</button>
+            <button class="iconbtn" id="saveJsonBtn" title="Save session(s) to JSON" style="min-height:36px;padding:6px 9px">💾 JSON</button>
+            <button class="iconbtn" id="exportBtn" title="Export CSV/TXT" style="min-height:36px;padding:6px 9px">⤓ Export</button>
+          </span>
+        </h2>
+        <div class="stat-row">
+          <div class="stat"><div class="n mono" id="sCalled">0</div><div class="k">Called</div></div>
+          <div class="stat"><div class="n mono" id="sLeft">75</div><div class="k">Remaining</div></div>
+          <div class="stat"><div class="n mono" id="sWins">0</div><div class="k">Winners</div></div>
+          <div class="stat"><div class="n mono" id="sGames">1</div><div class="k">Games</div></div>
+        </div>
+        <div class="prob-bar" id="probBar">
+          <div class="prob-label">
+            <span>🎲 Win probability</span>
+            <span class="prob-hint">
+              <label>Cards in play:
+                <input type="number" id="numCardsInput" value="30" min="1" max="500" step="1" style="width:56px">
+              </label>
+            </span>
+          </div>
+          <div class="prob-track"><div class="prob-fill" id="probFill"></div></div>
+          <div class="prob-nums" id="probNums">Call a ball to see odds</div>
+        </div>
+        <div id="winList"></div>
+        <div class="log">
+          <table>
+            <thead><tr><th>#</th><th>Ball</th><th>Time</th></tr></thead>
+            <tbody id="logBody"></tbody>
+          </table>
+        </div>
+        <details style="margin-top:12px">
+          <summary class="muted" style="font-size:.85rem">Session history &amp; data tools</summary>
+          <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
+            <div id="historyList" class="pat-cap"></div>
+            <div class="btn-row">
+              <button class="btn" id="loadJsonBtn">📂 Load JSON</button>
+              <button class="btn" id="archiveBtn">📒 Archive game</button>
+            </div>
+            <input type="file" id="fileInput" accept="application/json,.json" class="hide">
+            <p class="pat-cap" style="margin:0">Archiving stores the finished game in this device's night log, then starts fresh. “Save JSON” downloads a backup file you can re-load anywhere.</p>
+          </div>
+        </details>
+      </div>
+    </section>
+  </div>
+
+  <p class="pat-cap" style="text-align:center;margin-top:18px">
+    Shortcuts: <span class="kbd">Space</span> call · <span class="kbd">U</span> undo · <span class="kbd">A</span> auto · <span class="kbd">R</span> new game · <span class="kbd">F</span> big screen
+  </p>
+</div>
+
+<!-- ================= BIG SCREEN ================= -->
+<div class="bigscreen" id="bigscreen">
+  <button class="bs-tap" id="bsTap" title="Tap to call next"></button>
+  <button class="iconbtn bs-exit" id="bsExit">✕ Exit</button>
+  <div class="bs-ball">
+    <div class="letter" id="bsLetter"></div>
+    <div class="num" id="bsNum">—</div>
+  </div>
+  <div class="bs-callout" id="bsCallout"></div>
+  <div class="bs-meta"><b id="bsCount">0</b> called · <span id="bsPattern">Any Line</span></div>
+  <div class="bs-recent" id="bsRecent"></div>
+  <div class="bs-meta" style="font-size:1rem;opacity:.6">Tap anywhere to call the next ball</div>
+</div>
+
+<!-- ================= SETTINGS DRAWER ================= -->
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="Settings">
+  <div class="drawer-head">
+    <h2 style="font-size:1rem">Settings</h2>
+    <button class="iconbtn" id="closeDrawer">✕</button>
+  </div>
+  <div class="drawer-body">
+    <div class="sect">
+      <h3>Themes</h3>
+      <div class="theme-row" id="themeRow"></div>
+    </div>
+    <div class="sect">
+      <h3>Letter colors</h3>
+      <div class="swatch-row" id="swatchRow"></div>
+    </div>
+    <div class="sect">
+      <h3>Custom theme</h3>
+      <div class="row2">
+        <label class="fld">Background <input type="color" id="cBg" style="height:40px"></label>
+        <label class="fld">Text <input type="color" id="cText" style="height:40px"></label>
+      </div>
+      <div class="btn-row">
+        <input type="text" id="themeName" placeholder="Theme name" style="flex:1">
+        <button class="btn" id="saveTheme" style="flex:0 0 auto">Save preset</button>
+      </div>
+    </div>
+    <div class="sect">
+      <h3>Display</h3>
+      <label class="fld">Font size <span id="fsLabel" class="mono">100%</span>
+        <input type="range" id="fontRange" min="80" max="180" value="100" step="5">
+      </label>
+    </div>
+    <div class="sect">
+      <h3>Calling</h3>
+      <div class="toggle"><span>Show next-ball preview (host only)</span>
+        <label class="switch"><input type="checkbox" id="previewChk" checked><span class="slider"></span></label></div>
+      <div class="toggle"><span>Only draw balls the pattern can use</span>
+        <label class="switch"><input type="checkbox" id="limitChk" checked><span class="slider"></span></label></div>
+      <p class="pat-cap" style="margin:-2px 0 4px">e.g. Four Corners skips the I, N and G columns. Switching pattern keeps every called ball, and re-opens any columns the new pattern needs.</p>
+      <div class="toggle"><span>Free space (center) counts as daubed</span>
+        <label class="switch"><input type="checkbox" id="freeChk" checked><span class="slider"></span></label></div>
+      <div class="toggle"><span>Show call-outs (bingo lingo)</span>
+        <label class="switch"><input type="checkbox" id="calloutChk" checked><span class="slider"></span></label></div>
+      <div class="toggle"><span>Vibrate on call (mobile)</span>
+        <label class="switch"><input type="checkbox" id="hapticChk" checked><span class="slider"></span></label></div>
+    </div>
+    <div class="sect">
+      <h3>About</h3>
+      <p class="pat-cap" style="margin:0">Host-only caller. Everything is stored on this device — no accounts, no network needed once loaded. Works offline; add to home screen to install.</p>
+    </div>
+  </div>
+</aside>
+
+<!-- confirm modal -->
+<div class="modal" id="modal">
+  <div class="box">
+    <h3 id="modalTitle">Confirm</h3>
+    <p id="modalText">Are you sure?</p>
+    <div id="modalExtra"></div>
+    <div class="btn-row">
+      <button class="btn" id="modalCancel">Cancel</button>
+      <button class="btn danger" id="modalOk">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* ==========================================================================
+   Bingo Caller — single-file host console
+   ========================================================================== */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const LETTERS = ['B','I','N','G','O'];
+const STORAGE_KEY = 'bingoCaller.v1';
+
+/* ---------- Pattern library (5x5 card: row 0=top..4=bottom, col 0=B..4=O) ---------- */
+function rowCells(r){return [0,1,2,3,4].map(c=>[r,c]);}
+function colCells(c){return [0,1,2,3,4].map(r=>[r,c]);}
+const ALL25 = []; for(let r=0;r<5;r++)for(let c=0;c<5;c++)ALL25.push([r,c]);
+const OUTER = ALL25.filter(([r,c])=>r===0||r===4||c===0||c===4);
+
+const PATTERNS = {
+  any_line:    {name:'Any Line',          meta:'any',  cap:'Any single full row, column, or diagonal.'},
+  vertical:    {name:'Vertical Line',     meta:'col',  example:colCells(0), cap:'Any one full column (B, I, N, G, or O).'},
+  horizontal:  {name:'Horizontal Line',   meta:'row',  example:rowCells(2), cap:'Any one full horizontal row (1–5).'},
+  diagonal:    {name:'Diagonal Line',     cells:[[0,0],[1,1],[2,2],[3,3],[4,4]], cap:'Either corner-to-corner diagonal.'},
+  diagonal_stripes:{name:'Diagonal Stripes', cells:[[0,0],[1,1],[2,2],[3,3],[4,4],[0,1],[1,2],[2,3],[3,4],[1,0],[2,1],[3,2],[4,3]], cap:'Three parallel diagonals — the main one plus the two 4-cell broken diagonals beside it.'},
+  picket_fence:{name:'Picket Fence',      cells:colCells(0).concat(colCells(2),colCells(4)), cap:'Three full vertical columns — B, N and O.'},
+  railroad:    {name:'Railroad Tracks',   cells:colCells(0).concat(colCells(4)), cap:'The two outer columns — B and O.'},
+  stripes:     {name:'Stripes',           cells:rowCells(0).concat(rowCells(2),rowCells(4)), cap:'Three full horizontal rows — the 1st, 3rd and 5th.'},
+  chevron:     {name:'Chevron / Arrow',   cells:[[2,0],[1,1],[0,2],[1,3],[2,4]], cap:'A peak — two diagonals meeting at the top center.'},
+  letter_z:    {name:'Letter Z',          cells:rowCells(0).concat([[1,3],[2,2],[3,1]],rowCells(4)), cap:'Top row, anti-diagonal, then bottom row — a zigzag.'},
+  letter_n:    {name:'Letter N',          cells:colCells(0).concat([[1,1],[2,2],[3,3]],colCells(4)), cap:'Left column, main diagonal, right column.'},
+  diamond:     {name:'Diamond',           cells:[[0,2],[1,1],[1,3],[2,0],[2,4],[3,1],[3,3],[4,2]], cap:'The ring touching the four edge midpoints.'},
+  small_diamond:{name:'Small Diamond',    cells:[[1,2],[2,1],[2,3],[3,2]], cap:'The four cells hugging the free space.'},
+  four_corners:{name:'Four Corners',      cells:[[0,0],[0,4],[4,0],[4,4]], cap:'The four corner cells: top & bottom of the B and O columns.'},
+  x:           {name:'X (Both Diagonals)',cells:[[0,0],[1,1],[2,2],[3,3],[4,4],[0,4],[1,3],[3,1],[4,0]], cap:'Both diagonals crossing through the free center.'},
+  blackout:    {name:'Blackout / Coverall',cells:ALL25.slice(), cap:'Every square on the card.'},
+  postage:     {name:'Postage Stamp',     cells:[[0,3],[0,4],[1,3],[1,4]], cap:'A 2×2 block in the top-right corner (some halls allow any corner).'},
+  inner_square:{name:'Inner Square',      cells:[[1,1],[1,2],[1,3],[2,1],[2,3],[3,1],[3,2],[3,3]], cap:'The square of 8 cells ringing the free space.'},
+  frame:       {name:'Picture Frame',     cells:OUTER.slice(), cap:'The full outer border of the card.'},
+  letter_t:    {name:'Letter T',          cells:rowCells(0).concat(colCells(2).filter(([r])=>r>0)), cap:'Top row plus the center (N) column.'},
+  letter_l:    {name:'Letter L',          cells:colCells(0).concat(rowCells(4).filter(([,c])=>c>0)), cap:'Left (B) column plus the bottom row.'},
+};
+const CENTER = (r,c)=>r===2&&c===2;
+
+/* ---------- Bingo call-outs (US 1–75), family-friendly with a wink ----------
+   Each number maps to an ARRAY of call-out variants. When a ball is called,
+   the first variant in the combined list (your own + built-in) is shown.
+   The little ↻ button next to the call-out cycles to the next variant —
+   your choice is remembered for that number for the rest of the night. */
+const CALLS = {
+  1:["Kelly's eye, number one","Exit One, say goodbye — hello Delaware!"],
+  2:["One little duck, number two","Tie your shoe, lucky two"],
+  3:["Cup of tea, number three","Route Three — to the Meadowlands we go!"],
+  4:["Knock at the door, number four","Down the shore, lucky four!","Parkway Exit 4 — Wildwood, baby! Sun, sand, and funnel cake!"],
+  5:["Man alive, it's a five","High five for number five"],
+  6:["Pick up sticks, lucky six","Half a dozen, here come the kicks"],
+  7:["Lucky seven, straight from heaven","Seventh heaven, you're gonna win"],
+  8:["Garden gate, lucky eight","The Garden State — that's an eight!"],
+  9:["Cut the line, it's a nine","Route Nine — ride the shoreline","Parkway Exit 9 — Shell Bay Avenue, Cape May Court House — yes, that's a real place"],
+  10:["Once again, it's a ten","Cock and hen, number ten","Parkway Exit 10 — Stone Harbor! Break out the beach chairs!"],
+  11:["Legs eleven","Eleven — feels like heaven","Parkway Exit 11 — Avalon! The fancy end of Seven Mile Beach!"],
+  12:["One, two — buckle my shoe","A baker's dozen, minus one"],
+  13:["Unlucky for some — thirteen","Sweet thirteen, nothing but green","Parkway Exit 13 — Oceanview Service Area, mile marker 18.3 — grab a Cinnabon, you've earned it!"],
+  14:["Caught in between — fourteen","Fourteen, squeaky clean"],
+  15:["Young and keen — fifteen","Hoboken's own, born in '15 — that's Sinatra!"],
+  16:["Sweet sixteen","Sixteen — washed and clean"],
+  17:["Dancing queen — seventeen","Seventeen, livin' the dream"],
+  18:["Coming of age — eighteen","Eighteen — out on the scene"],
+  19:["Goodbye teens — nineteen","Nineteen — last of the teens"],
+  20:["Plenty to spare — that's twenty","Two perfect tens — twenty","Parkway Exit 20 — Route 50, Upper Township — is Upper Township above or below the Parkway? Nobody knows!"],
+  21:["Key of the door — twenty-one","Twenty-one — that's a ton of fun"],
+  22:["Two little ducks — quack quack!","Double deuce — twenty-two"],
+  23:["Thee and me — twenty-three","Busy as a bee — twenty-three"],
+  24:["Knock on the door — twenty-four","Route Twenty-Four — almost there!"],
+  25:["Duck and dive — twenty-five","A quarter, baby — twenty-five!","Parkway Exit 25 — Ocean City! Excuse me, it's a DRY town. The bars are on the Parkway."],
+  26:["Pick and mix — twenty-six","Bag of tricks — twenty-six"],
+  27:["Gates of heaven — twenty-seven","Lucky twenty-seven"],
+  28:["Closing the gate — twenty-eight","Twenty-eight — don't be late"],
+  29:["Rise and shine — twenty-nine","Twenty-nine — shoe's lookin' fine","Parkway Exit 29 — Somers Point, the last stop before Ocean City. Party while you can."],
+  30:["Dirty thirty","Flirty thirty"],
+  31:["Thirty-one — having fun","Get up and run — thirty-one"],
+  32:["Thirty-two — tie your shoe","Thirty-two — lookin' at you"],
+  33:["Thirty-three — busy as a bee","All the threes — thirty-three"],
+  34:["Ask for more — thirty-four","Thirty-four — knock once more"],
+  35:["Thirty-five — still alive!","Route Thirty-Five — Seaside, here we come!"],
+  36:["Three dozen — thirty-six","Thirty-six — bag of tricks","Parkway Exit 36 — Atlantic City Expressway junction. Vegas of the Jersey Shore. You already lost money getting there."],
+  37:["Thirty-seven — feels like heaven","Lucky thirty-seven"],
+  38:["Thirty-eight — don't make me wait","Thirty-eight — lookin' great"],
+  39:["Thirty-nine — lookin' fine","Thirty-nine — toe the line"],
+  40:["Life begins at forty!","Forty — ooh, that's naughty!"],
+  41:["Forty-one — time for fun","Forty-one — just begun","Parkway Exit 41 — Galloway Township. Home of Stockton University, where everyone's a philosophy major!"],
+  42:["Forty-two — peekaboo!","Forty-two — lookin' at you"],
+  43:["Down on one knee — forty-three","Forty-three — free as can be"],
+  44:["All the fours — forty-four","Forty-four — knock once more","Parkway Exit 44 — Egg Harbor City. Egg Harbor. There are two of them, because New Jersey."],
+  45:["Forty-five — still alive and kickin'","Forty-five — ready to thrive"],
+  46:["Route Forty-Six — let's get a diner booth!","Forty-six — bag of tricks"],
+  47:["Forty-seven — close to heaven","Lucky forty-seven"],
+  48:["Four dozen — forty-eight","Forty-eight — don't be late"],
+  49:["Born in '49 — that's The Boss! (Long Branch, NJ)","Forty-nine — born to run"],
+  50:["Fifty — nifty!","Half a century — fifty","Parkway Exit 50 — New Gretna, US 9 North. You're in the Pinelands now. No one is coming to find you."],
+  51:["Fifty-one — having fun","Fifty-one — nearly done"],
+  52:["Weeks in a year — fifty-two","Fifty-two — peekaboo!"],
+  53:["Fifty-three — busy as a bee","Fifty-three — fancy free"],
+  54:["Clean the floor — fifty-four","Fifty-four — and then some more"],
+  55:["Snakes alive — fifty-five","High-fives all around — fifty-five"],
+  56:["Fifty-six — bag of tricks","Fifty-six — fix it quick"],
+  57:["Heinz varieties — fifty-seven","Fifty-seven — close to heaven"],
+  58:["Fifty-eight — can't be late","Fifty-eight — feeling great","Parkway Exit 58 — Little Egg Harbor and Tuckerton. If you've been to Tuckerton, you've been to Tuckerton."],
+  59:["Fifty-nine — lookin' fine","Fifty-nine — right on time"],
+  60:["Five dozen — sixty","Grandma's getting frisky — sixty!"],
+  61:["Baker's bun — sixty-one","Sixty-one — just for fun"],
+  62:["Tickety-boo — sixty-two","Sixty-two — how do you do?"],
+  63:["Tickle me — sixty-three","Sixty-three — tea for free"],
+  64:["Almost retired — sixty-four","Sixty-four — and then some more"],
+  65:["Retirement age — sixty-five","Stay alive — sixty-five!"],
+  66:["Clickety-click — sixty-six","Sixty-six — pick up sticks"],
+  67:["Made in heaven — sixty-seven","Sixty-seven — touch of heaven","Parkway Exit 67 — Barnegat, Route 554. Barnegat means 'breakers inlet' in Dutch. You're basically a linguist now."],
+  68:["Pick a mate — sixty-eight","Sixty-eight — running late"],
+  69:["Either way up — you decide! (Sixty-nine)","Sixty-nine — flip it, it's still fine","Parkway Exit 69 — Wells Mills Road, Waretown. Sixty-nine AND Wells Mills. I couldn't make this up."],
+  70:["Three score and ten — seventy","Seventy — oh so heavenly"],
+  71:["Seventy-one — having fun","Seventy-one — nearly done"],
+  72:["Route Seventy-Two — LBI, here we come!","Seventy-two — how do you do?"],
+  73:["Seventy-three — fancy free","Lucky seventy-three"],
+  74:["Seventy-four — almost there","Seventy-four — one or two more","Parkway Exit 74 — Lacey Road, Forked River. There's a Forked River Service Area right here. Coffee. Gas. Stare at the Pines and question your choices."],
+  75:["Top of the shop — seventy-five!","Seventy-five — the year of 'Born to Run'!"],
+};
+
+/* ----------------------------------------------------------------------------
+   ✏️  YOUR OWN CALL-OUTS — add jokes/lines here!
+   Format: ball number -> array of strings. These appear FIRST in the cycle
+   for that number (before the built-in lines above). Leave an array empty,
+   or omit a number entirely, if you don't want any custom lines for it.
+   Example:
+     42: ["Forty-two — the answer to everything!"],
+     73: ["Seventy-three — Sheldon Cooper's favorite number"],
+---------------------------------------------------------------------------- */
+const MY_CALLS = {
+  // 1: ["your line here"],
+};
+
+/* Combined, de-duplicated variant list for a ball: your lines first, then built-ins. */
+function callVariants(n){
+  const mine=MY_CALLS[n]||[];
+  const base=CALLS[n]||[];
+  const seen=new Set(); const out=[];
+  for(const s of [...mine,...base]){ if(s && !seen.has(s)){ seen.add(s); out.push(s); } }
+  return out;
+}
+
+/* ---------- Themes ---------- */
+const THEMES = {
+  dark:        {label:'Dim Bar',     vars:{'--bg':'#15171c','--surface':'#1f232b','--surface-2':'#2a2f3a','--line':'#3a4150','--text':'#f2f5fa','--muted':'#9aa6b8','--accent':'#ffd23f'},
+                letters:{B:'#ff595e',I:'#ff924c',N:'#ffca3a',G:'#8ac926',O:'#52a6f0'}},
+  contrast:    {label:'High Contrast',vars:{'--bg':'#000000','--surface':'#0d0d0d','--surface-2':'#1a1a1a','--line':'#555','--text':'#ffffff','--muted':'#cfcfcf','--accent':'#ffe600'},
+                letters:{B:'#4da3ff',I:'#ff5c5c',N:'#ffffff',G:'#5cff8f',O:'#ffd24d'}},
+  classic:     {label:'Bingo Hall',  vars:{'--bg':'#102a43','--surface':'#1b3a5c','--surface-2':'#244a73','--line':'#3a5e85','--text':'#f5f7fb','--muted':'#a8c0db','--accent':'#ffcf33'},
+                letters:{B:'#36b3ff',I:'#ff5b6e',N:'#ffffff',G:'#46d27a',O:'#ffc24d'}},
+  light:       {label:'Daylight',    vars:{'--bg':'#f4f6fb','--surface':'#ffffff','--surface-2':'#e9eef6','--line':'#cfd8e6','--text':'#15202b','--muted':'#5c6b7e','--accent':'#f59e0b'},
+                letters:{B:'#1d6fd1',I:'#d1411d','N':'#7a4ed1',G:'#1d9d4e',O:'#c98a00'}},
+};
+
+/* ---------- Default state ---------- */
+function defaultState(){
+  return {
+    pattern:'any_line',
+    freeSpace:true,
+    patternDim:true,
+    called:[],
+    callTimes:[],
+    calloutIdx:{}, // { ballNumber: variantIndex } — remembers your cycled choice per number
+    winners:[],
+    settings:{
+      theme:'dark',
+      letters:{...THEMES.dark.letters},
+      vars:{}, fontScale:100,
+      haptics:true,
+      callouts:true,
+      limitDraw:true,
+      autoInterval:10,
+      patCollapsed:false,
+      showPreview:true,
+    },
+    customPatterns:[],
+    customThemes:[],
+    editorCells:[],
+    session:{id:Date.now(), started:new Date().toISOString(), games:1},
+    history:[], // archived games this "night"
+  };
+}
+
+let S = load() || defaultState();
+
+function load(){ try{const r=localStorage.getItem(STORAGE_KEY);return r?JSON.parse(r):null;}catch(e){return null;} }
+function save(){ try{localStorage.setItem(STORAGE_KEY, JSON.stringify(S));}catch(e){} }
+
+/* ---------- Ball helpers ---------- */
+const TOTAL = 75;
+function letterFor(n){ return LETTERS[Math.floor((n-1)/15)]; }
+function maxBalls(){ return TOTAL; }
+function colOf(n){ return Math.floor((n-1)/15); }
+
+/* Columns the draw is restricted to, given the pattern AND the limit setting.
+   Returns a Set of column indices, or null for "no restriction (all columns)". */
+function activeColumns(){
+  if(!S.settings.limitDraw) return null;
+  return involvedColumns();
+}
+/* The balls that may still be drawn right now: uncalled, and (if limiting) in an active column. */
+function eligibleBalls(){
+  const cols=activeColumns();
+  const called=new Set(S.called);
+  const out=[];
+  for(let n=1;n<=TOTAL;n++){
+    if(called.has(n)) continue;
+    if(cols && !cols.has(colOf(n))) continue;
+    out.push(n);
+  }
+  return out;
+}
+
+/* ==========================================================================
+   RENDER
+   ========================================================================== */
+function colorVar(L){ return getComputedStyle(document.documentElement).getPropertyValue('--col-'+L)||'var(--accent)'; }
+
+function renderBall(pop){
+  const last = S.called[S.called.length-1];
+  const inPlay = eligibleBalls().length;
+  const ball=$('#ball'), L=$('#ballLetter'), N=$('#ballNum');
+  if(!last){
+    ball.classList.add('empty'); L.textContent=''; N.textContent= inPlay? 'Ready':'Done';
+    ball.style.removeProperty('--ball-color');
+  }else{
+    ball.classList.remove('empty');
+    const lt=letterFor(last);
+    L.textContent=lt; N.textContent=last;
+    ball.style.setProperty('--ball-color', `var(--col-${lt})`);
+    if(pop){ ball.classList.remove('pop'); void ball.offsetWidth; ball.classList.add('pop'); }
+  }
+  $('#callIdx').textContent=S.called.length;
+  $('#remainCount').textContent=inPlay;
+  // draw-scope hint when the pool is pattern-limited
+  const cols=activeColumns();
+  $('#drawScope').textContent = cols
+    ? 'Drawing from '+[...cols].sort().map(i=>LETTERS[i]).join(' · ')+' only'
+    : '';
+  // call-out line
+  let co='';
+  if(last && S.settings.callouts){
+    const variants=callVariants(last);
+    if(variants.length){
+      const idx=((S.calloutIdx[last]||0) % variants.length);
+      co=variants[idx];
+    }
+  }
+  $('#callout').textContent=co;
+  $('#bsCallout').textContent=co;
+  // big screen mirror
+  $('#bsLetter').textContent=last?letterFor(last):'';
+  $('#bsNum').textContent=last?last:'—';
+  $('#bigscreen').style.setProperty('--ball-color', last?`var(--col-${letterFor(last)})`:'var(--accent)');
+  $('#bsCount').textContent=S.called.length;
+}
+
+function cycleCallout(){
+  const last=S.called[S.called.length-1];
+  if(!last) return;
+  const variants=callVariants(last);
+  if(variants.length<2) return;
+  const cur=(S.calloutIdx[last]||0);
+  S.calloutIdx[last]=(cur+1)%variants.length;
+  save();
+  renderBall(false);
+}
+
+function renderRecent(){
+  const box=$('#recent'); const bs=$('#bsRecent');
+  const recent=S.called.slice(-8).reverse();
+  if(!recent.length){ box.innerHTML='<span class="muted">Recent calls appear here…</span>'; bs.innerHTML=''; return; }
+  const html=recent.map((n,i)=>{
+    const lt=letterFor(n);
+    const col=lt?`color:var(--col-${lt})`:'';
+    return `<span class="chip ${i===0?'latest':''}"><span class="l" style="${col}">${lt}</span>${n}</span>`;
+  }).join('');
+  box.innerHTML=html; bs.innerHTML=html;
+}
+
+function buildBoard(){
+  const board=$('#board'); board.innerHTML='';
+  for(let c=0;c<5;c++){
+    const col=document.createElement('div'); col.className='bcol'; col.dataset.col=c;
+    const head=document.createElement('div'); head.className='bhead';
+    head.textContent=LETTERS[c]; head.style.setProperty('--lc',`var(--col-${LETTERS[c]})`);
+    col.appendChild(head);
+    for(let r=0;r<15;r++){
+      const n=c*15+r+1;
+      const cell=document.createElement('button');
+      cell.className='cell'; cell.dataset.n=n; cell.textContent=n;
+      cell.style.setProperty('--lc',`var(--col-${LETTERS[c]})`);
+      cell.addEventListener('click',()=>flashFind(n));
+      col.appendChild(cell);
+    }
+    board.appendChild(col);
+  }
+  paintBoard();
+}
+
+function paintBoard(){
+  const calledSet=new Set(S.called);
+  const last=S.called[S.called.length-1];
+  $$('#board .cell').forEach(cell=>{
+    const n=+cell.dataset.n;
+    cell.classList.toggle('called', calledSet.has(n));
+    cell.classList.toggle('current', n===last);
+  });
+  // dim columns the current pattern can't use
+  const cols=involvedColumns();
+  $$('#board .bcol').forEach(col=>{
+    const c=+col.dataset.col;
+    col.classList.toggle('dim', S.patternDim && cols && !cols.has(c));
+  });
+  $('#boardCount').textContent=`${S.called.length} / ${TOTAL}`;
+  $('#patDimBtn').classList.toggle('on', S.patternDim);
+}
+
+/* which B/I/N/G/O columns are involved in current pattern (null = all/any) */
+function involvedColumns(){
+  const p=currentPatternDef();
+  if(!p || p.meta) return null;            // any/row/col patterns span all columns
+  const cells=patternCells(p);
+  const cols=new Set(cells.map(([,c])=>c));
+  return cols.size>=5? null : cols;
+}
+
+function currentPatternDef(){
+  if(S.pattern.startsWith('custom:')){
+    const id=S.pattern.slice(7);
+    const cp=S.customPatterns.find(p=>p.id===id);
+    return cp? {name:cp.name, cells:cp.cells.map(x=>x.slice()), cap:'Custom pattern.'} : PATTERNS.any_line;
+  }
+  return PATTERNS[S.pattern]||PATTERNS.any_line;
+}
+function patternCells(p){
+  if(p.cells) return p.cells;
+  if(p.meta==='col') return p.example;
+  if(p.meta==='row') return p.example;
+  if(p.meta==='any') return ALL25; // representative
+  return [];
+}
+
+/* ---------- pattern selector + mini diagrams ---------- */
+function miniSVG(cells, opts){
+  // returns a .mini element content (25 <i>)
+  const set=new Set(cells.map(([r,c])=>r+'_'+c));
+  let html='';
+  for(let r=0;r<5;r++)for(let c=0;c<5;c++){
+    let cls='';
+    if(set.has(r+'_'+c)) cls='on';
+    if(S.freeSpace && CENTER(r,c) && (opts&&opts.markFree)) cls='free';
+    html+=`<i class="${cls}"></i>`;
+  }
+  return html;
+}
+
+/* representative cells for a pattern's mini diagram */
+function miniCellsFor(def){
+  if(def.meta==='any'){
+    // asterisk through center: middle row + middle col + both diagonals
+    const s=new Set(); const add=(r,c)=>s.add(r+'_'+c);
+    for(let i=0;i<5;i++){add(2,i);add(i,2);add(i,i);add(i,4-i);}
+    return [...s].map(k=>k.split('_').map(Number));
+  }
+  if(def.meta) return def.example;
+  return def.cells;
+}
+
+function buildPatternTiles(){
+  const wrap=$('#patTiles'); wrap.innerHTML='';
+  const make=(key,def,star)=>{
+    const t=document.createElement('button');
+    t.className='ptile'+(S.pattern===key?' on':'');
+    t.dataset.key=key;
+    const cells=miniCellsFor(def);
+    const markFree=S.freeSpace && cells.some(([r,c])=>CENTER(r,c));
+    t.innerHTML=`<span class="mini">${miniSVG(cells,{markFree})}</span><span>${star?'★ ':''}${def.name}</span>`;
+    t.onclick=()=>selectPattern(key);
+    wrap.appendChild(t);
+  };
+  Object.entries(PATTERNS).forEach(([k,p])=>make(k,p,false));
+  S.customPatterns.forEach(p=>make('custom:'+p.id,{name:p.name,cells:p.cells.map(x=>x.slice())},true));
+  const add=document.createElement('button');
+  add.className='ptile add';
+  add.innerHTML='<span class="mini"></span><span>＋ Custom</span>';
+  add.onclick=()=>{ S.editorCells=[]; buildEditor(); $('#customEditor').classList.remove('hide'); };
+  wrap.appendChild(add);
+}
+
+function selectPattern(key){
+  S.pattern=key; _probCache.key=''; save();
+  $('#customEditor').classList.toggle('hide', !key.startsWith('custom:'));
+  buildPatternTiles(); renderPattern(); renderBall(false); renderProbBar();
+  _nextBall=null; pickNextBall(); renderPreview();
+}
+
+function renderPattern(){
+  const p=currentPatternDef();
+  $('#patName').textContent=p.name;
+  $('#patHeaderName').textContent='— '+p.name;
+  $('#patCap').textContent=p.cap||'';
+  const cells=miniCellsFor(p);
+  const markFree=S.freeSpace && cells.some(([r,c])=>CENTER(r,c));
+  $('#patMini').innerHTML=miniSVG(cells,{markFree});
+  $('#bsPattern').textContent=p.name;
+  $('#freeTag').textContent = S.freeSpace?'free space on':'free space off';
+  paintBoard();
+}
+
+/* custom editor */
+function buildEditor(){
+  const g=$('#editorGrid'); g.innerHTML='';
+  const set=new Set(S.editorCells.map(([r,c])=>r+'_'+c));
+  for(let r=0;r<5;r++)for(let c=0;c<5;c++){
+    const b=document.createElement('b');
+    if(CENTER(r,c)){b.classList.add('center');b.textContent='★';}
+    if(set.has(r+'_'+c))b.classList.add('on');
+    b.addEventListener('click',()=>{
+      const key=r+'_'+c;
+      const idx=S.editorCells.findIndex(([rr,cc])=>rr===r&&cc===c);
+      if(idx>=0)S.editorCells.splice(idx,1); else S.editorCells.push([r,c]);
+      buildEditor(); save();
+    });
+    g.appendChild(b);
+  }
+}
+
+/* ---------- Win probability ----------
+   Fixed-cell patterns  →  exact analytic formula, handles tiny probabilities correctly.
+   Meta patterns (any / col / row)  →  Monte Carlo (large-enough win rates per trial).
+
+   Analytic formula per column c with k_c required rows and N_c called balls:
+     P(all k_c required rows covered) = C(N_c, k_c) / C(15, k_c)
+   Columns use disjoint number ranges → multiply independently.
+------------------------------------------------------------------------------ */
+
+function comb(n,k){
+  if(k<0||k>n) return 0;
+  if(k===0||k===n) return 1;
+  if(k>n-k) k=n-k;
+  let r=1; for(let i=0;i<k;i++) r=r*(n-i)/(i+1);
+  return Math.round(r);
+}
+
+function generateCard(){
+  const card=[];
+  for(let c=0;c<5;c++){
+    const pool=[];for(let i=c*15+1;i<=c*15+15;i++)pool.push(i);
+    for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
+    card.push(pool.slice(0,5));
+  }
+  return card;
+}
+
+function cardWinsPattern(card,calledSet,p){
+  const hit=(r,c)=>(S.freeSpace&&r===2&&c===2)||calledSet.has(card[c][r]);
+  if(p.meta==='any'){
+    for(let r=0;r<5;r++)if([0,1,2,3,4].every(c=>hit(r,c)))return true;
+    for(let c=0;c<5;c++)if([0,1,2,3,4].every(r=>hit(r,c)))return true;
+    if([0,1,2,3,4].every(i=>hit(i,i)))return true;
+    if([0,1,2,3,4].every(i=>hit(i,4-i)))return true;
+    return false;
+  }
+  if(p.meta==='col'){for(let c=0;c<5;c++)if([0,1,2,3,4].every(r=>hit(r,c)))return true;return false;}
+  if(p.meta==='row'){for(let r=0;r<5;r++)if([0,1,2,3,4].every(c=>hit(r,c)))return true;return false;}
+  return(p.cells||[]).every(([r,c])=>hit(r,c));
+}
+
+function analyticalSingleProb(patDef,calledSet){
+  const kc=[0,0,0,0,0];
+  for(const [r,c] of (patDef.cells||[])){
+    if(S.freeSpace&&r===2&&c===2) continue;
+    kc[c]++;
+  }
+  let p=1;
+  for(let col=0;col<5;col++){
+    if(!kc[col]) continue;
+    const start=col*15+1;
+    let Nc=0; for(let n=start;n<start+15;n++) if(calledSet.has(n)) Nc++;
+    const pc=comb(Nc,kc[col])/comb(15,kc[col]);
+    if(!pc) return 0;
+    p*=pc;
+  }
+  return p;
+}
+
+let _probCache={key:'',pSingle:0};
+
+function estimateWinProbability(numCards){
+  if(!S.called.length) return{pSingle:0,pAny:0};
+  const pat=currentPatternDef();
+  const calledSet=new Set(S.called);
+  const fk=S.freeSpace?'1':'0';
+  let pSingle;
+
+  if(pat.cells&&!pat.meta){
+    // Exact analytic — works for all fixed-cell patterns regardless of probability size
+    const perCol=[0,1,2,3,4].map(c=>{let n=0;for(let b=c*15+1;b<=c*15+15;b++)if(calledSet.has(b))n++;return n;});
+    const key=S.called.length+'|'+pat.name+'|'+fk+'|'+perCol.join(',');
+    if(_probCache.key===key){ pSingle=_probCache.pSingle; }
+    else{ pSingle=analyticalSingleProb(pat,calledSet); _probCache={key,pSingle}; }
+  } else {
+    // Monte Carlo for meta-patterns (any-line etc.)
+    const key=S.called.slice(-30).join(',')+pat.name+fk;
+    if(_probCache.key===key){ pSingle=_probCache.pSingle; }
+    else{
+      const TRIALS=4000; let wins=0;
+      for(let t=0;t<TRIALS;t++) if(cardWinsPattern(generateCard(),calledSet,pat)) wins++;
+      pSingle=wins/TRIALS; _probCache={key,pSingle};
+    }
+  }
+
+  const pAny=1-Math.pow(Math.max(0,1-pSingle),numCards);
+  return{pSingle,pAny};
+}
+
+function renderProbBar(){
+  const numCards=Math.max(1,parseInt($('#numCardsInput').value)||30);
+  if(!S.called.length){
+    $('#probFill').style.width='0%';
+    $('#probNums').textContent='Call a ball to see odds';
+    return;
+  }
+  const {pSingle,pAny}=estimateWinProbability(numCards);
+  const pct=n=>{
+    if(!n||isNaN(n)) return '0%';
+    if(n<0.00001)  return '<0.001%';
+    if(n<0.001)    return (n*100).toFixed(3)+'%';
+    if(n<0.01)     return (n*100).toFixed(2)+'%';
+    if(n>0.99999)  return '>99.999%';
+    return (n*100).toFixed(1)+'%';
+  };
+  $('#probFill').style.width=(Math.min(1,pAny)*100).toFixed(3)+'%';
+  $('#probNums').innerHTML=
+    `Any of <b>${numCards}</b> cards wins: <b>${pct(pAny)}</b> &nbsp;·&nbsp; Single card: ${pct(pSingle)}`;
+}
+
+
+/* ---------- audit / log ---------- */
+function fmtTime(iso){const d=new Date(iso);return d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});}
+function renderLog(){
+  const body=$('#logBody');
+  // Build a map of callCount → winner records for that call index
+  const winAtCall={};
+  S.winners.forEach(w=>{ (winAtCall[w.callCount]=winAtCall[w.callCount]||[]).push(w); });
+
+  // Interleave winner rows into the call log (newest first)
+  const rows=[];
+  S.called.forEach((n,i)=>{
+    const callNum=i+1;
+    const lt=letterFor(n);
+    rows.push(`<tr><td>${callNum}</td><td><b style="color:${lt?`var(--col-${lt})`:'inherit'}">${lt}\u00a0${n}</b></td><td class="mono">${S.callTimes?fmtTime(S.callTimes[i]):''}</td></tr>`);
+    // Insert winner row(s) AFTER the ball that triggered the win
+    if(winAtCall[callNum]){
+      winAtCall[callNum].forEach(w=>{
+        const label=w.name ? `<b class="winner-name">${w.name}</b> · ${w.pattern}` : `<b>${w.pattern}</b>`;
+        rows.push(`<tr class="win"><td>🏆</td><td colspan="2">${label} · <span class="mono">${fmtTime(w.ts)}</span></td></tr>`);
+      });
+    }
+  });
+  body.innerHTML=rows.reverse().join('')||'<tr><td colspan="3" class="muted" style="padding:14px">No balls called yet.</td></tr>';
+
+  $('#sCalled').textContent=S.called.length;
+  $('#sLeft').textContent=TOTAL - S.called.length;
+  $('#sWins').textContent=S.winners.length;
+  $('#sGames').textContent=S.session.games;
+  renderProbBar();
+
+  // Winners panel — always same format: name (if any) · pattern · call # · time
+  const allNames=S.winners.filter(w=>w.name).map(w=>w.name);
+  const banner=allNames.length
+    ? `<div class="congrats-banner">🎉 Tonight's winners: <b>${allNames.join(', ')}</b></div>` : '';
+  $('#winList').innerHTML=banner+S.winners.map(w=>{
+    const who=w.name?`<b class="winner-name">${w.name}</b> · `:''
+    return `<div class="winrec">🏆 ${who}${w.pattern} · call #${w.callCount} · <span class="mono">${fmtTime(w.ts)}</span></div>`;
+  }).join('');
+
+  // history
+  $('#historyList').innerHTML = S.history.length
+    ? S.history.map((h,i)=>{
+        const names=h.winnerRecs?h.winnerRecs.filter(w=>w.name).map(w=>w.name):[];
+        return `Game ${i+1}: ${h.calls} calls · ${h.winners} winner(s)${names.length?' ('+names.join(', ')+')':''} · ${fmtTime(h.ended)}`;
+      }).join('<br>')
+    : '<span class="muted">No archived games this session.</span>';
+}
+
+/* ==========================================================================
+   ACTIONS
+   ========================================================================== */
+function ensureTimes(){ if(!S.callTimes) S.callTimes=[]; }
+
+/* ---------- Live call-out preview ---------- */
+let _nextBall = null; // pre-selected ball — host-only, not persisted
+
+function pickNextBall(){
+  const elig = eligibleBalls();
+  if(!elig.length){ _nextBall = null; return; }
+  // Try to pick something other than whatever was just called
+  const last = S.called[S.called.length-1];
+  const pool = elig.length > 1 ? elig.filter(n=>n!==last) : elig;
+  _nextBall = pool[Math.floor(Math.random()*pool.length)];
+}
+
+function renderPreview(){
+  const panel = $('#previewPanel');
+  if(!S.settings.showPreview){ panel.classList.add('hidden'); return; }
+  panel.classList.remove('hidden');
+
+  if(!_nextBall || !eligibleBalls().includes(_nextBall)){
+    pickNextBall();
+  }
+
+  if(!_nextBall){
+    panel.classList.add('empty');
+    $('#previewLetter').textContent = '';
+    $('#previewNum').textContent = '—';
+    $('#previewCalloutTxt').textContent = 'No more balls to call';
+    panel.style.removeProperty('--preview-col');
+    return;
+  }
+  panel.classList.remove('empty');
+  const lt = letterFor(_nextBall);
+  const variants = callVariants(_nextBall);
+  const idx = S.calloutIdx[_nextBall] || 0;
+  const co = S.settings.callouts && variants.length ? variants[idx % variants.length] : '';
+  $('#previewLetter').textContent = lt;
+  $('#previewNum').textContent = _nextBall;
+  $('#previewCalloutTxt').textContent = co || '';
+  panel.style.setProperty('--preview-col', `var(--col-${lt})`);
+}
+
+function callNext(){
+  const elig=eligibleBalls();
+  if(!elig.length){
+    toast(S.called.length>=TOTAL ? 'Every ball has been called.' : 'No balls left for this pattern.');
+    stopAuto(); return;
+  }
+  ensureTimes();
+  // Use pre-selected preview ball if still valid; otherwise random
+  const n = (_nextBall && elig.includes(_nextBall)) ? _nextBall : elig[Math.floor(Math.random()*elig.length)];
+  _nextBall = null; // clear before picking next
+  S.called.push(n);
+  S.callTimes.push(new Date().toISOString());
+  save();
+  renderBall(true); renderRecent(); paintBoard(); renderLog();
+  if(S.settings.haptics && navigator.vibrate) navigator.vibrate(35);
+  pickNextBall(); renderPreview(); // advance preview to the following ball
+  if(!eligibleBalls().length){ toast('Last ball in play for this pattern.'); stopAuto(); }
+}
+
+function undo(){
+  if(!S.called.length){ toast('Nothing to undo.'); return; }
+  ensureTimes();
+  S.called.pop(); S.callTimes.pop();
+  save();
+  renderBall(false); renderRecent(); paintBoard(); renderLog();
+  _nextBall=null; pickNextBall(); renderPreview();
+}
+
+function newGame(){
+  confirmModal('New game?','Clears all called balls and the current call log. Winners and history are kept. Tip: “Archive game” first to save this round to the night log.',()=>{
+    S.called=[]; S.callTimes=[];
+    save(); fullRender(); toast('New game ready.');
+  });
+}
+
+function markWinner(){
+  if(!S.called.length){ toast('Call some balls first.'); return; }
+  const p=currentPatternDef();
+  confirmModal(
+    '🏆 Mark winner!',
+    'Pattern: '+p.name+' · call #'+S.called.length,
+    (captured)=>{
+      const name=((captured&&captured.modalNameInput)||'').trim();
+      S.winners.push({
+        name, pattern:p.name, ts:new Date().toISOString(),
+        callCount:S.called.length, lastBall:S.called[S.called.length-1]
+      });
+      save(); renderLog();
+      toast('🏆 '+(name?name+' wins!':'Winner recorded!')+' — '+p.name);
+    },
+    {okText:'Record winner', cancelText:'Cancel',
+     extra:'<label class="fld" style="font-size:.85rem;font-weight:700">Winner\'s name (optional)<input type="text" id="modalNameInput" placeholder="e.g. Table 4, or María" autocomplete="off" style="margin-top:6px"></label>'}
+  );
+}
+
+function archiveGame(){
+  if(!S.called.length && !S.winners.length){ toast('Nothing to archive yet.'); return; }
+  S.history.push({
+    ended:new Date().toISOString(),
+    calls:S.called.length,
+    winners:S.winners.length,
+    pattern:currentPatternDef().name,
+    order:S.called.slice(),
+    times:(S.callTimes||[]).slice(),
+    winnerRecs:S.winners.slice(),
+  });
+  S.session.games++;
+  S.called=[]; S.callTimes=[]; S.winners=[];
+  save(); fullRender(); toast('Game archived. Fresh board ready.');
+}
+
+/* ---------- auto-call ---------- */
+let autoTimer=null, autoRAF=null, autoEnd=0, autoRemain=0, autoOn=false, autoPaused=false;
+function startAuto(){
+  if(!eligibleBalls().length){ toast('No balls left to call.'); return; }
+  autoOn=true; autoPaused=false;
+  $('#autoBtn').textContent='⏸ Pause'; $('#autoBtn').classList.add('on');
+  scheduleAuto((S.settings.autoInterval||+$('#intRange').value)*1000);
+}
+function scheduleAuto(ms){
+  clearTimeout(autoTimer); cancelAnimationFrame(autoRAF);
+  autoEnd=performance.now()+ms; autoRemain=ms;
+  tickCountdown();
+  autoTimer=setTimeout(()=>{
+    if(!autoOn||autoPaused) return;
+    callNext();
+    if(eligibleBalls().length && autoOn) scheduleAuto(((S.settings.autoInterval)|| +$('#intRange').value)*1000);
+    else stopAuto();
+  },ms);
+}
+function tickCountdown(){
+  const total=((S.settings.autoInterval)|| +$('#intRange').value)*1000;
+  const left = autoPaused? autoRemain : Math.max(0,autoEnd-performance.now());
+  $('#cdFill').style.width=(100*(1-left/total))+'%';
+  if(autoOn && !autoPaused) autoRAF=requestAnimationFrame(tickCountdown);
+}
+function pauseAuto(){
+  autoPaused=true; autoRemain=Math.max(0,autoEnd-performance.now());
+  clearTimeout(autoTimer); cancelAnimationFrame(autoRAF);
+  $('#autoBtn').textContent='▶ Resume';
+}
+function resumeAuto(){
+  if(!eligibleBalls().length){ stopAuto(); return; }
+  autoPaused=false; $('#autoBtn').textContent='⏸ Pause';
+  scheduleAuto(autoRemain>200?autoRemain:200);
+}
+function stopAuto(){
+  autoOn=false; autoPaused=false;
+  clearTimeout(autoTimer); cancelAnimationFrame(autoRAF);
+  $('#autoBtn').textContent='▶ Auto Call'; $('#autoBtn').classList.remove('on');
+  $('#cdFill').style.width='0%';
+}
+function toggleAuto(){
+  if(!autoOn) startAuto();
+  else if(autoPaused) resumeAuto();
+  else pauseAuto();
+}
+
+/* ---------- find / search ---------- */
+function flashFind(n){
+  $$('#board .cell').forEach(c=>c.classList.remove('found'));
+  const cell=$(`#board .cell[data-n="${n}"]`); if(cell)cell.classList.add('found');
+  const idx=S.called.indexOf(n);
+  if(idx>=0){ ensureTimes(); $('#findNote').innerHTML=`<b style="color:var(--good)">${letterFor(n)} ${n}</b> — call #${idx+1}${S.callTimes&&S.callTimes[idx]?' at '+fmtTime(S.callTimes[idx]):''}`; }
+  else $('#findNote').innerHTML=`<b style="color:var(--warn)">${n}</b> — not called yet`;
+  if(cell) cell.scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+function doFind(){
+  const v=parseInt($('#findInput').value,10);
+  if(isNaN(v)||v<1||v>maxBalls()){ $('#findNote').textContent='Enter 1–'+maxBalls(); return; }
+  flashFind(v);
+}
+
+/* ==========================================================================
+   EXPORT / SAVE
+   ========================================================================== */
+function buildSessionObject(whole){
+  const cur={
+    pattern:currentPatternDef().name,
+    calledOrder:S.called.slice(),
+    callTimes:(S.callTimes||[]).slice(),
+    winners:S.winners.slice(),
+  };
+  if(!whole) return {kind:'bingo-session', exported:new Date().toISOString(), session:S.session, current:cur};
+  return {kind:'bingo-night', exported:new Date().toISOString(), session:S.session, games:S.history.slice(), current:cur};
+}
+function download(name, text, type){
+  const blob=new Blob([text],{type:type||'text/plain'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+}
+function saveJSON(){
+  confirmModal('Save backup','Save the current game only, or the whole night (all archived games + current)?',
+    ()=>{ download(`bingo-night-${stamp()}.json`, JSON.stringify(buildSessionObject(true),null,2),'application/json'); },
+    {okText:'Whole night', cancelText:'Current game', onCancel:()=>{
+      download(`bingo-game-${stamp()}.json`, JSON.stringify(buildSessionObject(false),null,2),'application/json');
+    }});
+}
+function exportData(){
+  confirmModal('Export log','Choose a format for the call log + winners.',
+    ()=>{ download(`bingo-log-${stamp()}.csv`, toCSV(),'text/csv'); },
+    {okText:'CSV', cancelText:'Plain text', onCancel:()=>{ download(`bingo-log-${stamp()}.txt`, toTXT(),'text/plain'); }});
+}
+function toCSV(){
+  let out='call_number,letter,ball,time\n';
+  S.called.forEach((n,i)=>{ out+=`${i+1},${letterFor(n)},${n},${S.callTimes&&S.callTimes[i]?fmtTime(S.callTimes[i]):''}\n`; });
+  out+='\nwinner_pattern,call_count,last_ball,time\n';
+  S.winners.forEach(w=>{ out+=`"${w.pattern}",${w.callCount},${w.lastBall},${fmtTime(w.ts)}\n`; });
+  return out;
+}
+function toTXT(){
+  let out=`BINGO SESSION LOG\nExported ${new Date().toLocaleString()}\nPattern: ${currentPatternDef().name}\n\nCALLS (${S.called.length}):\n`;
+  S.called.forEach((n,i)=>{ out+=`  ${String(i+1).padStart(2)}. ${letterFor(n)} ${n}   ${S.callTimes&&S.callTimes[i]?fmtTime(S.callTimes[i]):''}\n`; });
+  out+=`\nWINNERS (${S.winners.length}):\n`;
+  if(!S.winners.length)out+='  (none)\n';
+  S.winners.forEach(w=>{ out+=`  🏆 ${w.pattern} — call #${w.callCount} (${letterFor(w.lastBall)} ${w.lastBall}) at ${fmtTime(w.ts)}\n`; });
+  return out;
+}
+function stamp(){const d=new Date();const p=x=>String(x).padStart(2,'0');return `${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`;}
+
+function loadJSON(file){
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const data=JSON.parse(reader.result);
+      const cur=data.current||data;
+      if(!cur.calledOrder){ toast('Not a recognized bingo file.'); return; }
+      confirmModal('Load this file?','This replaces the current board and call log with the saved data. Winners load too.',()=>{
+        S.called=cur.calledOrder.slice();
+        S.callTimes=(cur.callTimes||[]).slice();
+        S.winners=(cur.winners||[]).slice();
+        if(data.games){ S.history=data.games.slice(); }
+        save(); fullRender(); toast('Session loaded.');
+      });
+    }catch(e){ toast('Could not read that file.'); }
+  };
+  reader.readAsText(file);
+}
+
+/* ==========================================================================
+   THEME / SETTINGS
+   ========================================================================== */
+function applyTheme(){
+  const root=document.documentElement;
+  // base theme vars
+  const base=THEMES[S.settings.theme]?THEMES[S.settings.theme].vars:{};
+  Object.entries(base).forEach(([k,v])=>root.style.setProperty(k,v));
+  // custom theme overrides (bg/text)
+  Object.entries(S.settings.vars||{}).forEach(([k,v])=>{ if(v)root.style.setProperty(k,v); });
+  // letters
+  LETTERS.forEach(L=>root.style.setProperty('--col-'+L, S.settings.letters[L]));
+  root.style.setProperty('--font-scale', (S.settings.fontScale/100));
+  $('#themeName');
+}
+function buildThemeRow(){
+  const row=$('#themeRow'); row.innerHTML='';
+  Object.entries(THEMES).forEach(([k,t])=>{
+    const b=document.createElement('button'); b.className='theme-chip'+(S.settings.theme===k?' on':''); b.textContent=t.label;
+    b.onclick=()=>{ S.settings.theme=k; S.settings.letters={...t.letters}; S.settings.vars={}; save(); applyTheme(); buildThemeRow(); buildSwatches(); renderRecent(); paintBoard(); };
+    row.appendChild(b);
+  });
+  (S.customThemes||[]).forEach((t,i)=>{
+    const b=document.createElement('button'); b.className='theme-chip'; b.textContent='★ '+t.name;
+    b.onclick=()=>{ Object.assign(S.settings.vars, t.vars); S.settings.letters={...t.letters}; save(); applyTheme(); renderRecent(); paintBoard(); };
+    row.appendChild(b);
+  });
+}
+function buildSwatches(){
+  const row=$('#swatchRow'); row.innerHTML='';
+  LETTERS.forEach(L=>{
+    const wrap=document.createElement('label'); wrap.className='swatch'; wrap.style.color=`var(--col-${L})`;
+    wrap.innerHTML=`${L}<input type="color" value="${rgbToHex(S.settings.letters[L])}">`;
+    wrap.querySelector('input').addEventListener('input',e=>{
+      S.settings.letters[L]=e.target.value; save(); applyTheme(); renderBall(false); renderRecent(); paintBoard();
+    });
+    row.appendChild(wrap);
+  });
+}
+function rgbToHex(c){ if(!c)return '#ffffff'; c=c.trim(); if(c[0]==='#')return c; const m=c.match(/\d+/g); if(!m)return '#ffffff'; return '#'+m.slice(0,3).map(x=>(+x).toString(16).padStart(2,'0')).join(''); }
+
+/* ==========================================================================
+   MODAL / TOAST
+   ========================================================================== */
+let modalOk=null, modalCancelFn=null;
+function confirmModal(title,text,onOk,opts){
+  opts=opts||{};
+  $('#modalTitle').textContent=title; $('#modalText').textContent=text;
+  $('#modalExtra').innerHTML=opts.extra||'';
+  $('#modalOk').textContent=opts.okText||'Confirm';
+  $('#modalCancel').textContent=opts.cancelText||'Cancel';
+  modalOk=onOk; modalCancelFn=opts.onCancel||null;
+  $('#modal').classList.add('show');
+  // Auto-focus the first input in the extra section if present
+  setTimeout(()=>{ const inp=$('#modalExtra input'); if(inp) inp.focus(); }, 60);
+}
+function closeModal(){ $('#modal').classList.remove('show'); $('#modalExtra').innerHTML=''; modalOk=null; modalCancelFn=null; }
+let toastT=null;
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2600); }
+
+/* ==========================================================================
+   FULL RENDER + WIRING
+   ========================================================================== */
+function fullRender(){
+  $('#intRange').value=S.settings.autoInterval||10;
+  $('#intLabel').textContent=S.settings.autoInterval||10;
+  renderBall(false); renderRecent(); renderPattern(); paintBoard(); renderLog();
+  _nextBall=null; pickNextBall(); renderPreview();
+}
+
+function applyPatCollapsed(){
+  const closed=!!S.settings.patCollapsed;
+  $('#patBody').classList.toggle('closed', closed);
+  $('#patHeader').classList.toggle('closed', closed);
+}
+
+function init(){
+  ensureTimes();
+  if(!S.settings.autoInterval) S.settings.autoInterval=10;
+  if(S.settings.callouts===undefined) S.settings.callouts=true;
+  if(S.settings.limitDraw===undefined) S.settings.limitDraw=true;
+  if(S.settings.showPreview===undefined) S.settings.showPreview=true;
+  if(S.settings.patCollapsed===undefined) S.settings.patCollapsed=false;
+  if(!S.calloutIdx) S.calloutIdx={};
+  applyTheme();
+  buildBoard();
+  buildPatternTiles();
+  buildThemeRow(); buildSwatches();
+  buildEditor();
+  fullRender(); // fullRender now calls pickNextBall + renderPreview internally
+
+  // settings reflect
+  $('#fontRange').value=S.settings.fontScale; $('#fsLabel').textContent=S.settings.fontScale+'%';
+  $('#freeChk').checked=S.freeSpace;
+  $('#limitChk').checked=S.settings.limitDraw;
+  $('#previewChk').checked=S.settings.showPreview;
+  $('#hapticChk').checked=S.settings.haptics;
+  $('#calloutChk').checked=S.settings.callouts;
+  $('#intRange').value=S.settings.autoInterval; $('#intLabel').textContent=S.settings.autoInterval;
+  applyPatCollapsed();
+
+  /* play-style collapse caret */
+  const togglePat=()=>{ S.settings.patCollapsed=!S.settings.patCollapsed; save(); applyPatCollapsed(); };
+  $('#patHeader').onclick=togglePat;
+  $('#patHeader').addEventListener('keydown',e=>{ if(e.key==='Enter'||e.code==='Space'){ e.preventDefault(); togglePat(); } });
+
+  $('#calloutChk').onchange=e=>{ S.settings.callouts=e.target.checked; save(); renderBall(false); };
+  $('#cycleBtn').onclick=cycleCallout;
+  $('#redrawBtn').onclick=()=>{ _nextBall=null; pickNextBall(); renderPreview(); };
+  $('#reportBtn').onclick=generateNightReport;
+  $('#limitChk').onchange=e=>{ S.settings.limitDraw=e.target.checked; save(); renderBall(false); paintBoard(); _nextBall=null; pickNextBall(); renderPreview(); };
+  $('#previewChk').onchange=e=>{ S.settings.showPreview=e.target.checked; save(); renderPreview(); };
+
+  /* core buttons */
+  $('#callBtn').onclick=callNext;
+  $('#undoBtn').onclick=undo;
+  $('#resetBtn').onclick=newGame;
+  $('#autoBtn').onclick=toggleAuto;
+  $('#markWinner').onclick=markWinner;
+  $('#bsTap').onclick=callNext;
+  $('#archiveBtn').onclick=archiveGame;
+
+  $('#intRange').oninput=e=>{ S.settings.autoInterval=+e.target.value; $('#intLabel').textContent=e.target.value; save(); };
+
+  /* save custom pattern */
+  $('#saveCustom').onclick=()=>{
+    const name=$('#customName').value.trim()||('Custom '+(S.customPatterns.length+1));
+    if(!S.editorCells.length){ toast('Tap some cells first.'); return; }
+    const id='c'+Date.now();
+    S.customPatterns.push({id,name,cells:S.editorCells.slice()});
+    S.editorCells=[]; $('#customName').value='';
+    save(); selectPattern('custom:'+id); buildEditor();
+    $('#customEditor').classList.add('hide');
+    toast('Saved pattern: '+name);
+  };
+
+  $('#patDimBtn').onclick=()=>{ S.patternDim=!S.patternDim; save(); paintBoard(); };
+
+  /* find */
+  $('#findBtn').onclick=doFind;
+  $('#findInput').addEventListener('keydown',e=>{ if(e.key==='Enter')doFind(); });
+
+  /* export / save / load */
+  $('#saveJsonBtn').onclick=saveJSON;
+  $('#exportBtn').onclick=exportData;
+  $('#loadJsonBtn').onclick=()=>$('#fileInput').click();
+  $('#fileInput').onchange=e=>{ if(e.target.files[0])loadJSON(e.target.files[0]); e.target.value=''; };
+
+  /* big screen */
+  $('#bigBtn').onclick=()=>$('#bigscreen').classList.add('show');
+  $('#bsExit').onclick=()=>$('#bigscreen').classList.remove('show');
+
+  /* settings drawer */
+  const openDrawer=()=>{ $('#drawer').classList.add('show'); $('#scrim').classList.add('show'); };
+  const closeDrawer=()=>{ $('#drawer').classList.remove('show'); $('#scrim').classList.remove('show'); };
+  $('#settingsBtn').onclick=openDrawer; $('#closeDrawer').onclick=closeDrawer; $('#scrim').onclick=closeDrawer;
+
+  $('#fontRange').oninput=e=>{ S.settings.fontScale=+e.target.value; $('#fsLabel').textContent=e.target.value+'%'; save(); applyTheme(); };
+  $('#freeChk').onchange=e=>{ S.freeSpace=e.target.checked; save(); renderPattern(); };
+  $('#hapticChk').onchange=e=>{ S.settings.haptics=e.target.checked; save(); };
+
+  $('#cBg').oninput=e=>{ S.settings.vars=S.settings.vars||{}; S.settings.vars['--bg']=e.target.value; save(); applyTheme(); };
+  $('#cText').oninput=e=>{ S.settings.vars=S.settings.vars||{}; S.settings.vars['--text']=e.target.value; save(); applyTheme(); };
+  $('#saveTheme').onclick=()=>{
+    const name=$('#themeName').value.trim()||('Theme '+((S.customThemes||[]).length+1));
+    S.customThemes=S.customThemes||[];
+    S.customThemes.push({name, vars:{...(S.settings.vars||{})}, letters:{...S.settings.letters}});
+    $('#themeName').value=''; save(); buildThemeRow(); toast('Saved theme: '+name);
+  };
+
+  /* modal — capture extra inputs BEFORE closeModal wipes #modalExtra */
+  $('#modalOk').onclick=()=>{
+    const captured={};
+    $$('#modalExtra input,#modalExtra textarea,#modalExtra select').forEach(el=>{captured[el.id]=el.value;});
+    const f=modalOk; closeModal(); if(f)f(captured);
+  };
+  $('#modalCancel').onclick=()=>{ const f=modalCancelFn; closeModal(); if(f)f(); };
+  // Enter submits; Escape cancels
+  $('#modal').addEventListener('keydown',e=>{
+    if(e.key==='Enter'&&document.activeElement.tagName==='INPUT'){ e.preventDefault(); $('#modalOk').click(); }
+    if(e.key==='Escape'){ e.preventDefault(); const f=modalCancelFn; closeModal(); if(f)f(); }
+  });
+  /* player-count for probability */
+  $('#numCardsInput').oninput=()=>{ _probCache.key=''; renderProbBar(); };
+
+  /* keyboard shortcuts */
+  document.addEventListener('keydown',e=>{
+    if(['INPUT','SELECT','TEXTAREA'].includes(document.activeElement.tagName)) return;
+    const k=e.key.toLowerCase();
+    if(e.code==='Space'){ e.preventDefault(); callNext(); }
+    else if(k==='u'){ undo(); }
+    else if(k==='a'){ toggleAuto(); }
+    else if(k==='r'){ newGame(); }
+    else if(k==='f'){ $('#bigscreen').classList.toggle('show'); }
+    else if(k==='escape'){ $('#bigscreen').classList.remove('show'); closeDrawer(); closeModal(); }
+  });
+
+  registerPWA();
+}
+
+/* ==========================================================================
+   PWA — inline manifest + best-effort service worker
+   ========================================================================== */
+/* ==========================================================================
+   NIGHT REPORT — generates a self-contained printable/shareable HTML page
+   ========================================================================== */
+function generateNightReport(){
+  // Collect all games: archived + current (if anything happened)
+  const games = S.history.map((h,i)=>({...h, gameNum:i+1, isCurrent:false}));
+  if(S.called.length || S.winners.length){
+    games.push({
+      gameNum: games.length+1, isCurrent:true,
+      ended: new Date().toISOString(),
+      calls: S.called.length, winners: S.winners.length,
+      pattern: currentPatternDef().name,
+      order: S.called.slice(),
+      times: (S.callTimes||[]).slice(),
+      winnerRecs: S.winners.slice(),
+    });
+  }
+  if(!games.length){ toast('No games yet — call some balls first!'); return; }
+
+  const nightDate = new Date(S.session.started).toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const lcol = {B:'#ff595e',I:'#ff924c',N:'#ffca3a',G:'#8ac926',O:'#52a6f0'};
+
+  // Build the visual board for a game
+  function boardHTML(calledSet){
+    let h='<div class="r-board">';
+    ['B','I','N','G','O'].forEach((L,c)=>{
+      h+=`<div class="r-col"><div class="r-head" style="color:${lcol[L]};border-bottom:3px solid ${lcol[L]}">${L}</div>`;
+      for(let r=0;r<15;r++){
+        const n=c*15+r+1;
+        const on=calledSet.has(n);
+        h+=`<div class="r-cell${on?' r-called':''}" style="${on?`background:${lcol[L]}20;color:${lcol[L]};border:1px solid ${lcol[L]}40;font-weight:800`:''}">${n}</div>`;
+      }
+      h+='</div>';
+    });
+    return h+'</div>';
+  }
+
+  // Build a game section
+  function gameSection(g){
+    const calledSet=new Set(g.order||[]);
+    const winnerRows=(g.winnerRecs||[]).map(w=>{
+      const who=w.name?`<strong style="color:#22c55e">${w.name}</strong> — `:'';
+      return `<div class="r-winner">🏆 ${who}${w.pattern} · call #${w.callCount} · ${fmtTime(w.ts)}</div>`;
+    }).join('');
+    const callRows=(g.order||[]).map((n,i)=>{
+      const lt=letterFor(n);
+      const t=g.times&&g.times[i]?fmtTime(g.times[i]):'';
+      const wins=(g.winnerRecs||[]).filter(w=>w.callCount===i+1);
+      const winTag=wins.map(w=>`<span class="r-win-tag">🏆${w.name?' '+w.name:''}</span>`).join('');
+      return `<tr><td>${i+1}</td><td style="color:${lcol[lt]||'inherit'};font-weight:800">${lt} ${n}</td><td>${t}</td><td>${winTag}</td></tr>`;
+    }).join('');
+    return `
+    <section class="r-game">
+      <div class="r-game-head">
+        <h2>Game ${g.gameNum}${g.isCurrent?' <span class="r-live">in progress</span>':''}</h2>
+        <span class="r-game-meta">${g.pattern} · ${g.calls} ball${g.calls!==1?'s':''} · ended ${fmtTime(g.ended)}</span>
+      </div>
+      ${winnerRows||'<p class="r-nowin">No winners recorded for this round.</p>'}
+      ${boardHTML(calledSet)}
+      <details>
+        <summary>Full call log (${g.calls} balls)</summary>
+        <table class="r-log">
+          <thead><tr><th>#</th><th>Ball</th><th>Time</th><th></th></tr></thead>
+          <tbody>${callRows||'<tr><td colspan="4" style="color:#888">No calls yet</td></tr>'}</tbody>
+        </table>
+      </details>
+    </section>`;
+  }
+
+  // Collect all winner names across the night
+  const allWinners=[...S.history,...(S.called.length||S.winners.length?[{winnerRecs:S.winners}]:[])]
+    .flatMap(g=>(g.winnerRecs||[]).filter(w=>w.name).map(w=>w.name));
+  const nightBanner = allWinners.length
+    ? `<div class="r-banner">🎉 Tonight's winners: <strong>${[...new Set(allWinners)].join(', ')}</strong></div>` : '';
+
+  const html=`<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bingo Night Report — ${nightDate}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:#f5f7fb;color:#1a2332;font-size:15px;line-height:1.5;padding:0 0 40px}
+.r-wrap{max-width:900px;margin:0 auto;padding:24px 20px}
+.r-header{text-align:center;padding:28px 0 22px;border-bottom:2px solid #e2e8f0;margin-bottom:28px}
+.r-header h1{font-size:2rem;font-weight:900;letter-spacing:-.02em;color:#0f172a}
+.r-header .r-date{color:#64748b;font-size:1rem;margin-top:4px}
+.r-header .r-sessions{margin-top:10px;font-size:.85rem;color:#94a3b8;font-weight:600}
+.r-banner{background:#dcfce7;border:1px solid #86efac;border-radius:10px;padding:12px 16px;font-size:1rem;margin-bottom:24px;color:#15803d}
+.r-game{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:20px;margin-bottom:22px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.r-game-head{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.r-game-head h2{font-size:1.15rem;font-weight:900;color:#0f172a}
+.r-live{font-size:.75rem;background:#fef3c7;color:#d97706;border-radius:5px;padding:2px 6px;font-weight:700}
+.r-game-meta{font-size:.82rem;color:#64748b;font-weight:600}
+.r-winner{background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:9px 12px;margin-bottom:8px;font-size:.92rem}
+.r-nowin{color:#94a3b8;font-size:.88rem;font-style:italic;margin-bottom:10px}
+.r-win-tag{background:#fef3c7;color:#92400e;border-radius:4px;padding:1px 5px;font-size:.75rem;font-weight:700;margin-left:4px}
+/* board */
+.r-board{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:14px 0}
+.r-col{display:flex;flex-direction:column;gap:3px}
+.r-head{text-align:center;font-weight:900;font-size:1rem;padding:5px 0;border-radius:6px 6px 0 0;background:#f8fafc}
+.r-cell{text-align:center;font-size:.78rem;padding:4px 2px;border-radius:5px;border:1px solid #e2e8f0;background:#f8fafc;color:#94a3b8;font-variant-numeric:tabular-nums}
+.r-called{font-weight:900}
+/* call log */
+details{margin-top:14px}
+summary{cursor:pointer;font-size:.85rem;font-weight:700;color:#64748b;padding:4px 0;user-select:none}
+.r-log{width:100%;border-collapse:collapse;font-size:.83rem;margin-top:8px}
+.r-log th{background:#f1f5f9;padding:6px 8px;text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:#64748b}
+.r-log td{padding:5px 8px;border-top:1px solid #f1f5f9;font-variant-numeric:tabular-nums;color:#475569}
+.r-log tr:nth-child(even) td{background:#fafafa}
+/* print toolbar */
+.r-toolbar{position:sticky;top:0;z-index:10;background:rgba(245,247,251,.94);backdrop-filter:blur(8px);border-bottom:1px solid #e2e8f0;padding:10px 20px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.r-toolbar button{border:1px solid #cbd5e1;background:#fff;border-radius:8px;padding:7px 14px;font-size:.88rem;font-weight:700;cursor:pointer;color:#0f172a}
+.r-toolbar button:hover{background:#f1f5f9}
+.r-toolbar button.primary{background:#0f172a;color:#fff;border-color:#0f172a}
+.r-meta-bar{text-align:center;color:#94a3b8;font-size:.78rem;margin-top:28px;padding-top:16px;border-top:1px solid #e2e8f0}
+@media print{
+  .r-toolbar{display:none!important}
+  body{background:#fff;padding:0}
+  .r-game{break-inside:avoid;box-shadow:none;border:1px solid #ddd}
+  details{display:block}
+  details summary{display:none}
+  .r-log{display:table}
+}
+</style>
+</head>
+<body>
+<div class="r-toolbar">
+  <button class="primary" onclick="window.print()">🖨 Print</button>
+  <button onclick="dlReport()">⬇ Download HTML</button>
+  <span style="flex:1;font-size:.82rem;color:#64748b">${nightDate} · ${games.length} game(s)</span>
+  <button onclick="window.close()">✕ Close</button>
+</div>
+<div class="r-wrap">
+  <div class="r-header">
+    <h1>🎱 Bingo Night Report</h1>
+    <div class="r-date">${nightDate}</div>
+    <div class="r-sessions">${games.length} game(s) · ${games.reduce((a,g)=>a+g.calls,0)} total balls called · Generated ${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>
+  </div>
+  ${nightBanner}
+  ${games.map(gameSection).join('\n')}
+  <div class="r-meta-bar">Generated by Bingo Caller &nbsp;·&nbsp; Revolution Entertainment &nbsp;·&nbsp; ${new Date().toLocaleString()}</div>
+</div>
+<script>
+function dlReport(){
+  const a=document.createElement('a');
+  a.href='data:text/html;charset=utf-8,'+encodeURIComponent('<!DOCTYPE html>'+document.documentElement.outerHTML);
+  a.download='bingo-night-${stamp()}.html';
+  a.click();
+}
+<\/script>
+</body>
+</html>`;
+
+  try{
+    const w=window.open('','_blank','width=960,height=820');
+    if(!w){ toast('Pop-up blocked — allow pop-ups and try again.'); return; }
+    w.document.write(html);
+    w.document.close();
+  }catch(e){ toast('Could not open report: '+e.message); }
+}
+
+function registerPWA(){
+  try{
+    const icon='data:image/svg+xml,'+encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192"><defs><radialGradient id="g" cx="34%" cy="30%" r="80%"><stop offset="0%" stop-color="#fff"/><stop offset="14%" stop-color="#fff"/><stop offset="15%" stop-color="#52a6f0"/><stop offset="100%" stop-color="#ff595e"/></radialGradient></defs><circle cx="96" cy="96" r="92" fill="url(#g)"/><text x="96" y="120" font-size="78" font-family="Arial" font-weight="900" text-anchor="middle" fill="#15171c">B</text></svg>`);
+    const manifest={ name:'Bingo Caller', short_name:'Bingo', start_url:'.', display:'standalone',
+      background_color:'#15171c', theme_color:'#15171c',
+      icons:[{src:icon,sizes:'192x192',type:'image/svg+xml',purpose:'any'},{src:icon,sizes:'512x512',type:'image/svg+xml',purpose:'any maskable'}] };
+    const mblob=new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'});
+    const link=document.createElement('link'); link.rel='manifest'; link.href=URL.createObjectURL(mblob);
+    document.head.appendChild(link);
+  }catch(e){}
+  // Service worker: register ./sw.js if present (for cold-start offline on a real host).
+  // The app already runs fully offline once loaded; sw.js is an optional companion file.
+  if('serviceWorker' in navigator && location.protocol==='https:'){
+    navigator.serviceWorker.register('sw.js').catch(()=>{/* no sw.js present — fine, app is self-contained */});
+  }
+}
+
+document.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>
