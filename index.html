@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#15171c">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Bingo Caller v2.6</title>
+<title>Bingo Caller v2.8</title>
 <style>
   /* ============================================================
      THEME TOKENS (overridable per theme / custom builder)
@@ -124,18 +124,18 @@
   .preview-callout-txt{font-size:.85rem;font-weight:700;color:var(--muted);font-style:italic;flex:1;min-width:120px;line-height:1.3}
   .preview-panel.empty .preview-body{opacity:.4}
   .preview-panel.hidden{display:none}
-  .callout{min-height:22px;text-align:center;font-weight:800;font-size:1.02rem;color:var(--accent);padding:0 6px;line-height:1.2}
-  .callout-row{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px;min-height:22px}
-  .callout-row:has(.callout:empty) .cyclebtn{display:none}
+  .callout{text-align:center;font-weight:800;font-size:1.02rem;color:var(--accent);padding:0 6px;line-height:1.2;min-height:0}
+  .callout-row{display:flex;flex-direction:column;align-items:center;gap:5px;margin-top:8px}
+  .callout-row:has(.callout:empty){margin-top:0}
+  .callout-row:has(.callout:empty) .cyclebtn-line{display:none}
+  .cyclebtn-line{display:flex;justify-content:center}
   .cyclebtn{
-    flex:0 0 auto;border:1px solid var(--line);background:var(--surface-2);color:var(--muted);
-    border-radius:999px;width:26px;height:26px;font-size:.95rem;display:flex;align-items:center;justify-content:center;
-    line-height:1;padding:0;
+    border:1px solid var(--line);background:var(--surface-2);color:var(--muted);
+    border-radius:999px;padding:3px 13px;font-size:.8rem;font-weight:700;display:inline-flex;align-items:center;gap:5px;
+    line-height:1;
   }
   .cyclebtn:hover{color:var(--accent);border-color:var(--accent)}
-  .cyclebtn:active{transform:scale(.92)}
-  .callout:empty{min-height:0}
-  .callout-row:has(.callout:empty){margin-top:0;min-height:0}
+  .cyclebtn:active{transform:scale(.96)}
   .bs-callout{font-weight:800;color:var(--accent);font-size:clamp(1.1rem,4.5vw,2.6rem);min-height:1.2em;padding:0 12px;text-align:center}
   .collapser{cursor:pointer;user-select:none}
   .caret{display:inline-block;transition:transform .2s;font-size:.85rem;color:var(--muted)}
@@ -337,7 +337,9 @@
           </div>
           <div class="callout-row" id="calloutRow">
             <span class="callout" id="callout"></span>
-            <button class="cyclebtn" id="cycleBtn" title="Try another call-out for this number">↻</button>
+            <div class="cyclebtn-line">
+              <button class="cyclebtn" id="cycleBtn" title="Try another call-out for this number">↻ different joke</button>
+            </div>
           </div>
           <div class="callmeta">
             <span>Call <b id="callIdx">0</b></span>
@@ -403,7 +405,6 @@
             <button class="btn" id="saveCustom" style="flex:0 0 auto">Save</button>
           </div>
         </div><!-- /patBody -->
-        <button class="btn" id="markWinner" style="margin-top:12px;background:rgba(61,220,132,.12);border-color:var(--good);color:var(--good)">🏆 Mark Winner</button>
       </div>
     </section>
 
@@ -420,6 +421,7 @@
           <span class="find-note" id="findNote"></span>
         </div>
         <div class="board" id="board"></div>
+        <button class="btn" id="markWinner" style="margin-top:14px;width:100%;background:rgba(61,220,132,.12);border-color:var(--good);color:var(--good);font-size:1.05rem;min-height:54px">🏆 Declare a Winner</button>
       </div>
     </section>
 
@@ -539,6 +541,11 @@
         <label class="switch"><input type="checkbox" id="calloutChk" checked><span class="slider"></span></label></div>
       <div class="toggle"><span>Vibrate on call (mobile)</span>
         <label class="switch"><input type="checkbox" id="hapticChk" checked><span class="slider"></span></label></div>
+    </div>
+    <div class="sect">
+      <h3>Data</h3>
+      <p class="pat-cap" style="margin:0 0 8px">Wipes all call history, winners, and archived games from this device. Settings and custom patterns are kept.</p>
+      <button class="btn danger" id="clearHistoryBtn" style="width:100%">🗑 Clear all history &amp; start fresh</button>
     </div>
     <div class="sect">
       <h3>About</h3>
@@ -838,12 +845,14 @@ function renderRecent(){
   const box=$('#recent'); const bs=$('#bsRecent');
   const recent=S.called.slice(-8).reverse();
   if(!recent.length){ box.innerHTML='<span class="muted">Recent calls appear here…</span>'; bs.innerHTML=''; return; }
-  const html=recent.map((n,i)=>{
+  const chips=recent.map((n,i)=>{
     const lt=letterFor(n);
     const col=lt?`color:var(--col-${lt})`:'';
     return `<span class="chip ${i===0?'latest':''}"><span class="l" style="${col}">${lt}</span>${n}</span>`;
   }).join('');
-  box.innerHTML=html; bs.innerHTML=html;
+  const tag=(label)=>`<span style="font-size:.65rem;font-weight:800;letter-spacing:.06em;color:var(--muted);white-space:nowrap;align-self:center">${label}</span>`;
+  const html=tag('NEWEST')+chips+(recent.length>1?tag('OLDEST'):'');
+  box.innerHTML=html; bs.innerHTML=chips;
 }
 
 function buildBoard(){
@@ -1554,6 +1563,22 @@ function init(){
   const openDrawer=()=>{ $('#drawer').classList.add('show'); $('#scrim').classList.add('show'); };
   const closeDrawer=()=>{ $('#drawer').classList.remove('show'); $('#scrim').classList.remove('show'); };
   $('#settingsBtn').onclick=openDrawer; $('#closeDrawer').onclick=closeDrawer; $('#scrim').onclick=closeDrawer;
+
+  $('#clearHistoryBtn').onclick=()=>{
+    confirmModal(
+      '🗑 Clear all history?',
+      'This erases every called ball, winner record, and archived game on this device — a true clean slate. Your settings, themes, and custom patterns are kept.',
+      ()=>{
+        S.called=[]; S.callTimes=[]; S.winners=[]; S.calloutIdx={};
+        S.history=[];
+        S.session={id:Date.now(), started:new Date().toISOString(), games:1};
+        save(); fullRender();
+        $('#drawer').classList.remove('show'); $('#scrim').classList.remove('show');
+        toast('Clean slate — all history cleared.');
+      },
+      {okText:'Yes, clear everything', cancelText:'Cancel'}
+    );
+  };
 
   $('#fontRange').oninput=e=>{ S.settings.fontScale=+e.target.value; $('#fsLabel').textContent=e.target.value+'%'; save(); applyTheme(); };
   $('#freeChk').onchange=e=>{ S.freeSpace=e.target.checked; save(); renderPattern(); };
