@@ -232,17 +232,18 @@
   .bhead{text-align:center;font-weight:900;font-size:1.2rem;padding:4px 0;border-radius:8px;background:var(--surface-2);color:var(--lc,var(--text))}
   .cell{
     text-align:center;font-weight:700;
-    font-size:clamp(.9rem,3.2vw,1.1rem);
-    padding:5px 1px;border-radius:7px;
+    font-size:calc(var(--board-scale,0.75) * 1.45rem);
+    padding:2px 2px;
+    border-radius:7px;
     background:var(--surface-2);color:var(--muted);border:1px solid transparent;
     font-variant-numeric:tabular-nums;
     transition:background .15s,color .15s,transform .15s;cursor:pointer;user-select:none;
-    line-height:1.2;
+    line-height:1.15;
   }
   .cell.called{
-    background:var(--lc,var(--accent));
+    background:var(--lc-bg,var(--lc,var(--accent)));
     color:var(--lc-text,#000);
-    border-color:rgba(255,255,255,.12);
+    border-color:rgba(0,0,0,.08);
     font-weight:900;
     letter-spacing:-.01em;
   }
@@ -550,6 +551,9 @@
       <label class="fld">Font size <span id="fsLabel" class="mono">100%</span>
         <input type="range" id="fontRange" min="80" max="180" value="100" step="5">
       </label>
+      <label class="fld" style="margin-top:8px">Board cell size <span id="boardScaleLabel" class="mono">75%</span>
+        <input type="range" id="boardScaleRange" min="45" max="130" value="75" step="5">
+      </label>
     </div>
     <div class="sect">
       <h3>Calling</h3>
@@ -570,7 +574,7 @@
     </div>
     <div class="sect">
       <h3>About</h3>
-      <p class="pat-cap" style="margin:0 0 6px"><strong style="color:var(--text)">Bingo Caller v2.11</strong></p>
+      <p class="pat-cap" style="margin:0 0 6px"><strong style="color:var(--text)">Bingo Caller v2.10</strong></p>
       <p class="pat-cap" style="margin:0 0 8px">Host-only caller. Everything is stored on this device — no accounts, no network needed once loaded. Works offline; add to home screen to install.</p>
       <p class="pat-cap" style="margin:0;font-size:.72rem;line-height:1.5;color:var(--muted)">⚡ Built with Claude AI (Anthropic). This application was developed using AI-assisted code generation. UI, logic, and content were created through a collaborative human–AI workflow.</p>
     </div>
@@ -763,7 +767,7 @@ function defaultState(){
     settings:{
       theme:'dark',
       letters:{...THEMES.dark.letters},
-      vars:{}, fontScale:100,
+      vars:{}, fontScale:100, boardScale:0.75,
       callouts:true,
       limitDraw:true,
       autoInterval:10,
@@ -888,7 +892,8 @@ function buildBoard(){
       const n=c*15+r+1;
       const cell=document.createElement('button');
       cell.className='cell'; cell.dataset.n=n; cell.textContent=n;
-      cell.style.setProperty('--lc',`var(--col-${LETTERS[c]})`);
+      cell.style.setProperty('--lc',     `var(--col-${LETTERS[c]})`);
+      cell.style.setProperty('--lc-bg',  `var(--col-${LETTERS[c]}-bg)`);
       cell.style.setProperty('--lc-text',`var(--col-${LETTERS[c]}-text)`);;
       cell.addEventListener('click',()=>flashFind(n));
       col.appendChild(cell);
@@ -1453,6 +1458,15 @@ function bestTextOn(bgHex){
   catch(e){ return '#000000'; }
 }
 
+/* Blend a hex color toward white. ratio=1 = original color, ratio=0 = white.
+   Used to lighten dark letter colors when they're used as cell backgrounds in light themes. */
+function _blendToWhite(hex, ratio){
+  hex=hex.replace(/^#/,''); if(hex.length===3) hex=hex.split('').map(x=>x+x).join('');
+  const r=parseInt(hex.slice(0,2),16), g=parseInt(hex.slice(2,4),16), b=parseInt(hex.slice(4,6),16);
+  const m=c=>Math.round(c*ratio+255*(1-ratio));
+  return '#'+[m(r),m(g),m(b)].map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+
 function applyTheme(){
   const root=document.documentElement;
   // base theme vars
@@ -1460,13 +1474,28 @@ function applyTheme(){
   Object.entries(base).forEach(([k,v])=>root.style.setProperty(k,v));
   // custom theme overrides (bg/text)
   Object.entries(S.settings.vars||{}).forEach(([k,v])=>{ if(v)root.style.setProperty(k,v); });
-  // letters — set color AND the WCAG-correct on-color text for each letter column
+
+  // Detect light vs dark theme by background luminance
+  const rawBg=(S.settings.vars&&S.settings.vars['--bg'])||
+              (THEMES[S.settings.theme]?THEMES[S.settings.theme].vars['--bg']:'#15171c')||'#15171c';
+  const isLightTheme = _luminance(rawBg) > 0.5;
+
+  // For each letter column:
+  //   --col-L       = the original letter color (used for headers, chips, etc.)
+  //   --col-L-bg    = the cell background when called:
+  //                   • dark theme  → original color (bright & saturated)
+  //                   • light theme → color blended 50% toward white (pastel) so numbers
+  //                     always get excellent contrast with black text
+  //   --col-L-text  = WCAG-correct text color (black or white) for --col-L-bg
   LETTERS.forEach(L=>{
     const hex=S.settings.letters[L]||'#888888';
     root.style.setProperty('--col-'+L, hex);
-    root.style.setProperty('--col-'+L+'-text', bestTextOn(hex));
+    const bgHex = isLightTheme ? _blendToWhite(hex, 0.5) : hex;
+    root.style.setProperty('--col-'+L+'-bg',   bgHex);
+    root.style.setProperty('--col-'+L+'-text', bestTextOn(bgHex));
   });
   root.style.setProperty('--font-scale', (S.settings.fontScale/100));
+  root.style.setProperty('--board-scale', S.settings.boardScale??0.75);
   $('#themeName');
 }
 function buildThemeRow(){
@@ -1538,6 +1567,7 @@ function init(){
   if(S.settings.showPreview===undefined) S.settings.showPreview=true;
   if(S.settings.patCollapsed===undefined) S.settings.patCollapsed=false;
   if(!S.calloutIdx) S.calloutIdx={};
+  if(S.settings.boardScale===undefined) S.settings.boardScale=0.75;
   applyTheme();
   buildBoard();
   buildPatternTiles();
@@ -1547,6 +1577,7 @@ function init(){
 
   // settings reflect
   $('#fontRange').value=S.settings.fontScale; $('#fsLabel').textContent=S.settings.fontScale+'%';
+  $('#boardScaleRange').value=Math.round(S.settings.boardScale*100); $('#boardScaleLabel').textContent=Math.round(S.settings.boardScale*100)+'%';
   $('#freeChk').checked=S.freeSpace;
   $('#limitChk').checked=S.settings.limitDraw;
   $('#previewChk').checked=S.settings.showPreview;
@@ -1627,6 +1658,7 @@ function init(){
   };
 
   $('#fontRange').oninput=e=>{ S.settings.fontScale=+e.target.value; $('#fsLabel').textContent=e.target.value+'%'; save(); applyTheme(); };
+  $('#boardScaleRange').oninput=e=>{ S.settings.boardScale=+e.target.value/100; $('#boardScaleLabel').textContent=e.target.value+'%'; save(); applyTheme(); };
   $('#freeChk').onchange=e=>{ S.freeSpace=e.target.checked; save(); renderPattern(); };
 
   $('#cBg').oninput=e=>{ S.settings.vars=S.settings.vars||{}; S.settings.vars['--bg']=e.target.value; save(); applyTheme(); };
