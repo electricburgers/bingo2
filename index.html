@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#15171c">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Bingo Caller v2.9</title>
+<title>Bingo Caller</title>
 <style>
   /* ============================================================
      THEME TOKENS (overridable per theme / custom builder)
@@ -71,6 +71,14 @@
   }
   .iconbtn:hover{background:var(--surface-2)}
   .iconbtn.on{border-color:var(--accent);color:var(--accent)}
+  /* Icon-only square buttons for the topbar */
+  .topbtn{
+    background:var(--surface);border:1px solid var(--line);border-radius:12px;
+    width:44px;height:44px;flex:0 0 44px;font-size:1.25rem;
+    display:flex;align-items:center;justify-content:center;
+    touch-action:manipulation;
+  }
+  .topbtn:hover{background:var(--surface-2)}
 
   /* ---------- Layout grid ---------- */
   .grid{display:grid;gap:14px;grid-template-columns:1fr}
@@ -223,12 +231,22 @@
   .bcol.dim{opacity:.18}
   .bhead{text-align:center;font-weight:900;font-size:1.2rem;padding:4px 0;border-radius:8px;background:var(--surface-2);color:var(--lc,var(--text))}
   .cell{
-    text-align:center;font-weight:700;font-size:clamp(.7rem,2.4vw,1rem);padding:7px 2px;border-radius:8px;
-    background:var(--surface-2);color:var(--muted);border:1px solid transparent;font-variant-numeric:tabular-nums;
+    text-align:center;font-weight:700;
+    font-size:clamp(.9rem,3.2vw,1.1rem);
+    padding:5px 1px;border-radius:7px;
+    background:var(--surface-2);color:var(--muted);border:1px solid transparent;
+    font-variant-numeric:tabular-nums;
     transition:background .15s,color .15s,transform .15s;cursor:pointer;user-select:none;
+    line-height:1.2;
   }
-  .cell.called{background:var(--lc,var(--accent));color:#10131a;border-color:rgba(255,255,255,.25);font-weight:900}
-  .cell.current{outline:3px solid #fff;outline-offset:1px;animation:pulse 1.1s ease-in-out infinite;transform:scale(1.04)}
+  .cell.called{
+    background:var(--lc,var(--accent));
+    color:var(--lc-text,#000);
+    border-color:rgba(255,255,255,.12);
+    font-weight:900;
+    letter-spacing:-.01em;
+  }
+  .cell.current{outline:3px solid #fff;outline-offset:1px;animation:pulse 1.1s ease-in-out infinite;transform:scale(1.05)}
   .cell.found{outline:3px solid var(--accent);outline-offset:1px}
   @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.5)}50%{box-shadow:0 0 0 6px rgba(255,255,255,0)}}
   .board-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
@@ -326,12 +344,12 @@
     <div class="brand">
       <div class="logo" aria-hidden="true"></div>
       <div>
-        <h1>Bingo Caller <span style="font-size:.65em;font-weight:600;opacity:.55;letter-spacing:0">v2.9</span></h1>
+        <h1>Bingo Caller</h1>
         <div class="sub" id="sessionLabel">Host console</div>
       </div>
     </div>
-    <button class="iconbtn" id="bigBtn" title="Big screen mode (F)">⛶ Big screen</button>
-    <button class="iconbtn" id="settingsBtn" title="Settings">⚙ Settings</button>
+    <button class="topbtn" id="bigBtn" title="Big screen mode (F)" aria-label="Big screen">⛶</button>
+    <button class="topbtn" id="settingsBtn" title="Settings" aria-label="Settings">⚙</button>
   </div>
 
   <div class="grid">
@@ -362,15 +380,12 @@
         </div>
 
         <div class="auto-bar">
-          <button class="btn" id="autoBtn" style="flex:0 0 auto;min-width:118px">▶ Auto Call</button>
-          <div class="countdown">
+          <button class="btn" id="autoBtn" style="flex:0 0 auto;min-width:110px">▶ Auto Call</button>
+          <div style="flex:1;display:flex;flex-direction:column;gap:3px">
+            <span style="font-size:.72rem;font-weight:700;color:var(--muted);white-space:nowrap">Interval: <span id="intLabel" class="mono">10</span>s</span>
             <div class="cd-track"><div class="cd-fill" id="cdFill"></div></div>
-          </div>
-        </div>
-        <div class="auto-bar">
-          <label class="fld" style="flex:1">Interval: <span id="intLabel" class="mono">10</span>s
             <input type="range" id="intRange" min="3" max="60" value="10" class="range">
-          </label>
+          </div>
         </div>
 
         <div class="recent" id="recent"><span class="muted">Recent calls appear here…</span></div>
@@ -547,8 +562,6 @@
         <label class="switch"><input type="checkbox" id="freeChk" checked><span class="slider"></span></label></div>
       <div class="toggle"><span>Show call-outs (bingo lingo)</span>
         <label class="switch"><input type="checkbox" id="calloutChk" checked><span class="slider"></span></label></div>
-      <div class="toggle"><span>Vibrate on call (mobile)</span>
-        <label class="switch"><input type="checkbox" id="hapticChk" checked><span class="slider"></span></label></div>
     </div>
     <div class="sect">
       <h3>Data</h3>
@@ -557,8 +570,9 @@
     </div>
     <div class="sect">
       <h3>About</h3>
-      <p class="pat-cap" style="margin:0 0 6px"><strong style="color:var(--text)">Bingo Caller v2.9</strong> · Revolution Entertainment</p>
-      <p class="pat-cap" style="margin:0">Host-only caller. Everything is stored on this device — no accounts, no network needed once loaded. Works offline; add to home screen to install.</p>
+      <p class="pat-cap" style="margin:0 0 6px"><strong style="color:var(--text)">Bingo Caller v2.11</strong></p>
+      <p class="pat-cap" style="margin:0 0 8px">Host-only caller. Everything is stored on this device — no accounts, no network needed once loaded. Works offline; add to home screen to install.</p>
+      <p class="pat-cap" style="margin:0;font-size:.72rem;line-height:1.5;color:var(--muted)">⚡ Built with Claude AI (Anthropic). This application was developed using AI-assisted code generation. UI, logic, and content were created through a collaborative human–AI workflow.</p>
     </div>
   </div>
 </aside>
@@ -750,7 +764,6 @@ function defaultState(){
       theme:'dark',
       letters:{...THEMES.dark.letters},
       vars:{}, fontScale:100,
-      haptics:true,
       callouts:true,
       limitDraw:true,
       autoInterval:10,
@@ -876,6 +889,7 @@ function buildBoard(){
       const cell=document.createElement('button');
       cell.className='cell'; cell.dataset.n=n; cell.textContent=n;
       cell.style.setProperty('--lc',`var(--col-${LETTERS[c]})`);
+      cell.style.setProperty('--lc-text',`var(--col-${LETTERS[c]}-text)`);;
       cell.addEventListener('click',()=>flashFind(n));
       col.appendChild(cell);
     }
@@ -1230,7 +1244,6 @@ function callNext(){
   S.callTimes.push(new Date().toISOString());
   save();
   renderBall(true); renderRecent(); paintBoard(); renderLog();
-  if(S.settings.haptics && navigator.vibrate) navigator.vibrate(35);
   pickNextBall(); renderPreview(); // advance preview to the following ball
   if(!eligibleBalls().length){ toast('Last ball in play for this pattern.'); stopAuto(); }
 }
@@ -1419,6 +1432,27 @@ function loadJSON(file){
 /* ==========================================================================
    THEME / SETTINGS
    ========================================================================== */
+
+/* WCAG 2.1 relative luminance + contrast ratio helpers.
+   Used to automatically pick black or white text on any letter-color background. */
+function _wcagLin(c){ c/=255; return c<=0.03928?c/12.92:Math.pow((c+0.055)/1.055,2.4); }
+function _luminance(hex){
+  hex=hex.replace(/^#/,'');
+  if(hex.length===3) hex=hex.split('').map(x=>x+x).join('');
+  const r=parseInt(hex.slice(0,2),16), g=parseInt(hex.slice(2,4),16), b=parseInt(hex.slice(4,6),16);
+  return 0.2126*_wcagLin(r)+0.7152*_wcagLin(g)+0.0722*_wcagLin(b);
+}
+function _contrast(hex1,hex2){
+  const l1=_luminance(hex1), l2=_luminance(hex2);
+  return (Math.max(l1,l2)+0.05)/(Math.min(l1,l2)+0.05);
+}
+/* Returns '#000000' or '#ffffff' — whichever gives higher contrast ratio on bgHex. */
+function bestTextOn(bgHex){
+  if(!bgHex||bgHex.length<4) return '#000000';
+  try{ return _contrast(bgHex,'#000000')>=_contrast(bgHex,'#ffffff')?'#000000':'#ffffff'; }
+  catch(e){ return '#000000'; }
+}
+
 function applyTheme(){
   const root=document.documentElement;
   // base theme vars
@@ -1426,8 +1460,12 @@ function applyTheme(){
   Object.entries(base).forEach(([k,v])=>root.style.setProperty(k,v));
   // custom theme overrides (bg/text)
   Object.entries(S.settings.vars||{}).forEach(([k,v])=>{ if(v)root.style.setProperty(k,v); });
-  // letters
-  LETTERS.forEach(L=>root.style.setProperty('--col-'+L, S.settings.letters[L]));
+  // letters — set color AND the WCAG-correct on-color text for each letter column
+  LETTERS.forEach(L=>{
+    const hex=S.settings.letters[L]||'#888888';
+    root.style.setProperty('--col-'+L, hex);
+    root.style.setProperty('--col-'+L+'-text', bestTextOn(hex));
+  });
   root.style.setProperty('--font-scale', (S.settings.fontScale/100));
   $('#themeName');
 }
@@ -1512,7 +1550,6 @@ function init(){
   $('#freeChk').checked=S.freeSpace;
   $('#limitChk').checked=S.settings.limitDraw;
   $('#previewChk').checked=S.settings.showPreview;
-  $('#hapticChk').checked=S.settings.haptics;
   $('#calloutChk').checked=S.settings.callouts;
   $('#intRange').value=S.settings.autoInterval; $('#intLabel').textContent=S.settings.autoInterval;
   applyPatCollapsed();
@@ -1591,7 +1628,6 @@ function init(){
 
   $('#fontRange').oninput=e=>{ S.settings.fontScale=+e.target.value; $('#fsLabel').textContent=e.target.value+'%'; save(); applyTheme(); };
   $('#freeChk').onchange=e=>{ S.freeSpace=e.target.checked; save(); renderPattern(); };
-  $('#hapticChk').onchange=e=>{ S.settings.haptics=e.target.checked; save(); };
 
   $('#cBg').oninput=e=>{ S.settings.vars=S.settings.vars||{}; S.settings.vars['--bg']=e.target.value; save(); applyTheme(); };
   $('#cText').oninput=e=>{ S.settings.vars=S.settings.vars||{}; S.settings.vars['--text']=e.target.value; save(); applyTheme(); };
@@ -1777,7 +1813,7 @@ summary{cursor:pointer;font-size:.85rem;font-weight:700;color:#64748b;padding:4p
   </div>
   ${nightBanner}
   ${games.map(gameSection).join('\n')}
-  <div class="r-meta-bar">Generated by Bingo Caller &nbsp;·&nbsp; Revolution Entertainment &nbsp;·&nbsp; ${new Date().toLocaleString()}</div>
+  <div class="r-meta-bar">Generated by Bingo Caller v2.10 &nbsp;·&nbsp; ${new Date().toLocaleString()}</div>
 </div>
 <script>
 function dlReport(){
