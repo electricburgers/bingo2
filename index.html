@@ -265,16 +265,9 @@
   .log th{position:sticky;top:0;background:var(--surface);text-align:left;padding:7px 10px;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);z-index:1}
   .log td{padding:7px 10px;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
   .log tr.win td{background:rgba(61,220,132,.12);color:var(--good);font-weight:700}
-  .prob-bar{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:10px}
   .winrec{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.85rem;padding:8px 10px;border:1px dashed var(--good);border-radius:10px;background:rgba(61,220,132,.07);margin-bottom:8px}
   .winner-name{color:var(--good);font-size:1rem}
   .congrats-banner{background:rgba(61,220,132,.13);border:1px solid var(--good);border-radius:10px;padding:9px 12px;font-size:.88rem;font-weight:700;margin-bottom:8px;color:var(--good)}
-  .prob-label{display:flex;justify-content:space-between;align-items:center;font-size:.82rem;font-weight:700;margin-bottom:6px;gap:10px;flex-wrap:wrap}
-  .prob-hint{font-size:.78rem;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:6px}
-  .prob-hint input{background:var(--surface);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:4px 6px;font-size:.82rem}
-  .prob-track{height:10px;background:var(--bg);border-radius:99px;overflow:hidden;border:1px solid var(--line);margin-bottom:5px}
-  .prob-fill{height:100%;width:0%;border-radius:99px;background:linear-gradient(90deg,var(--good),var(--accent));transition:width .4s ease}
-  .prob-nums{font-size:.8rem;color:var(--muted);font-weight:600;text-align:center}
   .modal p{color:var(--muted);font-size:.92rem;margin:0 0 10px}
   #modalExtra{margin-bottom:12px}
   #modalExtra input{width:100%;margin-top:4px}
@@ -465,18 +458,6 @@
           <div class="stat"><div class="n mono" id="sWins">0</div><div class="k">Winners</div></div>
           <div class="stat"><div class="n mono" id="sGames">1</div><div class="k">Games</div></div>
         </div>
-        <div class="prob-bar" id="probBar">
-          <div class="prob-label">
-            <span>🎲 Win probability</span>
-            <span class="prob-hint">
-              <label>Cards in play:
-                <input type="number" id="numCardsInput" value="30" min="1" max="500" step="1" style="width:56px">
-              </label>
-            </span>
-          </div>
-          <div class="prob-track"><div class="prob-fill" id="probFill"></div></div>
-          <div class="prob-nums" id="probNums">Call a ball to see odds</div>
-        </div>
         <div id="winList"></div>
         <div class="log">
           <table>
@@ -574,7 +555,7 @@
     </div>
     <div class="sect">
       <h3>About</h3>
-      <p class="pat-cap" style="margin:0 0 6px"><strong style="color:var(--text)">Bingo Caller v2.15</strong></p>
+      <p class="pat-cap" style="margin:0 0 6px"><strong style="color:var(--text)">Bingo Caller v2.16</strong></p>
       <p class="pat-cap" style="margin:0 0 8px">Host-only caller. Everything is stored on this device — no accounts, no network needed once loaded. Works offline; add to home screen to install.</p>
       <p class="pat-cap" style="margin:0;font-size:.72rem;line-height:1.5;color:var(--muted)">⚡ Built with Claude AI (Anthropic). This application was developed using AI-assisted code generation. UI, logic, and content were created through a collaborative human–AI workflow.</p>
     </div>
@@ -603,6 +584,11 @@
    ========================================================================== */
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
+/* Escape user-supplied text before interpolating into innerHTML (winner names,
+   custom pattern/theme names) to prevent stored-XSS via crafted input. */
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({
+  '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+}[c]));
 const LETTERS = ['B','I','N','G','O'];
 const STORAGE_KEY = 'bingoCaller.v1';
 
@@ -752,6 +738,12 @@ const THEMES = {
                 letters:{B:'#36b3ff',I:'#ff5b6e',N:'#ffffff',G:'#46d27a',O:'#ffc24d'}},
   light:       {label:'Daylight',    vars:{'--bg':'#f4f6fb','--surface':'#ffffff','--surface-2':'#e9eef6','--line':'#cfd8e6','--text':'#15202b','--muted':'#5c6b7e','--accent':'#f59e0b'},
                 letters:{B:'#1d6fd1',I:'#d1411d','N':'#7a4ed1',G:'#1d9d4e',O:'#c98a00'}},
+  cbDeuteran:  {label:'Colorblind · Deuteranopia', vars:{'--bg':'#13161c','--surface':'#1e222b','--surface-2':'#282d39','--line':'#3c4252','--text':'#f2f5fa','--muted':'#9aa6b8','--accent':'#f0e442'},
+                letters:{B:'#0072b2',I:'#e69f00',N:'#f0e442',G:'#009e73',O:'#cc79a7'}},
+  cbProtan:    {label:'Colorblind · Protanopia', vars:{'--bg':'#13161c','--surface':'#1e222b','--surface-2':'#282d39','--line':'#3c4252','--text':'#f2f5fa','--muted':'#9aa6b8','--accent':'#f0e442'},
+                letters:{B:'#0072b2',I:'#e69f00',N:'#f0e442',G:'#009e73',O:'#cc79a7'}},
+  cbTritan:    {label:'Colorblind · Tritanopia', vars:{'--bg':'#13161c','--surface':'#1e222b','--surface-2':'#282d39','--line':'#3c4252','--text':'#f2f5fa','--muted':'#9aa6b8','--accent':'#d55e00'},
+                letters:{B:'#d55e00',I:'#cc79a7',N:'#ffffff',G:'#009e73',O:'#0072b2'}},
 };
 
 /* ---------- Default state ---------- */
@@ -785,7 +777,19 @@ function defaultState(){
 let S = load() || defaultState();
 
 function load(){ try{const r=localStorage.getItem(STORAGE_KEY);return r?JSON.parse(r):null;}catch(e){return null;} }
-function save(){ try{localStorage.setItem(STORAGE_KEY, JSON.stringify(S));}catch(e){} }
+let _saveTimer=null;
+function flushSave(){
+  if(_saveTimer){ clearTimeout(_saveTimer); _saveTimer=null; }
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(S)); }catch(e){}
+}
+function save(){
+  // Debounce rapid successive writes (e.g. multiple state changes in one tick)
+  // into a single localStorage write to reduce main-thread/JSON-stringify overhead.
+  if(_saveTimer) clearTimeout(_saveTimer);
+  _saveTimer=setTimeout(flushSave, 120);
+}
+addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='hidden') flushSave(); });
+addEventListener('pagehide', flushSave);
 
 /* ---------- Ball helpers ---------- */
 const TOTAL = 75;
@@ -980,7 +984,7 @@ function buildPatternTiles(){
     t.dataset.key=key;
     const cells=miniCellsFor(def);
     const markFree=S.freeSpace && cells.some(([r,c])=>CENTER(r,c));
-    t.innerHTML=`<span class="mini">${miniSVG(cells,{markFree})}</span><span>${star?'★ ':''}${def.name}</span>`;
+    t.innerHTML=`<span class="mini">${miniSVG(cells,{markFree})}</span><span>${star?'★ ':''}${esc(def.name)}</span>`;
     t.onclick=()=>selectPattern(key);
     wrap.appendChild(t);
   };
@@ -994,9 +998,9 @@ function buildPatternTiles(){
 }
 
 function selectPattern(key){
-  S.pattern=key; _probCache.key=''; save();
+  S.pattern=key; save();
   $('#customEditor').classList.toggle('hide', !key.startsWith('custom:'));
-  buildPatternTiles(); renderPattern(); renderBall(false); renderProbBar();
+  buildPatternTiles(); renderPattern(); renderBall(false);
   _nextBall=null; pickNextBall(); renderPreview();
 }
 
@@ -1031,117 +1035,6 @@ function buildEditor(){
   }
 }
 
-/* ---------- Win probability ----------
-   Fixed-cell patterns  →  exact analytic formula, handles tiny probabilities correctly.
-   Meta patterns (any / col / row)  →  Monte Carlo (large-enough win rates per trial).
-
-   Analytic formula per column c with k_c required rows and N_c called balls:
-     P(all k_c required rows covered) = C(N_c, k_c) / C(15, k_c)
-   Columns use disjoint number ranges → multiply independently.
------------------------------------------------------------------------------- */
-
-function comb(n,k){
-  if(k<0||k>n) return 0;
-  if(k===0||k===n) return 1;
-  if(k>n-k) k=n-k;
-  let r=1; for(let i=0;i<k;i++) r=r*(n-i)/(i+1);
-  return Math.round(r);
-}
-
-function generateCard(){
-  const card=[];
-  for(let c=0;c<5;c++){
-    const pool=[];for(let i=c*15+1;i<=c*15+15;i++)pool.push(i);
-    for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
-    card.push(pool.slice(0,5));
-  }
-  return card;
-}
-
-function cardWinsPattern(card,calledSet,p){
-  const hit=(r,c)=>(S.freeSpace&&r===2&&c===2)||calledSet.has(card[c][r]);
-  if(p.meta==='any'){
-    for(let r=0;r<5;r++)if([0,1,2,3,4].every(c=>hit(r,c)))return true;
-    for(let c=0;c<5;c++)if([0,1,2,3,4].every(r=>hit(r,c)))return true;
-    if([0,1,2,3,4].every(i=>hit(i,i)))return true;
-    if([0,1,2,3,4].every(i=>hit(i,4-i)))return true;
-    return false;
-  }
-  if(p.meta==='col'){for(let c=0;c<5;c++)if([0,1,2,3,4].every(r=>hit(r,c)))return true;return false;}
-  if(p.meta==='row'){for(let r=0;r<5;r++)if([0,1,2,3,4].every(c=>hit(r,c)))return true;return false;}
-  return(p.cells||[]).every(([r,c])=>hit(r,c));
-}
-
-function analyticalSingleProb(patDef,calledSet){
-  const kc=[0,0,0,0,0];
-  for(const [r,c] of (patDef.cells||[])){
-    if(S.freeSpace&&r===2&&c===2) continue;
-    kc[c]++;
-  }
-  let p=1;
-  for(let col=0;col<5;col++){
-    if(!kc[col]) continue;
-    const start=col*15+1;
-    let Nc=0; for(let n=start;n<start+15;n++) if(calledSet.has(n)) Nc++;
-    const pc=comb(Nc,kc[col])/comb(15,kc[col]);
-    if(!pc) return 0;
-    p*=pc;
-  }
-  return p;
-}
-
-let _probCache={key:'',pSingle:0};
-
-function estimateWinProbability(numCards){
-  if(!S.called.length) return{pSingle:0,pAny:0};
-  const pat=currentPatternDef();
-  const calledSet=new Set(S.called);
-  const fk=S.freeSpace?'1':'0';
-  let pSingle;
-
-  if(pat.cells&&!pat.meta){
-    // Exact analytic — works for all fixed-cell patterns regardless of probability size
-    const perCol=[0,1,2,3,4].map(c=>{let n=0;for(let b=c*15+1;b<=c*15+15;b++)if(calledSet.has(b))n++;return n;});
-    const key=S.called.length+'|'+pat.name+'|'+fk+'|'+perCol.join(',');
-    if(_probCache.key===key){ pSingle=_probCache.pSingle; }
-    else{ pSingle=analyticalSingleProb(pat,calledSet); _probCache={key,pSingle}; }
-  } else {
-    // Monte Carlo for meta-patterns (any-line etc.)
-    const key=S.called.slice(-30).join(',')+pat.name+fk;
-    if(_probCache.key===key){ pSingle=_probCache.pSingle; }
-    else{
-      const TRIALS=4000; let wins=0;
-      for(let t=0;t<TRIALS;t++) if(cardWinsPattern(generateCard(),calledSet,pat)) wins++;
-      pSingle=wins/TRIALS; _probCache={key,pSingle};
-    }
-  }
-
-  const pAny=1-Math.pow(Math.max(0,1-pSingle),numCards);
-  return{pSingle,pAny};
-}
-
-function renderProbBar(){
-  const numCards=Math.max(1,parseInt($('#numCardsInput').value)||30);
-  if(!S.called.length){
-    $('#probFill').style.width='0%';
-    $('#probNums').textContent='Call a ball to see odds';
-    return;
-  }
-  const {pSingle,pAny}=estimateWinProbability(numCards);
-  const pct=n=>{
-    if(!n||isNaN(n)) return '0%';
-    if(n<0.00001)  return '<0.001%';
-    if(n<0.001)    return (n*100).toFixed(3)+'%';
-    if(n<0.01)     return (n*100).toFixed(2)+'%';
-    if(n>0.99999)  return '>99.999%';
-    return (n*100).toFixed(1)+'%';
-  };
-  $('#probFill').style.width=(Math.min(1,pAny)*100).toFixed(3)+'%';
-  $('#probNums').innerHTML=
-    `Any of <b>${numCards}</b> cards wins: <b>${pct(pAny)}</b> &nbsp;·&nbsp; Single card: ${pct(pSingle)}`;
-}
-
-
 /* ---------- audit / log ---------- */
 function fmtTime(iso){const d=new Date(iso);return d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});}
 function renderLog(){
@@ -1159,7 +1052,7 @@ function renderLog(){
     // Insert winner row(s) AFTER the ball that triggered the win
     if(winAtCall[callNum]){
       winAtCall[callNum].forEach(w=>{
-        const label=w.name ? `<b class="winner-name">${w.name}</b> · ${w.pattern}` : `<b>${w.pattern}</b>`;
+        const label=w.name ? `<b class="winner-name">${esc(w.name)}</b> · ${esc(w.pattern)}` : `<b>${esc(w.pattern)}</b>`;
         rows.push(`<tr class="win"><td>🏆</td><td colspan="2">${label} · <span class="mono">${fmtTime(w.ts)}</span></td></tr>`);
       });
     }
@@ -1170,21 +1063,20 @@ function renderLog(){
   $('#sLeft').textContent=TOTAL - S.called.length;
   $('#sWins').textContent=S.winners.length;
   $('#sGames').textContent=S.session.games;
-  renderProbBar();
 
   // Winners panel — always same format: name (if any) · pattern · call # · time
-  const allNames=S.winners.filter(w=>w.name).map(w=>w.name);
+  const allNames=S.winners.filter(w=>w.name).map(w=>esc(w.name));
   const banner=allNames.length
     ? `<div class="congrats-banner">🎉 Tonight's winners: <b>${allNames.join(', ')}</b></div>` : '';
   $('#winList').innerHTML=banner+S.winners.map(w=>{
-    const who=w.name?`<b class="winner-name">${w.name}</b> · `:''
-    return `<div class="winrec">🏆 ${who}${w.pattern} · call #${w.callCount} · <span class="mono">${fmtTime(w.ts)}</span></div>`;
+    const who=w.name?`<b class="winner-name">${esc(w.name)}</b> · `:''
+    return `<div class="winrec">🏆 ${who}${esc(w.pattern)} · call #${w.callCount} · <span class="mono">${fmtTime(w.ts)}</span></div>`;
   }).join('');
 
   // history
   $('#historyList').innerHTML = S.history.length
     ? S.history.map((h,i)=>{
-        const names=h.winnerRecs?h.winnerRecs.filter(w=>w.name).map(w=>w.name):[];
+        const names=h.winnerRecs?h.winnerRecs.filter(w=>w.name).map(w=>esc(w.name)):[];
         return `Game ${i+1}: ${h.calls} calls · ${h.winners} winner(s)${names.length?' ('+names.join(', ')+')':''} · ${fmtTime(h.ended)}`;
       }).join('<br>')
     : '<span class="muted">No archived games this session.</span>';
@@ -1682,8 +1574,6 @@ function init(){
     if(e.key==='Enter'&&document.activeElement.tagName==='INPUT'){ e.preventDefault(); $('#modalOk').click(); }
     if(e.key==='Escape'){ e.preventDefault(); const f=modalCancelFn; closeModal(); if(f)f(); }
   });
-  /* player-count for probability */
-  $('#numCardsInput').oninput=()=>{ _probCache.key=''; renderProbBar(); };
 
   /* keyboard shortcuts */
   document.addEventListener('keydown',e=>{
@@ -1744,21 +1634,21 @@ function generateNightReport(){
   function gameSection(g){
     const calledSet=new Set(g.order||[]);
     const winnerRows=(g.winnerRecs||[]).map(w=>{
-      const who=w.name?`<strong style="color:#22c55e">${w.name}</strong> — `:'';
-      return `<div class="r-winner">🏆 ${who}${w.pattern} · call #${w.callCount} · ${fmtTime(w.ts)}</div>`;
+      const who=w.name?`<strong style="color:#22c55e">${esc(w.name)}</strong> — `:'';
+      return `<div class="r-winner">🏆 ${who}${esc(w.pattern)} · call #${w.callCount} · ${fmtTime(w.ts)}</div>`;
     }).join('');
     const callRows=(g.order||[]).map((n,i)=>{
       const lt=letterFor(n);
       const t=g.times&&g.times[i]?fmtTime(g.times[i]):'';
       const wins=(g.winnerRecs||[]).filter(w=>w.callCount===i+1);
-      const winTag=wins.map(w=>`<span class="r-win-tag">🏆${w.name?' '+w.name:''}</span>`).join('');
+      const winTag=wins.map(w=>`<span class="r-win-tag">🏆${w.name?' '+esc(w.name):''}</span>`).join('');
       return `<tr><td>${i+1}</td><td style="color:${lcol[lt]||'inherit'};font-weight:800">${lt} ${n}</td><td>${t}</td><td>${winTag}</td></tr>`;
     }).join('');
     return `
     <section class="r-game">
       <div class="r-game-head">
         <h2>Game ${g.gameNum}${g.isCurrent?' <span class="r-live">in progress</span>':''}</h2>
-        <span class="r-game-meta">${g.pattern} · ${g.calls} ball${g.calls!==1?'s':''} · ended ${fmtTime(g.ended)}</span>
+        <span class="r-game-meta">${esc(g.pattern)} · ${g.calls} ball${g.calls!==1?'s':''} · ended ${fmtTime(g.ended)}</span>
       </div>
       ${winnerRows||'<p class="r-nowin">No winners recorded for this round.</p>'}
       ${boardHTML(calledSet)}
@@ -1774,7 +1664,7 @@ function generateNightReport(){
 
   // Collect all winner names across the night
   const allWinners=[...S.history,...(S.called.length||S.winners.length?[{winnerRecs:S.winners}]:[])]
-    .flatMap(g=>(g.winnerRecs||[]).filter(w=>w.name).map(w=>w.name));
+    .flatMap(g=>(g.winnerRecs||[]).filter(w=>w.name).map(w=>esc(w.name)));
   const nightBanner = allWinners.length
     ? `<div class="r-banner">🎉 Tonight's winners: <strong>${[...new Set(allWinners)].join(', ')}</strong></div>` : '';
 
@@ -1845,7 +1735,7 @@ summary{cursor:pointer;font-size:.85rem;font-weight:700;color:#64748b;padding:4p
   </div>
   ${nightBanner}
   ${games.map(gameSection).join('\n')}
-  <div class="r-meta-bar">Generated by Bingo Caller v2.10 &nbsp;·&nbsp; ${new Date().toLocaleString()}</div>
+  <div class="r-meta-bar">Generated by Bingo Caller v2.16 &nbsp;·&nbsp; ${new Date().toLocaleString()}</div>
 </div>
 <script>
 function dlReport(){
