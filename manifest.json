@@ -1,0 +1,26 @@
+{
+  "name": "Bingo Caller",
+  "short_name": "Bingo",
+  "description": "Host console for calling live bingo games — works fully offline once installed.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "id": "./index.html",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#15171c",
+  "theme_color": "#15171c",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22192%22%20height%3D%22192%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22g%22%20cx%3D%2234%25%22%20cy%3D%2230%25%22%20r%3D%2280%25%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23fff%22/%3E%3Cstop%20offset%3D%2214%25%22%20stop-color%3D%22%23fff%22/%3E%3Cstop%20offset%3D%2215%25%22%20stop-color%3D%22%2352a6f0%22/%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23ff595e%22/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle%20cx%3D%2296%22%20cy%3D%2296%22%20r%3D%2292%22%20fill%3D%22url%28%23g%29%22/%3E%3Ctext%20x%3D%2296%22%20y%3D%22120%22%20font-size%3D%2278%22%20font-family%3D%22Arial%22%20font-weight%3D%22900%22%20text-anchor%3D%22middle%22%20fill%3D%22%2315171c%22%3EB%3C/text%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22192%22%20height%3D%22192%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22g%22%20cx%3D%2234%25%22%20cy%3D%2230%25%22%20r%3D%2280%25%22%3E%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23fff%22/%3E%3Cstop%20offset%3D%2214%25%22%20stop-color%3D%22%23fff%22/%3E%3Cstop%20offset%3D%2215%25%22%20stop-color%3D%22%2352a6f0%22/%3E%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23ff595e%22/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle%20cx%3D%2296%22%20cy%3D%2296%22%20r%3D%2292%22%20fill%3D%22url%28%23g%29%22/%3E%3Ctext%20x%3D%2296%22%20y%3D%22120%22%20font-size%3D%2278%22%20font-family%3D%22Arial%22%20font-weight%3D%22900%22%20text-anchor%3D%22middle%22%20fill%3D%22%2315171c%22%3EB%3C/text%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

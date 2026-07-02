@@ -6,6 +6,9 @@
 <meta name="theme-color" content="#15171c">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bingo">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'">
+<link rel="manifest" href="manifest.json">
 <title>Bingo Caller</title>
 <style>
   /* ============================================================
@@ -221,9 +224,9 @@
 
   /* custom pattern editor */
   .editor{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;max-width:240px;margin:10px auto}
-  .editor b{aspect-ratio:1;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--muted)}
-  .editor b.on{background:var(--accent);border-color:var(--accent);color:#222}
-  .editor b.center{outline:2px dashed var(--muted)}
+  .editor button{aspect-ratio:1;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--muted);margin:0;padding:0}
+  .editor button.on{background:var(--accent);border-color:var(--accent);color:#222}
+  .editor button.center{outline:2px dashed var(--muted)}
 
   /* ---------- Master flashboard ---------- */
   .board{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
@@ -326,6 +329,7 @@
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
   .hide{display:none !important}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
   details summary{cursor:pointer;font-weight:700}
   .kbd{font-size:.72rem;border:1px solid var(--line);border-radius:5px;padding:1px 5px;background:var(--surface-2);color:var(--muted)}
   @media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
@@ -342,6 +346,7 @@
         <div class="sub" id="sessionLabel">Host console</div>
       </div>
     </div>
+    <button class="topbtn hide" id="installBtn" title="Install app for offline use" aria-label="Install app">⬇</button>
     <button class="topbtn" id="bigBtn" title="Big screen mode (F)" aria-label="Big screen">⛶</button>
     <button class="topbtn" id="settingsBtn" title="Settings" aria-label="Settings">⚙</button>
   </div>
@@ -374,7 +379,7 @@
         </div>
 
         <div class="auto-bar">
-          <button class="btn" id="autoBtn" style="flex:0 0 auto;min-width:110px">▶ Auto Call</button>
+          <button class="btn" id="autoBtn" aria-pressed="false" style="flex:0 0 auto;min-width:110px">▶ Auto Call</button>
           <div style="flex:1;display:flex;flex-direction:column;gap:3px">
             <span style="font-size:.72rem;font-weight:700;color:var(--muted);white-space:nowrap">Interval: <span id="intLabel" class="mono">10</span>s</span>
             <div class="cd-track"><div class="cd-fill" id="cdFill"></div></div>
@@ -434,7 +439,7 @@
             <input type="text" id="findInput" inputmode="numeric" placeholder="# called?">
             <button class="btn" id="findBtn" style="flex:0 0 auto;min-width:64px">Find</button>
           </div>
-          <button class="iconbtn on" id="patDimBtn" title="Dim columns not in pattern" style="min-height:42px">▦ Pattern dim</button>
+          <button class="iconbtn on" id="patDimBtn" aria-pressed="true" title="Dim columns not in pattern" style="min-height:42px">▦ Pattern dim</button>
           <span class="find-note" id="findNote"></span>
         </div>
         <div class="board" id="board"></div>
@@ -487,8 +492,8 @@
 </div>
 
 <!-- ================= BIG SCREEN ================= -->
-<div class="bigscreen" id="bigscreen">
-  <button class="bs-tap" id="bsTap" title="Tap to call next"></button>
+<div class="bigscreen" id="bigscreen" role="dialog" aria-modal="true" aria-label="Big screen display" tabindex="-1">
+  <button class="bs-tap" id="bsTap" title="Tap to call next" aria-label="Call next ball"></button>
   <button class="iconbtn bs-exit" id="bsExit">✕ Exit</button>
   <div class="bs-ball">
     <div class="letter" id="bsLetter"></div>
@@ -502,7 +507,7 @@
 
 <!-- ================= SETTINGS DRAWER ================= -->
 <div class="scrim" id="scrim"></div>
-<aside class="drawer" id="drawer" aria-label="Settings">
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Settings" tabindex="-1">
   <div class="drawer-head">
     <h2 style="font-size:1rem">Settings</h2>
     <button class="iconbtn" id="closeDrawer">✕</button>
@@ -539,14 +544,18 @@
     <div class="sect">
       <h3>Calling</h3>
       <div class="toggle"><span>Show next-ball preview (host only)</span>
-        <label class="switch"><input type="checkbox" id="previewChk" checked><span class="slider"></span></label></div>
+        <label class="switch"><input type="checkbox" id="previewChk" checked aria-label="Show next-ball preview (host only)"><span class="slider"></span></label></div>
       <div class="toggle"><span>Only draw balls the pattern can use</span>
-        <label class="switch"><input type="checkbox" id="limitChk" checked><span class="slider"></span></label></div>
+        <label class="switch"><input type="checkbox" id="limitChk" checked aria-label="Only draw balls the pattern can use"><span class="slider"></span></label></div>
       <p class="pat-cap" style="margin:-2px 0 4px">e.g. Four Corners skips the I, N and G columns. Switching pattern keeps every called ball, and re-opens any columns the new pattern needs.</p>
       <div class="toggle"><span>Free space (center) counts as daubed</span>
-        <label class="switch"><input type="checkbox" id="freeChk" checked><span class="slider"></span></label></div>
+        <label class="switch"><input type="checkbox" id="freeChk" checked aria-label="Free space (center) counts as daubed"><span class="slider"></span></label></div>
       <div class="toggle"><span>Show call-outs (bingo lingo)</span>
-        <label class="switch"><input type="checkbox" id="calloutChk" checked><span class="slider"></span></label></div>
+        <label class="switch"><input type="checkbox" id="calloutChk" checked aria-label="Show call-outs (bingo lingo)"><span class="slider"></span></label></div>
+      <div class="toggle"><span>Speak calls aloud</span>
+        <label class="switch"><input type="checkbox" id="speakChk" aria-label="Speak calls aloud"><span class="slider"></span></label></div>
+      <div class="toggle"><span>Vibrate on call (mobile)</span>
+        <label class="switch"><input type="checkbox" id="vibrateChk" checked aria-label="Vibrate on call (mobile)"><span class="slider"></span></label></div>
     </div>
     <div class="sect">
       <h3>Data</h3>
@@ -555,15 +564,15 @@
     </div>
     <div class="sect">
       <h3>About</h3>
-      <p class="pat-cap" style="margin:0 0 6px"><strong style="color:var(--text)">Bingo Caller v2.16</strong></p>
-      <p class="pat-cap" style="margin:0 0 8px">Host-only caller. Everything is stored on this device — no accounts, no network needed once loaded. Works offline; add to home screen to install.</p>
+      <p class="pat-cap" style="margin:0 0 6px"><strong style="color:var(--text)">Bingo Caller v2.17</strong></p>
+      <p class="pat-cap" style="margin:0 0 8px">Host-only caller. Everything is stored on this device — no accounts, no network needed once loaded. Tap the ⬇ install button (or your browser's "Add to Home Screen") so it keeps working with no signal.</p>
       <p class="pat-cap" style="margin:0;font-size:.72rem;line-height:1.5;color:var(--muted)">⚡ Built with Claude AI (Anthropic). This application was developed using AI-assisted code generation. UI, logic, and content were created through a collaborative human–AI workflow.</p>
     </div>
   </div>
 </aside>
 
 <!-- confirm modal -->
-<div class="modal" id="modal">
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalText">
   <div class="box">
     <h3 id="modalTitle">Confirm</h3>
     <p id="modalText">Are you sure?</p>
@@ -576,6 +585,7 @@
 </div>
 
 <div class="toast" id="toast"></div>
+<div class="sr-only" id="srAnnounce" aria-live="assertive" aria-atomic="true"></div>
 
 <script>
 "use strict";
@@ -589,6 +599,9 @@ const $$ = s => Array.from(document.querySelectorAll(s));
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({
   '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
 }[c]));
+/* Keep the visual "on" state and the aria-pressed state of a toggle button in sync
+   so screen reader users get the same on/off signal as sighted users. */
+const setToggle = (el,on) => { el.classList.toggle('on',on); el.setAttribute('aria-pressed', on?'true':'false'); };
 const LETTERS = ['B','I','N','G','O'];
 const STORAGE_KEY = 'bingoCaller.v1';
 
@@ -819,8 +832,6 @@ function eligibleBalls(){
 /* ==========================================================================
    RENDER
    ========================================================================== */
-function colorVar(L){ return getComputedStyle(document.documentElement).getPropertyValue('--col-'+L)||'var(--accent)'; }
-
 function renderBall(pop){
   const last = S.called[S.called.length-1];
   const inPlay = eligibleBalls().length;
@@ -858,6 +869,8 @@ function renderBall(pop){
   $('#bsNum').textContent=last?last:'—';
   $('#bigscreen').style.setProperty('--ball-color', last?`var(--col-${letterFor(last)})`:'var(--accent)');
   $('#bsCount').textContent=S.called.length;
+  if(last) $('#srAnnounce').textContent = `${letterFor(last)} ${last}. ${co}`;
+  if(pop && last) speakCall(letterFor(last), last, co);
 }
 
 function cycleCallout(){
@@ -885,8 +898,11 @@ function renderRecent(){
   box.innerHTML=html; bs.innerHTML=chips;
 }
 
+/* Cached once in buildBoard() and reused by paintBoard()/flashFind() so every
+   render doesn't re-run a 75-node querySelectorAll. */
+let boardCells=[];
 function buildBoard(){
-  const board=$('#board'); board.innerHTML='';
+  const board=$('#board'); board.innerHTML=''; boardCells=[];
   for(let c=0;c<5;c++){
     const col=document.createElement('div'); col.className='bcol'; col.dataset.col=c;
     const head=document.createElement('div'); head.className='bhead';
@@ -895,25 +911,40 @@ function buildBoard(){
     for(let r=0;r<15;r++){
       const n=c*15+r+1;
       const cell=document.createElement('button');
+      cell.type='button';
       cell.className='cell'; cell.dataset.n=n; cell.textContent=n;
+      cell.setAttribute('aria-label', `${LETTERS[c]} ${n}`);
+      cell.setAttribute('aria-pressed','false');
       cell.style.setProperty('--lc',     `var(--col-${LETTERS[c]})`);
       cell.style.setProperty('--lc-bg',  `var(--col-${LETTERS[c]}-bg)`);
       cell.style.setProperty('--lc-text',`var(--col-${LETTERS[c]}-text)`);;
-      cell.addEventListener('click',()=>flashFind(n));
       col.appendChild(cell);
+      boardCells.push(cell);
     }
     board.appendChild(col);
   }
   paintBoard();
 }
+/* Single delegated click listener for all 75 board cells, instead of one
+   listener per cell — cheaper to set up and doesn't need re-binding if the
+   board is ever rebuilt. */
+function wireBoardClicks(){
+  $('#board').addEventListener('click', e=>{
+    const cell=e.target.closest('.cell');
+    if(cell) flashFind(+cell.dataset.n);
+  });
+}
 
 function paintBoard(){
   const calledSet=new Set(S.called);
   const last=S.called[S.called.length-1];
-  $$('#board .cell').forEach(cell=>{
+  boardCells.forEach(cell=>{
     const n=+cell.dataset.n;
-    cell.classList.toggle('called', calledSet.has(n));
+    const isCalled=calledSet.has(n);
+    cell.classList.toggle('called', isCalled);
     cell.classList.toggle('current', n===last);
+    cell.setAttribute('aria-pressed', isCalled?'true':'false');
+    cell.setAttribute('aria-label', `${letterFor(n)} ${n}${isCalled?', called':''}`);
   });
   // dim columns the current pattern can't use
   const cols=involvedColumns();
@@ -922,7 +953,7 @@ function paintBoard(){
     col.classList.toggle('dim', S.patternDim && cols && !cols.has(c));
   });
   $('#boardCount').textContent=`${S.called.length} / ${TOTAL}`;
-  $('#patDimBtn').classList.toggle('on', S.patternDim);
+  setToggle($('#patDimBtn'), S.patternDim);
 }
 
 /* which B/I/N/G/O columns are involved in current pattern (null = all/any) */
@@ -980,8 +1011,9 @@ function buildPatternTiles(){
   const wrap=$('#patTiles'); wrap.innerHTML='';
   const make=(key,def,star)=>{
     const t=document.createElement('button');
-    t.className='ptile'+(S.pattern===key?' on':'');
+    t.className='ptile';
     t.dataset.key=key;
+    setToggle(t, S.pattern===key);
     const cells=miniCellsFor(def);
     const markFree=S.freeSpace && cells.some(([r,c])=>CENTER(r,c));
     t.innerHTML=`<span class="mini">${miniSVG(cells,{markFree})}</span><span>${star?'★ ':''}${esc(def.name)}</span>`;
@@ -1022,9 +1054,13 @@ function buildEditor(){
   const g=$('#editorGrid'); g.innerHTML='';
   const set=new Set(S.editorCells.map(([r,c])=>r+'_'+c));
   for(let r=0;r<5;r++)for(let c=0;c<5;c++){
-    const b=document.createElement('b');
-    if(CENTER(r,c)){b.classList.add('center');b.textContent='★';}
-    if(set.has(r+'_'+c))b.classList.add('on');
+    const b=document.createElement('button');
+    b.type='button';
+    const isCenter=CENTER(r,c), isOn=set.has(r+'_'+c);
+    const label=`${LETTERS[c]} row ${r+1}${isCenter?', free space':''}`;
+    b.setAttribute('aria-label', label+(isOn?', selected':''));
+    setToggle(b, isOn);
+    if(isCenter){b.classList.add('center');b.textContent='★';}
     b.addEventListener('click',()=>{
       const key=r+'_'+c;
       const idx=S.editorCells.findIndex(([rr,cc])=>rr===r&&cc===c);
@@ -1127,6 +1163,13 @@ function renderPreview(){
   panel.style.setProperty('--preview-col', `var(--col-${lt})`);
 }
 
+/* Shared post-mutation refresh for callNext()/undo() — both change S.called
+   and need the same set of views (and the next-ball preview) refreshed. */
+function renderAfterCallChange(pop){
+  renderBall(pop); renderRecent(); paintBoard(); renderLog();
+  _nextBall=null; pickNextBall(); renderPreview();
+}
+
 function callNext(){
   const elig=eligibleBalls();
   if(!elig.length){
@@ -1136,12 +1179,11 @@ function callNext(){
   ensureTimes();
   // Use pre-selected preview ball if still valid; otherwise random
   const n = (_nextBall && elig.includes(_nextBall)) ? _nextBall : elig[Math.floor(Math.random()*elig.length)];
-  _nextBall = null; // clear before picking next
   S.called.push(n);
   S.callTimes.push(new Date().toISOString());
   save();
-  renderBall(true); renderRecent(); paintBoard(); renderLog();
-  pickNextBall(); renderPreview(); // advance preview to the following ball
+  renderAfterCallChange(true);
+  if(S.settings.vibrate && navigator.vibrate) navigator.vibrate(40);
   if(!eligibleBalls().length){ toast('Last ball in play for this pattern.'); stopAuto(); }
 }
 
@@ -1150,8 +1192,7 @@ function undo(){
   ensureTimes();
   S.called.pop(); S.callTimes.pop();
   save();
-  renderBall(false); renderRecent(); paintBoard(); renderLog();
-  _nextBall=null; pickNextBall(); renderPreview();
+  renderAfterCallChange(false);
 }
 
 function newGame(){
@@ -1202,8 +1243,9 @@ let autoTimer=null, autoRAF=null, autoEnd=0, autoRemain=0, autoOn=false, autoPau
 function startAuto(){
   if(!eligibleBalls().length){ toast('No balls left to call.'); return; }
   autoOn=true; autoPaused=false;
-  $('#autoBtn').textContent='⏸ Pause'; $('#autoBtn').classList.add('on');
+  $('#autoBtn').textContent='⏸ Pause'; setToggle($('#autoBtn'), true);
   scheduleAuto((S.settings.autoInterval||+$('#intRange').value)*1000);
+  syncWakeLock();
 }
 function scheduleAuto(ms){
   clearTimeout(autoTimer); cancelAnimationFrame(autoRAF);
@@ -1235,8 +1277,9 @@ function resumeAuto(){
 function stopAuto(){
   autoOn=false; autoPaused=false;
   clearTimeout(autoTimer); cancelAnimationFrame(autoRAF);
-  $('#autoBtn').textContent='▶ Auto Call'; $('#autoBtn').classList.remove('on');
+  $('#autoBtn').textContent='▶ Auto Call'; setToggle($('#autoBtn'), false);
   $('#cdFill').style.width='0%';
+  syncWakeLock();
 }
 function toggleAuto(){
   if(!autoOn) startAuto();
@@ -1246,8 +1289,8 @@ function toggleAuto(){
 
 /* ---------- find / search ---------- */
 function flashFind(n){
-  $$('#board .cell').forEach(c=>c.classList.remove('found'));
-  const cell=$(`#board .cell[data-n="${n}"]`); if(cell)cell.classList.add('found');
+  boardCells.forEach(c=>c.classList.remove('found'));
+  const cell=boardCells[n-1]; if(cell)cell.classList.add('found');
   const idx=S.called.indexOf(n);
   if(idx>=0){ ensureTimes(); $('#findNote').innerHTML=`<b style="color:var(--good)">${letterFor(n)} ${n}</b> — call #${idx+1}${S.callTimes&&S.callTimes[idx]?' at '+fmtTime(S.callTimes[idx]):''}`; }
   else $('#findNote').innerHTML=`<b style="color:var(--warn)">${n}</b> — not called yet`;
@@ -1307,18 +1350,57 @@ function toTXT(){
 }
 function stamp(){const d=new Date();const p=x=>String(x).padStart(2,'0');return `${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`;}
 
+/* ---------- Import validation ----------
+   Loaded JSON comes from a file on disk, not a trusted source — never assume
+   its shape. Reject anything that isn't a plausible bingo session before it
+   touches app state (bad ball numbers, oversized arrays, wrong types). */
+const MAX_IMPORT_ITEMS = 5000;
+function isValidBallArray(a){
+  return Array.isArray(a) && a.length<=MAX_IMPORT_ITEMS &&
+    a.every(n=>Number.isInteger(n) && n>=1 && n<=TOTAL);
+}
+function sanitizeWinners(arr){
+  if(!Array.isArray(arr)) return [];
+  return arr.slice(0,MAX_IMPORT_ITEMS)
+    .filter(w=>w && typeof w==='object')
+    .map(w=>({
+      name: typeof w.name==='string' ? w.name.slice(0,120) : '',
+      pattern: typeof w.pattern==='string' ? w.pattern.slice(0,120) : 'Unknown',
+      ts: typeof w.ts==='string' ? w.ts : new Date().toISOString(),
+      callCount: Number.isFinite(w.callCount) ? w.callCount : 0,
+      lastBall: Number.isInteger(w.lastBall) && w.lastBall>=1 && w.lastBall<=TOTAL ? w.lastBall : null,
+    }));
+}
+function sanitizeTimes(arr,len){
+  if(!Array.isArray(arr)) return [];
+  return arr.slice(0,len).map(t=>typeof t==='string' ? t : new Date().toISOString());
+}
+function sanitizeHistory(arr){
+  if(!Array.isArray(arr)) return [];
+  return arr.slice(0,MAX_IMPORT_ITEMS)
+    .filter(h=>h && typeof h==='object' && isValidBallArray(h.order))
+    .map(h=>({
+      ended: typeof h.ended==='string' ? h.ended : new Date().toISOString(),
+      calls: h.order.length,
+      winners: sanitizeWinners(h.winnerRecs).length,
+      pattern: typeof h.pattern==='string' ? h.pattern.slice(0,120) : 'Unknown',
+      order: h.order.slice(),
+      times: sanitizeTimes(h.times, h.order.length),
+      winnerRecs: sanitizeWinners(h.winnerRecs),
+    }));
+}
 function loadJSON(file){
   const reader=new FileReader();
   reader.onload=()=>{
     try{
       const data=JSON.parse(reader.result);
-      const cur=data.current||data;
-      if(!cur.calledOrder){ toast('Not a recognized bingo file.'); return; }
+      const cur=(data&&data.current)||data;
+      if(!cur||!isValidBallArray(cur.calledOrder)){ toast('Not a recognized bingo file.'); return; }
       confirmModal('Load this file?','This replaces the current board and call log with the saved data. Winners load too.',()=>{
         S.called=cur.calledOrder.slice();
-        S.callTimes=(cur.callTimes||[]).slice();
-        S.winners=(cur.winners||[]).slice();
-        if(data.games){ S.history=data.games.slice(); }
+        S.callTimes=sanitizeTimes(cur.callTimes, S.called.length);
+        S.winners=sanitizeWinners(cur.winners);
+        if(data.games){ S.history=sanitizeHistory(data.games); }
         save(); fullRender(); toast('Session loaded.');
       });
     }catch(e){ toast('Could not read that file.'); }
@@ -1393,7 +1475,8 @@ function applyTheme(){
 function buildThemeRow(){
   const row=$('#themeRow'); row.innerHTML='';
   Object.entries(THEMES).forEach(([k,t])=>{
-    const b=document.createElement('button'); b.className='theme-chip'+(S.settings.theme===k?' on':''); b.textContent=t.label;
+    const b=document.createElement('button'); b.className='theme-chip'; b.textContent=t.label;
+    setToggle(b, S.settings.theme===k);
     b.onclick=()=>{ S.settings.theme=k; S.settings.letters={...t.letters}; S.settings.vars={}; save(); applyTheme(); buildThemeRow(); buildSwatches(); renderRecent(); paintBoard(); };
     row.appendChild(b);
   });
@@ -1417,6 +1500,37 @@ function buildSwatches(){
 function rgbToHex(c){ if(!c)return '#ffffff'; c=c.trim(); if(c[0]==='#')return c; const m=c.match(/\d+/g); if(!m)return '#ffffff'; return '#'+m.slice(0,3).map(x=>(+x).toString(16).padStart(2,'0')).join(''); }
 
 /* ==========================================================================
+   DIALOG FOCUS MANAGEMENT (drawer / modal / big screen)
+   Keeps keyboard focus trapped inside whichever overlay is open, and returns
+   it to the element that opened the overlay on close — standard WAI-ARIA
+   dialog behavior that screen reader and keyboard-only users depend on.
+   ========================================================================== */
+let _lastFocused=null;
+function focusableIn(container){
+  return Array.from(container.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
+    .filter(el=>!el.disabled && el.offsetParent!==null);
+}
+function trapTabKey(container, e){
+  if(e.key!=='Tab') return;
+  const list=focusableIn(container);
+  if(!list.length) return;
+  const first=list[0], last=list[list.length-1];
+  if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
+  else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
+}
+function openDialog(container){
+  _lastFocused=document.activeElement;
+  container.classList.add('show');
+  const list=focusableIn(container);
+  (list[0]||container).focus();
+}
+function closeDialog(container){
+  container.classList.remove('show');
+  if(_lastFocused && typeof _lastFocused.focus==='function') _lastFocused.focus();
+  _lastFocused=null;
+}
+
+/* ==========================================================================
    MODAL / TOAST
    ========================================================================== */
 let modalOk=null, modalCancelFn=null;
@@ -1427,11 +1541,11 @@ function confirmModal(title,text,onOk,opts){
   $('#modalOk').textContent=opts.okText||'Confirm';
   $('#modalCancel').textContent=opts.cancelText||'Cancel';
   modalOk=onOk; modalCancelFn=opts.onCancel||null;
-  $('#modal').classList.add('show');
-  // Auto-focus the first input in the extra section if present
+  openDialog($('#modal'));
+  // Prefer the first input in the extra section, once it's rendered
   setTimeout(()=>{ const inp=$('#modalExtra input'); if(inp) inp.focus(); }, 60);
 }
-function closeModal(){ $('#modal').classList.remove('show'); $('#modalExtra').innerHTML=''; modalOk=null; modalCancelFn=null; }
+function closeModal(){ closeDialog($('#modal')); $('#modalExtra').innerHTML=''; modalOk=null; modalCancelFn=null; }
 let toastT=null;
 function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2600); }
 
@@ -1451,6 +1565,10 @@ function applyPatCollapsed(){
   $('#patHeader').classList.toggle('closed', closed);
 }
 
+/* Clamp a stored number back into its valid range — guards against a
+   corrupted/hand-edited localStorage value producing an unusable layout. */
+function clampNum(v,min,max,fallback){ v=+v; return Number.isFinite(v) ? Math.min(max,Math.max(min,v)) : fallback; }
+
 function init(){
   ensureTimes();
   if(!S.settings.autoInterval) S.settings.autoInterval=10;
@@ -1460,8 +1578,14 @@ function init(){
   if(S.settings.patCollapsed===undefined) S.settings.patCollapsed=false;
   if(!S.calloutIdx) S.calloutIdx={};
   if(S.settings.boardScale===undefined) S.settings.boardScale=0.75;
+  if(S.settings.speakCalls===undefined) S.settings.speakCalls=false;
+  if(S.settings.vibrate===undefined) S.settings.vibrate=true;
+  S.settings.autoInterval=clampNum(S.settings.autoInterval,3,60,10);
+  S.settings.fontScale=clampNum(S.settings.fontScale,80,180,100);
+  S.settings.boardScale=clampNum(S.settings.boardScale,0.45,1.3,0.75);
   applyTheme();
   buildBoard();
+  wireBoardClicks();
   buildPatternTiles();
   buildThemeRow(); buildSwatches();
   buildEditor();
@@ -1474,6 +1598,8 @@ function init(){
   $('#limitChk').checked=S.settings.limitDraw;
   $('#previewChk').checked=S.settings.showPreview;
   $('#calloutChk').checked=S.settings.callouts;
+  $('#speakChk').checked=S.settings.speakCalls;
+  $('#vibrateChk').checked=S.settings.vibrate;
   $('#intRange').value=S.settings.autoInterval; $('#intLabel').textContent=S.settings.autoInterval;
   applyPatCollapsed();
 
@@ -1488,6 +1614,8 @@ function init(){
   $('#reportBtn').onclick=generateNightReport;
   $('#limitChk').onchange=e=>{ S.settings.limitDraw=e.target.checked; save(); renderBall(false); paintBoard(); _nextBall=null; pickNextBall(); renderPreview(); };
   $('#previewChk').onchange=e=>{ S.settings.showPreview=e.target.checked; save(); renderPreview(); };
+  $('#speakChk').onchange=e=>{ S.settings.speakCalls=e.target.checked; save(); if(!e.target.checked && 'speechSynthesis' in window) speechSynthesis.cancel(); };
+  $('#vibrateChk').onchange=e=>{ S.settings.vibrate=e.target.checked; save(); };
 
   /* core buttons */
   $('#callBtn').onclick=callNext;
@@ -1525,13 +1653,16 @@ function init(){
   $('#fileInput').onchange=e=>{ if(e.target.files[0])loadJSON(e.target.files[0]); e.target.value=''; };
 
   /* big screen */
-  $('#bigBtn').onclick=()=>$('#bigscreen').classList.add('show');
-  $('#bsExit').onclick=()=>$('#bigscreen').classList.remove('show');
+  $('#bigBtn').onclick=()=>{ openDialog($('#bigscreen')); syncWakeLock(); };
+  $('#bsExit').onclick=()=>{ closeDialog($('#bigscreen')); syncWakeLock(); };
+  $('#bigscreen').addEventListener('keydown', e=>trapTabKey($('#bigscreen'), e));
 
   /* settings drawer */
-  const openDrawer=()=>{ $('#drawer').classList.add('show'); $('#scrim').classList.add('show'); };
-  const closeDrawer=()=>{ $('#drawer').classList.remove('show'); $('#scrim').classList.remove('show'); };
+  const openDrawer=()=>{ openDialog($('#drawer')); $('#scrim').classList.add('show'); };
+  const closeDrawer=()=>{ closeDialog($('#drawer')); $('#scrim').classList.remove('show'); };
   $('#settingsBtn').onclick=openDrawer; $('#closeDrawer').onclick=closeDrawer; $('#scrim').onclick=closeDrawer;
+  $('#drawer').addEventListener('keydown', e=>trapTabKey($('#drawer'), e));
+  $('#modal').addEventListener('keydown', e=>trapTabKey($('#modal'), e));
 
   $('#clearHistoryBtn').onclick=()=>{
     confirmModal(
@@ -1542,7 +1673,7 @@ function init(){
         S.history=[];
         S.session={id:Date.now(), started:new Date().toISOString(), games:1};
         save(); fullRender();
-        $('#drawer').classList.remove('show'); $('#scrim').classList.remove('show');
+        closeDrawer();
         toast('Clean slate — all history cleared.');
       },
       {okText:'Yes, clear everything', cancelText:'Cancel'}
@@ -1583,8 +1714,8 @@ function init(){
     else if(k==='u'){ undo(); }
     else if(k==='a'){ toggleAuto(); }
     else if(k==='r'){ newGame(); }
-    else if(k==='f'){ $('#bigscreen').classList.toggle('show'); }
-    else if(k==='escape'){ $('#bigscreen').classList.remove('show'); closeDrawer(); closeModal(); }
+    else if(k==='f'){ const bs=$('#bigscreen'); bs.classList.contains('show') ? closeDialog(bs) : openDialog(bs); syncWakeLock(); }
+    else if(k==='escape'){ if($('#bigscreen').classList.contains('show')){ closeDialog($('#bigscreen')); syncWakeLock(); } closeDrawer(); closeModal(); }
   });
 
   registerPWA();
@@ -1735,7 +1866,7 @@ summary{cursor:pointer;font-size:.85rem;font-weight:700;color:#64748b;padding:4p
   </div>
   ${nightBanner}
   ${games.map(gameSection).join('\n')}
-  <div class="r-meta-bar">Generated by Bingo Caller v2.16 &nbsp;·&nbsp; ${new Date().toLocaleString()}</div>
+  <div class="r-meta-bar">Generated by Bingo Caller v2.17 &nbsp;·&nbsp; ${new Date().toLocaleString()}</div>
 </div>
 <script>
 function dlReport(){
@@ -1756,22 +1887,92 @@ function dlReport(){
   }catch(e){ toast('Could not open report: '+e.message); }
 }
 
-function registerPWA(){
+/* iOS ignores manifest.json icons for "Add to Home Screen" — it only reads a
+   real <link rel="apple-touch-icon"> image, and is picky about SVG there.
+   Draw the same logo to a canvas and hand iOS an actual PNG, generated at
+   runtime so the repo doesn't need a binary icon asset. */
+function addAppleTouchIcon(){
   try{
-    const icon='data:image/svg+xml,'+encodeURIComponent(
-      `<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192"><defs><radialGradient id="g" cx="34%" cy="30%" r="80%"><stop offset="0%" stop-color="#fff"/><stop offset="14%" stop-color="#fff"/><stop offset="15%" stop-color="#52a6f0"/><stop offset="100%" stop-color="#ff595e"/></radialGradient></defs><circle cx="96" cy="96" r="92" fill="url(#g)"/><text x="96" y="120" font-size="78" font-family="Arial" font-weight="900" text-anchor="middle" fill="#15171c">B</text></svg>`);
-    const manifest={ name:'Bingo Caller', short_name:'Bingo', start_url:'.', display:'standalone',
-      background_color:'#15171c', theme_color:'#15171c',
-      icons:[{src:icon,sizes:'192x192',type:'image/svg+xml',purpose:'any'},{src:icon,sizes:'512x512',type:'image/svg+xml',purpose:'any maskable'}] };
-    const mblob=new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'});
-    const link=document.createElement('link'); link.rel='manifest'; link.href=URL.createObjectURL(mblob);
+    const size=180;
+    const canvas=document.createElement('canvas');
+    canvas.width=size; canvas.height=size;
+    const ctx=canvas.getContext('2d');
+    const grad=ctx.createRadialGradient(size*.34,size*.30,4,size*.5,size*.5,size*.5);
+    grad.addColorStop(0,'#ffffff'); grad.addColorStop(.15,'#52a6f0'); grad.addColorStop(1,'#ff595e');
+    ctx.fillStyle=grad;
+    ctx.beginPath(); ctx.arc(size/2,size/2,size/2-4,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#15171c';
+    ctx.font='900 '+Math.round(size*.42)+'px Arial, sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('B', size/2, size/2+size*.05);
+    const link=document.createElement('link');
+    link.rel='apple-touch-icon'; link.href=canvas.toDataURL('image/png');
     document.head.appendChild(link);
   }catch(e){}
-  // Service worker: register ./sw.js if present (for cold-start offline on a real host).
-  // The app already runs fully offline once loaded; sw.js is an optional companion file.
-  if('serviceWorker' in navigator && location.protocol==='https:'){
-    navigator.serviceWorker.register('sw.js').catch(()=>{/* no sw.js present — fine, app is self-contained */});
+}
+
+function registerPWA(){
+  addAppleTouchIcon();
+  // manifest.json is a real static file (see <link rel="manifest"> in <head>) so
+  // Chrome/Android can evaluate install criteria reliably across reloads.
+  // Service worker gives real offline support — cache the app shell on first
+  // load so the console keeps working with no signal after that.
+  if('serviceWorker' in navigator && (location.protocol==='https:' || location.hostname==='localhost')){
+    navigator.serviceWorker.register('sw.js').catch(()=>{/* no sw.js reachable — app still works online */});
   }
+  wireInstallPrompt();
+}
+
+/* Chrome/Edge/Android fire beforeinstallprompt instead of showing their own
+   install UI reliably — capture it and expose our own "Install" button so
+   hosts notice they can put this on a home screen before they lose signal. */
+let _deferredInstallPrompt=null;
+function wireInstallPrompt(){
+  const btn=$('#installBtn');
+  const isStandalone=()=>window.matchMedia('(display-mode: standalone)').matches || navigator.standalone===true;
+  if(isStandalone()) return;
+  addEventListener('beforeinstallprompt', e=>{
+    e.preventDefault();
+    _deferredInstallPrompt=e;
+    btn.classList.remove('hide');
+  });
+  btn.onclick=async ()=>{
+    if(!_deferredInstallPrompt) return;
+    btn.classList.add('hide');
+    _deferredInstallPrompt.prompt();
+    await _deferredInstallPrompt.userChoice.catch(()=>{});
+    _deferredInstallPrompt=null;
+  };
+  addEventListener('appinstalled', ()=>btn.classList.add('hide'));
+}
+
+/* ---------- Screen Wake Lock ----------
+   Keeps the display on while auto-call or big-screen mode is running, so a
+   phone/tablet acting as the caller or the venue display doesn't sleep
+   mid-game. Best-effort: silently no-ops on browsers without the API. */
+let _wakeLock=null;
+async function requestWakeLock(){
+  try{
+    if('wakeLock' in navigator) _wakeLock=await navigator.wakeLock.request('screen');
+  }catch(e){ _wakeLock=null; }
+}
+function releaseWakeLock(){
+  if(_wakeLock){ _wakeLock.release().catch(()=>{}); _wakeLock=null; }
+}
+function wakeLockWanted(){ return autoOn || $('#bigscreen').classList.contains('show'); }
+function syncWakeLock(){ if(wakeLockWanted()) requestWakeLock(); else releaseWakeLock(); }
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState==='visible' && wakeLockWanted()) requestWakeLock();
+});
+
+/* ---------- Speak calls aloud (SpeechSynthesis) ---------- */
+function speakCall(letter,num,calloutText){
+  if(!S.settings.speakCalls || !('speechSynthesis' in window)) return;
+  try{
+    speechSynthesis.cancel(); // don't let calls queue up during fast auto-play
+    const text=calloutText ? `${letter} ${num}. ${calloutText}` : `${letter} ${num}`;
+    speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+  }catch(e){}
 }
 
 document.addEventListener('DOMContentLoaded',init);
