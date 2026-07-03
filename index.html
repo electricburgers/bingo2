@@ -66,14 +66,14 @@
     box-shadow:inset 0 0 0 3px rgba(0,0,0,.25), var(--shadow);
   }
   .brand h1{font-size:1.15rem;line-height:1}
-  .brand .sub{font-size:.72rem;color:var(--muted)}
+  .brand .sub{font-size:.76rem;color:var(--muted)}
   .iconbtn{
     background:var(--surface);border:1px solid var(--line);border-radius:12px;
     padding:9px 11px;font-size:.9rem;font-weight:700;display:inline-flex;align-items:center;gap:6px;
     min-height:44px;
   }
   .iconbtn:hover{background:var(--surface-2)}
-  .iconbtn.on{border-color:var(--accent);color:var(--accent)}
+  .iconbtn.on{border-color:var(--accent);color:var(--accent-fg)}
   /* Icon-only square buttons for the topbar */
   .topbtn{
     background:var(--surface);border:1px solid var(--line);border-radius:12px;
@@ -100,7 +100,7 @@
   }
 
   .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
-  .card h2{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px;justify-content:space-between}
+  .card h2{font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px;justify-content:space-between}
 
   /* ---------- Current ball ---------- */
   .ball-wrap{display:flex;flex-direction:column;align-items:center;gap:6px}
@@ -114,20 +114,20 @@
   }
   .ball.pop{animation:pop .42s cubic-bezier(.2,1.4,.4,1)}
   @keyframes pop{0%{transform:scale(.6) rotate(-8deg);opacity:.2}60%{transform:scale(1.08)}100%{transform:scale(1)}}
-  .ball .letter{font-size:clamp(2.6rem,16vw,4.6rem);font-weight:900;line-height:.9;color:var(--ball-color,var(--text))}
+  .ball .letter{font-size:clamp(2.6rem,16vw,4.6rem);font-weight:900;line-height:.9;color:var(--ball-text,var(--text))}
   .ball .num{font-size:clamp(3.2rem,22vw,6.4rem);font-weight:900;line-height:.85;letter-spacing:-.03em}
   .ball.empty{opacity:.6}
   .ball.empty .num{font-size:1.3rem;font-weight:800}
   .ball.empty .letter{display:none}
-  .callmeta{display:flex;gap:14px;justify-content:center;font-size:.82rem;color:var(--muted);margin-top:2px}
+  .callmeta{display:flex;gap:14px;justify-content:center;font-size:.86rem;color:var(--muted);margin-top:2px}
   .callmeta b{color:var(--text)}
-  .drawscope{text-align:center;font-size:.74rem;color:var(--muted);margin-top:3px;min-height:14px;font-weight:600}
+  .drawscope{text-align:center;font-size:.78rem;color:var(--muted);margin-top:3px;min-height:14px;font-weight:600}
 
   /* preview panel */
   .preview-panel{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:10px}
   .preview-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;gap:8px}
-  .preview-label{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:flex;align-items:center;gap:7px}
-  .preview-host-tag{font-size:.65rem;background:rgba(255,210,63,.15);color:var(--accent);border:1px solid rgba(255,210,63,.3);border-radius:5px;padding:1px 5px;font-weight:700;letter-spacing:.04em}
+  .preview-label{font-size:.76rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:flex;align-items:center;gap:7px}
+  .preview-host-tag{font-size:.7rem;background:var(--accent-badge-bg);color:var(--accent-badge-text);border:1px solid var(--accent-badge-bg);border-radius:5px;padding:1px 5px;font-weight:700;letter-spacing:.04em}
   .preview-body{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   .preview-ball-mini{font-weight:900;font-size:1.45rem;display:flex;align-items:baseline;gap:4px;min-width:56px}
   .preview-ball-mini #previewLetter{font-size:1rem;font-weight:900;color:var(--preview-col,var(--muted))}
@@ -136,15 +136,19 @@
   .preview-panel.empty .preview-body{opacity:.4}
   .preview-panel.hidden{display:none}
   .callout{
-    text-align:center;font-weight:800;font-size:1.02rem;color:var(--accent);
+    text-align:center;font-weight:800;font-size:1.02rem;color:var(--accent-fg);
     padding:0 8px;line-height:1.35;
     /* reserve 2 lines so the button never shifts */
     min-height:2.75rem;
     display:flex;align-items:center;justify-content:center;
   }
+  /* Height is constant whether or not there's a callout yet — only the cycle
+     button's visibility toggles. Collapsing this row's margin/display on the
+     first call (the old behavior) shoved every button below it down the
+     page the instant a host called ball #1, which is jarring and makes the
+     Call/Undo/Reset buttons move right as someone's about to tap them again. */
   .callout-row{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:8px}
-  .callout-row:has(.callout:empty){margin-top:0}
-  .callout-row:has(.callout:empty) .cyclebtn-line{display:none}
+  .callout-row:has(.callout:empty) .cyclebtn{visibility:hidden}
   .cyclebtn-line{display:flex;justify-content:center}
   .cyclebtn{
     border:1px solid var(--line);background:var(--surface-2);color:var(--muted);
@@ -153,9 +157,9 @@
     min-height:44px;min-width:140px;justify-content:center;
     touch-action:manipulation;
   }
-  .cyclebtn:hover{color:var(--accent);border-color:var(--accent)}
+  .cyclebtn:hover{color:var(--accent-fg);border-color:var(--accent)}
   .cyclebtn:active{transform:scale(.96)}
-  .bs-callout{font-weight:800;color:var(--accent);font-size:clamp(1.1rem,4.5vw,2.6rem);min-height:1.2em;padding:0 12px;text-align:center}
+  .bs-callout{font-weight:800;color:var(--accent-fg);font-size:clamp(1.1rem,4.5vw,2.6rem);min-height:1.2em;padding:0 12px;text-align:center}
   .collapser{cursor:pointer;user-select:none}
   .caret{display:inline-block;transition:transform .2s;font-size:.85rem;color:var(--muted)}
   .collapser.closed .caret{transform:rotate(-90deg)}
@@ -177,7 +181,7 @@
     padding:12px;font-weight:700;font-size:.9rem;min-height:48px;display:flex;align-items:center;justify-content:center;gap:6px;
   }
   .btn:hover{background:var(--line)}
-  .btn.on{border-color:var(--accent);color:var(--accent)}
+  .btn.on{border-color:var(--accent);color:var(--accent-fg)}
   .btn.danger{color:var(--warn)}
 
   /* ---------- Recent strip ---------- */
@@ -200,17 +204,17 @@
     background:var(--surface-2);border:1px solid var(--line);color:var(--text);border-radius:10px;
     padding:9px 10px;font-size:.95rem;font-family:inherit;min-height:42px;
   }
-  label.fld{display:flex;flex-direction:column;gap:5px;font-size:.8rem;color:var(--muted);font-weight:600}
+  label.fld{display:flex;flex-direction:column;gap:5px;font-size:.84rem;color:var(--muted);font-weight:600}
 
   /* ---------- Pattern selector ---------- */
   .pat-head{display:flex;gap:10px;align-items:center}
   .pat-head select{flex:1}
   .pat-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:8px;max-height:228px;overflow:auto;padding:2px}
-  .ptile{display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 4px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);font-size:.66rem;font-weight:700;text-align:center;line-height:1.1}
+  .ptile{display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 4px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);font-size:.72rem;font-weight:700;text-align:center;line-height:1.1}
   .ptile:hover{border-color:var(--muted)}
   .ptile.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
   .ptile .mini{width:46px;height:46px;gap:2px}
-  .ptile.add{justify-content:center;color:var(--accent);font-size:.74rem}
+  .ptile.add{justify-content:center;color:var(--accent-fg);font-size:.74rem}
   .mini{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;width:62px;height:62px;flex:0 0 auto}
   .mini i{background:var(--surface-2);border-radius:3px}
   .mini i.on{background:var(--accent)}
@@ -225,14 +229,14 @@
   /* custom pattern editor */
   .editor{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;max-width:240px;margin:10px auto}
   .editor button{aspect-ratio:1;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--muted);margin:0;padding:0}
-  .editor button.on{background:var(--accent);border-color:var(--accent);color:#222}
+  .editor button.on{background:var(--accent);border-color:var(--accent);color:var(--accent-on)}
   .editor button.center{outline:2px dashed var(--muted)}
 
   /* ---------- Master flashboard ---------- */
   .board{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
   .bcol{display:flex;flex-direction:column;gap:5px;transition:opacity .2s}
   .bcol.dim{opacity:.18}
-  .bhead{text-align:center;font-weight:900;font-size:1.4rem;padding:1px 0;border-radius:8px;background:var(--surface-2);color:var(--lc,var(--text))}
+  .bhead{text-align:center;font-weight:900;font-size:1.4rem;padding:1px 0;border-radius:8px;background:var(--lc-bg,var(--surface-2));color:var(--lc-text,var(--text))}
   .cell{
     text-align:center;font-weight:700;
     font-size:calc(var(--board-scale,0.75) * 1.45rem);
@@ -250,27 +254,40 @@
     font-weight:900;
     letter-spacing:-.01em;
   }
-  .cell.current{outline:3px solid #fff;outline-offset:1px;animation:pulse 1.1s ease-in-out infinite;transform:scale(1.05)}
+  /* Current-ball ring uses a dark ring + a light ring together (not one fixed
+     color) so it stays visible no matter how light or dark the active theme's
+     surface and letter-column colors are — a single color (the old solid
+     white) disappears against light themes like Daylight. Black-on-light /
+     white-on-dark guarantees a high-contrast edge on either side. */
+  .cell.current{
+    outline:2px solid #05070a;outline-offset:1px;
+    box-shadow:0 0 0 4px #fff;
+    animation:pulse 1.1s ease-in-out infinite;transform:scale(1.05);
+    position:relative;z-index:1;
+  }
   .cell.found{outline:3px solid var(--accent);outline-offset:1px}
-  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.5)}50%{box-shadow:0 0 0 6px rgba(255,255,255,0)}}
+  @keyframes pulse{
+    0%,100%{box-shadow:0 0 0 4px #fff,0 0 0 4px rgba(5,7,10,.5)}
+    50%{box-shadow:0 0 0 4px #fff,0 0 0 9px rgba(5,7,10,0)}
+  }
   .board-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
   .search{display:flex;align-items:center;gap:6px}
   .search input{width:92px}
-  .find-note{font-size:.82rem;color:var(--muted)}
+  .find-note{font-size:.86rem;color:var(--muted)}
 
   /* ---------- Audit / log ---------- */
   .stat-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
   .stat{flex:1;min-width:84px;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:9px 11px;text-align:center}
   .stat .n{font-size:1.4rem;font-weight:900}
-  .stat .k{font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  .stat .k{font-size:.74rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
   .log{max-height:280px;overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
   .log table{width:100%;border-collapse:collapse;font-size:.85rem}
-  .log th{position:sticky;top:0;background:var(--surface);text-align:left;padding:7px 10px;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);z-index:1}
+  .log th{position:sticky;top:0;background:var(--surface);text-align:left;padding:7px 10px;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);z-index:1}
   .log td{padding:7px 10px;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
-  .log tr.win td{background:rgba(61,220,132,.12);color:var(--good);font-weight:700}
+  .log tr.win td{background:rgba(61,220,132,.12);color:var(--good-fg);font-weight:700}
   .winrec{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.85rem;padding:8px 10px;border:1px dashed var(--good);border-radius:10px;background:rgba(61,220,132,.07);margin-bottom:8px}
-  .winner-name{color:var(--good);font-size:1rem}
-  .congrats-banner{background:rgba(61,220,132,.13);border:1px solid var(--good);border-radius:10px;padding:9px 12px;font-size:.88rem;font-weight:700;margin-bottom:8px;color:var(--good)}
+  .winner-name{color:var(--good-fg);font-size:1rem}
+  .congrats-banner{background:rgba(61,220,132,.13);border:1px solid var(--good);border-radius:10px;padding:9px 12px;font-size:.88rem;font-weight:700;margin-bottom:8px;color:var(--good-fg)}
   .modal p{color:var(--muted);font-size:.92rem;margin:0 0 10px}
   #modalExtra{margin-bottom:12px}
   #modalExtra input{width:100%;margin-top:4px}
@@ -288,26 +305,26 @@
   .drawer-head{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid var(--line)}
   .drawer-body{overflow:auto;padding:16px;display:flex;flex-direction:column;gap:18px}
   .sect{display:flex;flex-direction:column;gap:10px}
-  .sect>h3{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+  .sect>h3{font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
   .swatch-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
   .swatch{display:flex;flex-direction:column;align-items:center;gap:4px;font-weight:800;font-size:.8rem}
   .swatch input[type=color]{width:100%;height:40px;border:1px solid var(--line);border-radius:8px;background:none;padding:2px}
   .theme-row{display:flex;gap:8px;flex-wrap:wrap}
   .theme-chip{padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);font-weight:700;font-size:.85rem}
-  .theme-chip.on{border-color:var(--accent);color:var(--accent)}
+  .theme-chip.on{border-color:var(--accent);color:var(--accent-fg)}
   .toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0}
   .switch{position:relative;width:48px;height:28px;flex:0 0 auto}
   .switch input{opacity:0;width:0;height:0}
   .slider{position:absolute;inset:0;background:var(--surface-2);border:1px solid var(--line);border-radius:99px;transition:.2s}
   .slider:before{content:"";position:absolute;width:20px;height:20px;left:3px;top:3px;background:var(--muted);border-radius:50%;transition:.2s}
   .switch input:checked+.slider{background:var(--accent);border-color:var(--accent)}
-  .switch input:checked+.slider:before{transform:translateX(20px);background:#15171c}
+  .switch input:checked+.slider:before{transform:translateX(20px);background:var(--accent-on)}
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
   /* ---------- Big screen mode ---------- */
   .bigscreen{position:fixed;inset:0;background:var(--bg);z-index:60;display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center}
   .bigscreen.show{display:flex}
-  .bs-ball .letter{font-size:clamp(5rem,22vw,18rem);font-weight:900;line-height:.85;color:var(--ball-color,var(--text))}
+  .bs-ball .letter{font-size:clamp(5rem,22vw,18rem);font-weight:900;line-height:.85;color:var(--ball-text,var(--text))}
   .bs-ball .num{font-size:clamp(7rem,40vw,30rem);font-weight:900;line-height:.8;letter-spacing:-.03em}
   .bs-recent{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
   .bs-recent .chip{font-size:clamp(1rem,3vw,1.8rem);padding:8px 16px}
@@ -443,7 +460,7 @@
           <span class="find-note" id="findNote"></span>
         </div>
         <div class="board" id="board"></div>
-        <button class="btn" id="markWinner" style="margin-top:14px;width:100%;background:rgba(61,220,132,.12);border-color:var(--good);color:var(--good);font-size:1.05rem;min-height:54px">🏆 Declare a Winner</button>
+        <button class="btn" id="markWinner" style="margin-top:14px;width:100%;background:rgba(61,220,132,.12);border-color:var(--good);color:var(--good-fg);font-size:1.05rem;min-height:54px">🏆 Declare a Winner</button>
       </div>
     </section>
 
@@ -564,7 +581,7 @@
     </div>
     <div class="sect">
       <h3>About</h3>
-      <p class="pat-cap" style="margin:0 0 6px"><strong style="color:var(--text)">Bingo Caller v2.17</strong></p>
+      <p class="pat-cap" style="margin:0 0 6px"><strong style="color:var(--text)">Bingo Caller v2.19</strong></p>
       <p class="pat-cap" style="margin:0 0 8px">Host-only caller. Everything is stored on this device — no accounts, no network needed once loaded. Tap the ⬇ install button (or your browser's "Add to Home Screen") so it keeps working with no signal.</p>
       <p class="pat-cap" style="margin:0;font-size:.72rem;line-height:1.5;color:var(--muted)">⚡ Built with Claude AI (Anthropic). This application was developed using AI-assisted code generation. UI, logic, and content were created through a collaborative human–AI workflow.</p>
     </div>
@@ -838,12 +855,16 @@ function renderBall(pop){
   const ball=$('#ball'), L=$('#ballLetter'), N=$('#ballNum');
   if(!last){
     ball.classList.add('empty'); L.textContent=''; N.textContent= inPlay? 'Ready':'Done';
-    ball.style.removeProperty('--ball-color');
+    ball.style.removeProperty('--ball-color'); ball.style.removeProperty('--ball-text');
   }else{
     ball.classList.remove('empty');
     const lt=letterFor(last);
     L.textContent=lt; N.textContent=last;
+    // --ball-color is the raw, saturated letter hue (decorative border/glow only).
+    // --ball-text is a separately-computed AAA-safe variant for the letter glyph itself,
+    // since the same bright hue that looks great as a ring often can't hit 7:1 as text.
     ball.style.setProperty('--ball-color', `var(--col-${lt})`);
+    ball.style.setProperty('--ball-text', `var(--col-${lt}-fg)`);
     if(pop){ ball.classList.remove('pop'); void ball.offsetWidth; ball.classList.add('pop'); }
   }
   $('#callIdx').textContent=S.called.length;
@@ -868,6 +889,7 @@ function renderBall(pop){
   $('#bsLetter').textContent=last?letterFor(last):'';
   $('#bsNum').textContent=last?last:'—';
   $('#bigscreen').style.setProperty('--ball-color', last?`var(--col-${letterFor(last)})`:'var(--accent)');
+  $('#bigscreen').style.setProperty('--ball-text', last?`var(--col-${letterFor(last)}-fg)`:'var(--accent-fg)');
   $('#bsCount').textContent=S.called.length;
   if(last) $('#srAnnounce').textContent = `${letterFor(last)} ${last}. ${co}`;
   if(pop && last) speakCall(letterFor(last), last, co);
@@ -890,7 +912,7 @@ function renderRecent(){
   if(!recent.length){ box.innerHTML='<span class="muted">Recent calls appear here…</span>'; bs.innerHTML=''; return; }
   const chips=recent.map((n,i)=>{
     const lt=letterFor(n);
-    const col=lt?`color:var(--col-${lt})`:'';
+    const col=lt?`color:var(--col-${lt}-fg)`:'';
     return `<span class="chip ${i===0?'latest':''}"><span class="l" style="${col}">${lt}</span>${n}</span>`;
   }).join('');
   const tag=(label)=>`<span style="font-size:.65rem;font-weight:800;letter-spacing:.06em;color:var(--muted);white-space:nowrap;align-self:center">${label}</span>`;
@@ -907,6 +929,8 @@ function buildBoard(){
     const col=document.createElement('div'); col.className='bcol'; col.dataset.col=c;
     const head=document.createElement('div'); head.className='bhead';
     head.textContent=LETTERS[c]; head.style.setProperty('--lc',`var(--col-${LETTERS[c]})`);
+    head.style.setProperty('--lc-bg',`var(--col-${LETTERS[c]}-bg)`);
+    head.style.setProperty('--lc-text',`var(--col-${LETTERS[c]}-text)`);
     col.appendChild(head);
     for(let r=0;r<15;r++){
       const n=c*15+r+1;
@@ -1084,7 +1108,7 @@ function renderLog(){
   S.called.forEach((n,i)=>{
     const callNum=i+1;
     const lt=letterFor(n);
-    rows.push(`<tr><td>${callNum}</td><td><b style="color:${lt?`var(--col-${lt})`:'inherit'}">${lt}\u00a0${n}</b></td><td class="mono">${S.callTimes?fmtTime(S.callTimes[i]):''}</td></tr>`);
+    rows.push(`<tr><td>${callNum}</td><td><b style="color:${lt?`var(--col-${lt}-fg)`:'inherit'}">${lt}\u00a0${n}</b></td><td class="mono">${S.callTimes?fmtTime(S.callTimes[i]):''}</td></tr>`);
     // Insert winner row(s) AFTER the ball that triggered the win
     if(winAtCall[callNum]){
       winAtCall[callNum].forEach(w=>{
@@ -1160,7 +1184,7 @@ function renderPreview(){
   $('#previewLetter').textContent = lt;
   $('#previewNum').textContent = _nextBall;
   $('#previewCalloutTxt').textContent = co || '';
-  panel.style.setProperty('--preview-col', `var(--col-${lt})`);
+  panel.style.setProperty('--preview-col', `var(--col-${lt}-fg)`);
 }
 
 /* Shared post-mutation refresh for callNext()/undo() — both change S.called
@@ -1292,7 +1316,7 @@ function flashFind(n){
   boardCells.forEach(c=>c.classList.remove('found'));
   const cell=boardCells[n-1]; if(cell)cell.classList.add('found');
   const idx=S.called.indexOf(n);
-  if(idx>=0){ ensureTimes(); $('#findNote').innerHTML=`<b style="color:var(--good)">${letterFor(n)} ${n}</b> — call #${idx+1}${S.callTimes&&S.callTimes[idx]?' at '+fmtTime(S.callTimes[idx]):''}`; }
+  if(idx>=0){ ensureTimes(); $('#findNote').innerHTML=`<b style="color:var(--good-fg)">${letterFor(n)} ${n}</b> — call #${idx+1}${S.callTimes&&S.callTimes[idx]?' at '+fmtTime(S.callTimes[idx]):''}`; }
   else $('#findNote').innerHTML=`<b style="color:var(--warn)">${n}</b> — not called yet`;
   if(cell) cell.scrollIntoView({block:'nearest',behavior:'smooth'});
 }
@@ -1412,8 +1436,7 @@ function loadJSON(file){
    THEME / SETTINGS
    ========================================================================== */
 
-/* WCAG 2.1 relative luminance + contrast ratio helpers.
-   Used to automatically pick black or white text on any letter-color background. */
+/* WCAG 2.1 relative luminance + contrast ratio helpers. */
 function _wcagLin(c){ c/=255; return c<=0.03928?c/12.92:Math.pow((c+0.055)/1.055,2.4); }
 function _luminance(hex){
   hex=hex.replace(/^#/,'');
@@ -1432,41 +1455,106 @@ function bestTextOn(bgHex){
   catch(e){ return '#000000'; }
 }
 
-/* Blend a hex color toward white. ratio=1 = original color, ratio=0 = white.
-   Used to lighten dark letter colors when they're used as cell backgrounds in light themes. */
-function _blendToWhite(hex, ratio){
-  hex=hex.replace(/^#/,''); if(hex.length===3) hex=hex.split('').map(x=>x+x).join('');
-  const r=parseInt(hex.slice(0,2),16), g=parseInt(hex.slice(2,4),16), b=parseInt(hex.slice(4,6),16);
-  const m=c=>Math.round(c*ratio+255*(1-ratio));
-  return '#'+[m(r),m(g),m(b)].map(v=>v.toString(16).padStart(2,'0')).join('');
+/* ---------- AAA-guaranteed color derivation ----------
+   WCAG AAA needs 7:1 for normal text. A theme's hand-picked accent/muted/
+   letter colors often don't hit that against every surface they land on
+   (this is exactly why the "current ball" ring and the light theme's callout
+   text were unreadable before). Rather than hand-tune 7 themes × a dozen
+   color pairs, every derived color below is computed: nudge the original
+   hue toward black or white by the SMALLEST amount that clears the target
+   ratio against every background it's actually used on, picking whichever
+   direction (toward black or toward white) needs the least nudging — that
+   keeps the result as close to the designed color as accessibility allows. */
+function _mix(hexFrom, hexTo, t){ // t=0 -> hexFrom, t=1 -> hexTo
+  const norm=h=>{ h=h.replace(/^#/,''); return h.length===3?h.split('').map(c=>c+c).join(''):h; };
+  const a=norm(hexFrom), b=norm(hexTo);
+  const pa=[0,2,4].map(i=>parseInt(a.slice(i,i+2),16));
+  const pb=[0,2,4].map(i=>parseInt(b.slice(i,i+2),16));
+  const m=(x,y)=>Math.round(x*(1-t)+y*t);
+  return '#'+pa.map((x,i)=>m(x,pb[i]).toString(16).padStart(2,'0')).join('');
 }
+/* Smallest mix-toward-anchor (0..1) so `hex` clears `target` contrast against every color in bgList. */
+function _shiftFor(hex, anchor, bgList, target){
+  const worst=c=>Math.min(...bgList.map(bg=>_contrast(c,bg)));
+  if(worst(hex)>=target) return {color:hex, t:0};
+  let lo=0, hi=1;
+  for(let i=0;i<25;i++){
+    const mid=(lo+hi)/2;
+    if(worst(_mix(hex,anchor,mid))>=target) hi=mid; else lo=mid;
+  }
+  return {color:_mix(hex,anchor,hi), t:hi};
+}
+/* Shift `hex` toward whichever of black/white needs the smaller nudge to hit `target` against bgList. */
+function accessibleColor(hex, bgList, target){
+  const toBlack=_shiftFor(hex,'#000000',bgList,target);
+  const toWhite=_shiftFor(hex,'#ffffff',bgList,target);
+  return (toBlack.t<=toWhite.t ? toBlack : toWhite).color;
+}
+/* A colored badge (background + text) guaranteed to hit `target` contrast between the two,
+   staying as close to the original hue as possible — used for letter/pattern badges. */
+function accessibleBadge(hex, target){
+  const lighten=_shiftFor(hex,'#ffffff',['#000000'],target); // paired with black text
+  const darken=_shiftFor(hex,'#000000',['#ffffff'],target);  // paired with white text
+  return lighten.t<=darken.t ? {bg:lighten.color,text:'#000000'} : {bg:darken.color,text:'#ffffff'};
+}
+
+const AAA_TARGET = 7; // WCAG AAA, normal text
 
 function applyTheme(){
   const root=document.documentElement;
+  const themeKey=THEMES[S.settings.theme]?S.settings.theme:'dark';
+  const base=THEMES[themeKey].vars;
   // base theme vars
-  const base=THEMES[S.settings.theme]?THEMES[S.settings.theme].vars:{};
   Object.entries(base).forEach(([k,v])=>root.style.setProperty(k,v));
-  // custom theme overrides (bg/text)
-  Object.entries(S.settings.vars||{}).forEach(([k,v])=>{ if(v)root.style.setProperty(k,v); });
+  // custom theme overrides (bg/text only — surface/muted/accent aren't user-editable)
+  const customVars=S.settings.vars||{};
+  Object.entries(customVars).forEach(([k,v])=>{ if(v)root.style.setProperty(k,v); });
 
-  // Detect light vs dark theme by background luminance
-  const rawBg=(S.settings.vars&&S.settings.vars['--bg'])||
-              (THEMES[S.settings.theme]?THEMES[S.settings.theme].vars['--bg']:'#15171c')||'#15171c';
-  const isLightTheme = _luminance(rawBg) > 0.5;
+  const effBg=customVars['--bg']||base['--bg'];
+  const effText=customVars['--text']||base['--text'];
+  const effSurface=base['--surface'];
+  const effSurface2=base['--surface-2'];
+  const surfaces=[effBg, effSurface, effSurface2];
 
-  // For each letter column:
-  //   --col-L       = the original letter color (used for headers, chips, etc.)
-  //   --col-L-bg    = the cell background when called:
-  //                   • dark theme  → original color (bright & saturated)
-  //                   • light theme → color blended 50% toward white (pastel) so numbers
-  //                     always get excellent contrast with black text
-  //   --col-L-text  = WCAG-correct text color (black or white) for --col-L-bg
+  // Secondary/"muted" text — shift toward the theme's own text color (not black/white)
+  // just enough to clear AAA against every surface it sits on (bg, card, chip/button fills).
+  root.style.setProperty('--muted', _shiftFor(base['--muted'], effText, surfaces, AAA_TARGET).color);
+
+  // Accent used AS TEXT (callouts, badges, "on" states) needs its own AAA-safe variant —
+  // the raw --accent stays untouched for borders/fills/progress bars, which only need the
+  // much looser 3:1 non-text bar and should keep the theme's intended punchy color.
+  root.style.setProperty('--accent-fg', accessibleColor(base['--accent'], surfaces, AAA_TARGET));
+  // Icon/dot drawn ON TOP of a solid --accent fill (switch thumb, editor "on" tile).
+  root.style.setProperty('--accent-on', bestTextOn(base['--accent']));
+  // Solid accent badge (host-only tag) — was a low-opacity tint that vanished in several themes.
+  const accentBadge=accessibleBadge(base['--accent'], AAA_TARGET);
+  root.style.setProperty('--accent-badge-bg', accentBadge.bg);
+  root.style.setProperty('--accent-badge-text', accentBadge.text);
+
+  // "good"/"warn" text (winner names, danger buttons, find results). --good itself stays
+  // fixed for the Call button gradient, which already pairs with a fixed dark label everywhere.
+  root.style.setProperty('--good', '#3ddc84');
+  // good-fg also has to survive the low-opacity green tints those "win" backgrounds actually
+  // render as (log row / winrec / congrats banner / winner button) — checking the raw
+  // surfaces alone under-shifts it since the tint pulls the effective bg toward green.
+  const goodTints=[_mix(effBg,'#3ddc84',0.12), _mix(effSurface,'#3ddc84',0.07),
+                    _mix(effSurface,'#3ddc84',0.13), _mix(effSurface2,'#3ddc84',0.12)];
+  root.style.setProperty('--good-fg', accessibleColor('#3ddc84', [...surfaces, ...goodTints], AAA_TARGET));
+  root.style.setProperty('--warn', accessibleColor('#ff6b6b', [effSurface, effSurface2], AAA_TARGET));
+
+  // Per-letter badge: background + text chosen together so a called cell (and the column
+  // header, which reuses the same pair) always hits AAA, regardless of how saturated or
+  // pale the theme's letter color is. --col-L-fg is a separate AAA-safe text-only variant
+  // for places that show the raw letter color as text on an existing surface (the current
+  // ball, its big-screen mirror, the next-up preview, recent-call chips) rather than as a
+  // matching badge — --col-L itself stays untouched for decorative uses (the ball's ring).
   LETTERS.forEach(L=>{
     const hex=S.settings.letters[L]||'#888888';
     root.style.setProperty('--col-'+L, hex);
-    const bgHex = isLightTheme ? _blendToWhite(hex, 0.5) : hex;
-    root.style.setProperty('--col-'+L+'-bg',   bgHex);
-    root.style.setProperty('--col-'+L+'-text', bestTextOn(bgHex));
+    const badge=accessibleBadge(hex, AAA_TARGET);
+    root.style.setProperty('--col-'+L+'-bg', badge.bg);
+    root.style.setProperty('--col-'+L+'-text', badge.text);
+    root.style.setProperty('--col-'+L+'-fg', accessibleColor(hex, surfaces, AAA_TARGET));
   });
   root.style.setProperty('--font-scale', (S.settings.fontScale/100));
   root.style.setProperty('--board-scale', S.settings.boardScale??0.75);
@@ -1489,7 +1577,7 @@ function buildThemeRow(){
 function buildSwatches(){
   const row=$('#swatchRow'); row.innerHTML='';
   LETTERS.forEach(L=>{
-    const wrap=document.createElement('label'); wrap.className='swatch'; wrap.style.color=`var(--col-${L})`;
+    const wrap=document.createElement('label'); wrap.className='swatch'; wrap.style.color=`var(--col-${L}-fg)`;
     wrap.innerHTML=`${L}<input type="color" value="${rgbToHex(S.settings.letters[L])}">`;
     wrap.querySelector('input').addEventListener('input',e=>{
       S.settings.letters[L]=e.target.value; save(); applyTheme(); renderBall(false); renderRecent(); paintBoard();
@@ -1866,7 +1954,7 @@ summary{cursor:pointer;font-size:.85rem;font-weight:700;color:#64748b;padding:4p
   </div>
   ${nightBanner}
   ${games.map(gameSection).join('\n')}
-  <div class="r-meta-bar">Generated by Bingo Caller v2.17 &nbsp;·&nbsp; ${new Date().toLocaleString()}</div>
+  <div class="r-meta-bar">Generated by Bingo Caller v2.19 &nbsp;·&nbsp; ${new Date().toLocaleString()}</div>
 </div>
 <script>
 function dlReport(){
