@@ -65,20 +65,6 @@
 
         <div class="recent-label hide" id="recentLabel">Newest → Oldest</div>
         <div class="recent" id="recent"><span class="muted">Recent calls appear here…</span></div>
-
-        <!-- live preview panel -->
-        <div class="preview-panel" id="previewPanel">
-          <div class="preview-top">
-            <span class="preview-label">⏭ Next up <span class="preview-host-tag">host only</span></span>
-            <button class="btn" id="redrawBtn" style="flex:0 0 auto;font-size:.78rem;padding:4px 10px;min-height:32px">↻ Redraw</button>
-          </div>
-          <div class="preview-body">
-            <div class="preview-ball-mini" id="previewBallMini">
-              <span id="previewLetter"></span><span id="previewNum">—</span>
-            </div>
-            <span class="preview-callout-txt" id="previewCalloutTxt"></span>
-          </div>
-        </div>
       </div>
 
       <!-- pattern -->
@@ -112,10 +98,6 @@
       <div class="card">
         <h2>Main board <span id="boardCount" class="mono muted">0 / 75</span></h2>
         <div class="board-tools">
-          <div class="search">
-            <input type="text" id="findInput" inputmode="numeric" placeholder="# called?">
-            <button class="btn" id="findBtn" style="flex:0 0 auto;min-width:64px">Find</button>
-          </div>
           <button class="iconbtn on" id="patDimBtn" aria-pressed="true" title="Dim columns not in pattern" style="min-height:42px">▦ Pattern dim</button>
           <span class="find-note" id="findNote"></span>
         </div>
@@ -143,7 +125,7 @@
         <div id="winList"></div>
         <div class="log">
           <table>
-            <thead><tr><th>#</th><th>Ball</th><th>Time</th></tr></thead>
+            <thead><tr><th>#</th><th>Ball</th><th>Time</th><th>Play style</th></tr></thead>
             <tbody id="logBody"></tbody>
           </table>
         </div>
@@ -220,8 +202,6 @@
     </div>
     <div class="sect">
       <h3>Calling</h3>
-      <div class="toggle"><span>Show next-ball preview (host only)</span>
-        <label class="switch"><input type="checkbox" id="previewChk" checked aria-label="Show next-ball preview (host only)"><span class="slider"></span></label></div>
       <div class="toggle"><span>Only draw balls the pattern can use</span>
         <label class="switch"><input type="checkbox" id="limitChk" checked aria-label="Only draw balls the pattern can use"><span class="slider"></span></label></div>
       <p class="pat-cap" style="margin:-2px 0 4px">e.g. Four Corners skips the I, N and G columns. Switching pattern keeps every called ball, and re-opens any columns the new pattern needs.</p>
@@ -241,7 +221,7 @@
     </div>
     <div class="sect">
       <h3>About</h3>
-      <p class="pat-cap" style="margin:0 0 6px"><strong style="color:var(--text)">Bingo Caller v2.22</strong></p>
+      <p class="pat-cap" style="margin:0 0 6px"><strong style="color:var(--text)">Bingo Caller v2.23</strong></p>
       <p class="pat-cap" style="margin:0 0 8px">Host-only caller. Everything is stored on this device — no accounts, no network needed once loaded. Tap the ⬇ install button (or your browser's "Add to Home Screen") so it keeps working with no signal.</p>
       <p class="pat-cap" style="margin:0;font-size:.72rem;line-height:1.5;color:var(--muted)">⚡ Built with Claude AI (Anthropic). This application was developed using AI-assisted code generation. UI, logic, and content were created through a collaborative human–AI workflow.</p>
     </div>

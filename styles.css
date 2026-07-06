@@ -119,18 +119,6 @@
   .callmeta b{color:var(--text);font-weight:800}
   .drawscope{text-align:center;font-size:.98rem;color:var(--muted);margin-top:4px;min-height:18px;font-weight:700}
 
-  /* preview panel */
-  .preview-panel{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:10px}
-  .preview-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;gap:8px}
-  .preview-label{font-size:.76rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:flex;align-items:center;gap:7px}
-  .preview-host-tag{font-size:.7rem;background:var(--accent-badge-bg);color:var(--accent-badge-text);border:1px solid var(--accent-badge-bg);border-radius:5px;padding:1px 5px;font-weight:700;letter-spacing:.04em}
-  .preview-body{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-  .preview-ball-mini{font-weight:900;font-size:1.45rem;display:flex;align-items:baseline;gap:4px;min-width:56px}
-  .preview-ball-mini #previewLetter{font-size:1rem;font-weight:900;color:var(--preview-col,var(--muted))}
-  .preview-ball-mini #previewNum{color:var(--preview-col,var(--muted))}
-  .preview-callout-txt{font-size:.85rem;font-weight:700;color:var(--muted);font-style:italic;flex:1;min-width:120px;line-height:1.3}
-  .preview-panel.empty .preview-body{opacity:.4}
-  .preview-panel.hidden{display:none}
   .callout{
     text-align:center;font-weight:800;font-size:1.02rem;color:var(--accent-fg);
     padding:0 8px;line-height:1.35;
@@ -274,8 +262,6 @@
     50%{box-shadow:0 0 0 4px #fff,0 0 0 9px rgba(5,7,10,0)}
   }
   .board-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
-  .search{display:flex;align-items:center;gap:6px}
-  .search input{width:92px}
   .find-note{font-size:.86rem;color:var(--muted)}
 
   /* ---------- Audit / log ---------- */

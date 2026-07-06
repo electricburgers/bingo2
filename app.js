@@ -181,6 +181,7 @@ function defaultState(){
     patternDim:true,
     called:[],
     callTimes:[],
+    callPatterns:[], // play-style name active at the moment each ball was called
     calloutIdx:{}, // { ballNumber: variantIndex } — remembers your cycled choice per number
     winners:[],
     settings:{
@@ -191,7 +192,6 @@ function defaultState(){
       limitDraw:true,
       autoInterval:10,
       patCollapsed:false,
-      showPreview:true,
     },
     customPatterns:[],
     customThemes:[],
@@ -221,7 +221,6 @@ addEventListener('pagehide', flushSave);
 /* ---------- Ball helpers ---------- */
 const TOTAL = 75;
 function letterFor(n){ return LETTERS[Math.floor((n-1)/15)]; }
-function maxBalls(){ return TOTAL; }
 function colOf(n){ return Math.floor((n-1)/15); }
 
 /* Columns the draw is restricted to, given the pattern AND the limit setting.
@@ -305,7 +304,7 @@ function cycleCallout(){
 
 function renderRecent(){
   const box=$('#recent'); const bs=$('#bsRecent'); const label=$('#recentLabel');
-  const recent=S.called.slice(-8).reverse();
+  const recent=S.called.slice(-5).reverse();
   if(!recent.length){
     box.innerHTML='<span class="muted">Recent calls appear here…</span>'; bs.innerHTML='';
     label.classList.add('hide');
@@ -457,7 +456,6 @@ function selectPattern(key){
   S.pattern=key; save();
   $('#customEditor').classList.toggle('hide', !key.startsWith('custom:'));
   buildPatternTiles(); renderPattern(); renderBall(false);
-  _nextBall=null; pickNextBall(); renderPreview();
 }
 
 function renderPattern(){
@@ -508,16 +506,19 @@ function renderLog(){
   S.called.forEach((n,i)=>{
     const callNum=i+1;
     const lt=letterFor(n);
-    rows.push(`<tr><td>${callNum}</td><td><b style="color:${lt?`var(--col-${lt}-fg)`:'inherit'}">${lt}\u00a0${n}</b></td><td class="mono">${S.callTimes?fmtTime(S.callTimes[i]):''}</td></tr>`);
+    // Older saved sessions won't have a recorded play style for every call \u2014
+    // fall back to the currently-selected pattern rather than a blank cell.
+    const style=(S.callPatterns&&S.callPatterns[i])||currentPatternDef().name;
+    rows.push(`<tr><td>${callNum}</td><td><b style="color:${lt?`var(--col-${lt}-fg)`:'inherit'}">${lt}\u00a0${n}</b></td><td class="mono">${S.callTimes?fmtTime(S.callTimes[i]):''}</td><td>${esc(style)}</td></tr>`);
     // Insert winner row(s) AFTER the ball that triggered the win
     if(winAtCall[callNum]){
       winAtCall[callNum].forEach(w=>{
         const label=w.name ? `<b class="winner-name">${esc(w.name)}</b> · ${esc(w.pattern)}` : `<b>${esc(w.pattern)}</b>`;
-        rows.push(`<tr class="win"><td>🏆</td><td colspan="2">${label} · <span class="mono">${fmtTime(w.ts)}</span></td></tr>`);
+        rows.push(`<tr class="win"><td>🏆</td><td colspan="3">${label} · <span class="mono">${fmtTime(w.ts)}</span></td></tr>`);
       });
     }
   });
-  body.innerHTML=rows.reverse().join('')||'<tr><td colspan="3" class="muted" style="padding:14px">No balls called yet.</td></tr>';
+  body.innerHTML=rows.reverse().join('')||'<tr><td colspan="4" class="muted" style="padding:14px">No balls called yet.</td></tr>';
 
   $('#sCalled').textContent=S.called.length;
   $('#sLeft').textContent=TOTAL - S.called.length;
@@ -545,53 +546,12 @@ function renderLog(){
 /* ==========================================================================
    ACTIONS
    ========================================================================== */
-function ensureTimes(){ if(!S.callTimes) S.callTimes=[]; }
-
-/* ---------- Live call-out preview ---------- */
-let _nextBall = null; // pre-selected ball — host-only, not persisted
-
-function pickNextBall(){
-  const elig = eligibleBalls();
-  if(!elig.length){ _nextBall = null; return; }
-  // Try to pick something other than whatever was just called
-  const last = S.called[S.called.length-1];
-  const pool = elig.length > 1 ? elig.filter(n=>n!==last) : elig;
-  _nextBall = pool[Math.floor(Math.random()*pool.length)];
-}
-
-function renderPreview(){
-  const panel = $('#previewPanel');
-  if(!S.settings.showPreview){ panel.classList.add('hidden'); return; }
-  panel.classList.remove('hidden');
-
-  if(!_nextBall || !eligibleBalls().includes(_nextBall)){
-    pickNextBall();
-  }
-
-  if(!_nextBall){
-    panel.classList.add('empty');
-    $('#previewLetter').textContent = '';
-    $('#previewNum').textContent = '—';
-    $('#previewCalloutTxt').textContent = 'No more balls to call';
-    panel.style.removeProperty('--preview-col');
-    return;
-  }
-  panel.classList.remove('empty');
-  const lt = letterFor(_nextBall);
-  const variants = callVariants(_nextBall);
-  const idx = S.calloutIdx[_nextBall] || 0;
-  const co = S.settings.callouts && variants.length ? variants[idx % variants.length] : '';
-  $('#previewLetter').textContent = lt;
-  $('#previewNum').textContent = _nextBall;
-  $('#previewCalloutTxt').textContent = co || '';
-  panel.style.setProperty('--preview-col', `var(--col-${lt}-fg)`);
-}
+function ensureTimes(){ if(!S.callTimes) S.callTimes=[]; if(!S.callPatterns) S.callPatterns=[]; }
 
 /* Shared post-mutation refresh for callNext()/undo() — both change S.called
-   and need the same set of views (and the next-ball preview) refreshed. */
+   and need the same set of views refreshed. */
 function renderAfterCallChange(pop){
   renderBall(pop); renderRecent(); paintBoard(); renderLog();
-  _nextBall=null; pickNextBall(); renderPreview();
 }
 
 function callNext(){
@@ -601,10 +561,10 @@ function callNext(){
     stopAuto(); return;
   }
   ensureTimes();
-  // Use pre-selected preview ball if still valid; otherwise random
-  const n = (_nextBall && elig.includes(_nextBall)) ? _nextBall : elig[Math.floor(Math.random()*elig.length)];
+  const n = elig[Math.floor(Math.random()*elig.length)];
   S.called.push(n);
   S.callTimes.push(new Date().toISOString());
+  S.callPatterns.push(currentPatternDef().name);
   save();
   renderAfterCallChange(true);
   if(S.settings.vibrate && navigator.vibrate) navigator.vibrate(40);
@@ -614,7 +574,7 @@ function callNext(){
 function undo(){
   if(!S.called.length){ toast('Nothing to undo.'); return; }
   ensureTimes();
-  S.called.pop(); S.callTimes.pop();
+  S.called.pop(); S.callTimes.pop(); S.callPatterns.pop();
   save();
   renderAfterCallChange(false);
 }
@@ -655,10 +615,11 @@ function archiveGame(){
     pattern:currentPatternDef().name,
     order:S.called.slice(),
     times:(S.callTimes||[]).slice(),
+    patterns:(S.callPatterns||[]).slice(),
     winnerRecs:S.winners.slice(),
   });
   S.session.games++;
-  S.called=[]; S.callTimes=[]; S.winners=[];
+  S.called=[]; S.callTimes=[]; S.callPatterns=[]; S.winners=[];
   save(); fullRender(); toast('Game archived. Fresh board ready.');
 }
 
@@ -720,11 +681,6 @@ function flashFind(n){
   else $('#findNote').innerHTML=`<b style="color:var(--warn)">${n}</b> — not called yet`;
   if(cell) cell.scrollIntoView({block:'nearest',behavior:'smooth'});
 }
-function doFind(){
-  const v=parseInt($('#findInput').value,10);
-  if(isNaN(v)||v<1||v>maxBalls()){ $('#findNote').textContent='Enter 1–'+maxBalls(); return; }
-  flashFind(v);
-}
 
 /* ==========================================================================
    EXPORT / SAVE
@@ -734,6 +690,7 @@ function buildSessionObject(whole){
     pattern:currentPatternDef().name,
     calledOrder:S.called.slice(),
     callTimes:(S.callTimes||[]).slice(),
+    callPatterns:(S.callPatterns||[]).slice(),
     winners:S.winners.slice(),
   };
   if(!whole) return {kind:'bingo-session', exported:new Date().toISOString(), session:S.session, current:cur};
@@ -758,15 +715,21 @@ function exportData(){
     {okText:'CSV', cancelText:'Plain text', onCancel:()=>{ download(`bingo-log-${stamp()}.txt`, toTXT(),'text/plain'); }});
 }
 function toCSV(){
-  let out='call_number,letter,ball,time\n';
-  S.called.forEach((n,i)=>{ out+=`${i+1},${letterFor(n)},${n},${S.callTimes&&S.callTimes[i]?fmtTime(S.callTimes[i]):''}\n`; });
+  let out='call_number,letter,ball,time,play_style\n';
+  S.called.forEach((n,i)=>{
+    const style=(S.callPatterns&&S.callPatterns[i])||currentPatternDef().name;
+    out+=`${i+1},${letterFor(n)},${n},${S.callTimes&&S.callTimes[i]?fmtTime(S.callTimes[i]):''},"${style}"\n`;
+  });
   out+='\nwinner_pattern,call_count,last_ball,time\n';
   S.winners.forEach(w=>{ out+=`"${w.pattern}",${w.callCount},${w.lastBall},${fmtTime(w.ts)}\n`; });
   return out;
 }
 function toTXT(){
   let out=`BINGO SESSION LOG\nExported ${new Date().toLocaleString()}\nPattern: ${currentPatternDef().name}\n\nCALLS (${S.called.length}):\n`;
-  S.called.forEach((n,i)=>{ out+=`  ${String(i+1).padStart(2)}. ${letterFor(n)} ${n}   ${S.callTimes&&S.callTimes[i]?fmtTime(S.callTimes[i]):''}\n`; });
+  S.called.forEach((n,i)=>{
+    const style=(S.callPatterns&&S.callPatterns[i])||currentPatternDef().name;
+    out+=`  ${String(i+1).padStart(2)}. ${letterFor(n)} ${n}   ${S.callTimes&&S.callTimes[i]?fmtTime(S.callTimes[i]):''}   [${style}]\n`;
+  });
   out+=`\nWINNERS (${S.winners.length}):\n`;
   if(!S.winners.length)out+='  (none)\n';
   S.winners.forEach(w=>{ out+=`  🏆 ${w.pattern} — call #${w.callCount} (${letterFor(w.lastBall)} ${w.lastBall}) at ${fmtTime(w.ts)}\n`; });
@@ -799,6 +762,10 @@ function sanitizeTimes(arr,len){
   if(!Array.isArray(arr)) return [];
   return arr.slice(0,len).map(t=>typeof t==='string' ? t : new Date().toISOString());
 }
+function sanitizeStrings(arr,len,fallback){
+  if(!Array.isArray(arr)) return [];
+  return arr.slice(0,len).map(s=>typeof s==='string' ? s.slice(0,120) : fallback);
+}
 function sanitizeHistory(arr){
   if(!Array.isArray(arr)) return [];
   return arr.slice(0,MAX_IMPORT_ITEMS)
@@ -810,6 +777,7 @@ function sanitizeHistory(arr){
       pattern: typeof h.pattern==='string' ? h.pattern.slice(0,120) : 'Unknown',
       order: h.order.slice(),
       times: sanitizeTimes(h.times, h.order.length),
+      patterns: sanitizeStrings(h.patterns, h.order.length, typeof h.pattern==='string' ? h.pattern : 'Unknown'),
       winnerRecs: sanitizeWinners(h.winnerRecs),
     }));
 }
@@ -823,6 +791,7 @@ function loadJSON(file){
       confirmModal('Load this file?','This replaces the current board and call log with the saved data. Winners load too.',()=>{
         S.called=cur.calledOrder.slice();
         S.callTimes=sanitizeTimes(cur.callTimes, S.called.length);
+        S.callPatterns=sanitizeStrings(cur.callPatterns, S.called.length, currentPatternDef().name);
         S.winners=sanitizeWinners(cur.winners);
         if(data.games){ S.history=sanitizeHistory(data.games); }
         save(); fullRender(); toast('Session loaded.');
@@ -1044,7 +1013,6 @@ function fullRender(){
   $('#intRange').value=S.settings.autoInterval||10;
   $('#intLabel').textContent=S.settings.autoInterval||10;
   renderBall(false); renderRecent(); renderPattern(); paintBoard(); renderLog();
-  _nextBall=null; pickNextBall(); renderPreview();
 }
 
 function applyPatCollapsed(){
@@ -1062,7 +1030,6 @@ function init(){
   if(!S.settings.autoInterval) S.settings.autoInterval=10;
   if(S.settings.callouts===undefined) S.settings.callouts=true;
   if(S.settings.limitDraw===undefined) S.settings.limitDraw=true;
-  if(S.settings.showPreview===undefined) S.settings.showPreview=true;
   if(S.settings.patCollapsed===undefined) S.settings.patCollapsed=false;
   if(!S.calloutIdx) S.calloutIdx={};
   if(S.settings.boardScale===undefined) S.settings.boardScale=0.75;
@@ -1077,14 +1044,13 @@ function init(){
   buildPatternTiles();
   buildThemeRow(); buildSwatches();
   buildEditor();
-  fullRender(); // fullRender now calls pickNextBall + renderPreview internally
+  fullRender();
 
   // settings reflect
   $('#fontRange').value=S.settings.fontScale; $('#fsLabel').textContent=S.settings.fontScale+'%';
   $('#boardScaleRange').value=Math.round(S.settings.boardScale*100); $('#boardScaleLabel').textContent=Math.round(S.settings.boardScale*100)+'%';
   $('#freeChk').checked=S.freeSpace;
   $('#limitChk').checked=S.settings.limitDraw;
-  $('#previewChk').checked=S.settings.showPreview;
   $('#calloutChk').checked=S.settings.callouts;
   $('#speakChk').checked=S.settings.speakCalls;
   $('#vibrateChk').checked=S.settings.vibrate;
@@ -1098,10 +1064,8 @@ function init(){
 
   $('#calloutChk').onchange=e=>{ S.settings.callouts=e.target.checked; save(); renderBall(false); };
   $('#cycleBtn').onclick=cycleCallout;
-  $('#redrawBtn').onclick=()=>{ _nextBall=null; pickNextBall(); renderPreview(); };
   $('#reportBtn').onclick=generateNightReport;
-  $('#limitChk').onchange=e=>{ S.settings.limitDraw=e.target.checked; save(); renderBall(false); paintBoard(); _nextBall=null; pickNextBall(); renderPreview(); };
-  $('#previewChk').onchange=e=>{ S.settings.showPreview=e.target.checked; save(); renderPreview(); };
+  $('#limitChk').onchange=e=>{ S.settings.limitDraw=e.target.checked; save(); renderBall(false); paintBoard(); };
   $('#speakChk').onchange=e=>{ S.settings.speakCalls=e.target.checked; save(); if(!e.target.checked && 'speechSynthesis' in window) speechSynthesis.cancel(); };
   $('#vibrateChk').onchange=e=>{ S.settings.vibrate=e.target.checked; save(); };
 
@@ -1129,10 +1093,6 @@ function init(){
   };
 
   $('#patDimBtn').onclick=()=>{ S.patternDim=!S.patternDim; save(); paintBoard(); };
-
-  /* find */
-  $('#findBtn').onclick=doFind;
-  $('#findInput').addEventListener('keydown',e=>{ if(e.key==='Enter')doFind(); });
 
   /* export / save / load */
   $('#saveJsonBtn').onclick=saveJSON;
@@ -1354,7 +1314,7 @@ summary{cursor:pointer;font-size:.85rem;font-weight:700;color:#64748b;padding:4p
   </div>
   ${nightBanner}
   ${games.map(gameSection).join('\n')}
-  <div class="r-meta-bar">Generated by Bingo Caller v2.22 &nbsp;·&nbsp; ${new Date().toLocaleString()}</div>
+  <div class="r-meta-bar">Generated by Bingo Caller v2.23 &nbsp;·&nbsp; ${new Date().toLocaleString()}</div>
 </div>
 <script>
 function dlReport(){
