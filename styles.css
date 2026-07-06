@@ -1,0 +1,364 @@
+  /* ============================================================
+     THEME TOKENS (overridable per theme / custom builder)
+     ============================================================ */
+  :root{
+    --bg:#15171c;
+    --surface:#1f232b;
+    --surface-2:#2a2f3a;
+    --line:#3a4150;
+    --text:#f2f5fa;
+    --muted:#9aa6b8;
+    --accent:#ffd23f;
+    --good:#3ddc84;
+    --warn:#ff6b6b;
+    --radius:16px;
+    --font-scale:1;
+    /* per-letter colors — rainbow, high contrast on dark */
+    --col-B:#ff595e;
+    --col-I:#ff924c;
+    --col-N:#ffca3a;
+    --col-G:#8ac926;
+    --col-O:#52a6f0;
+    --shadow:0 6px 24px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:calc(16px * var(--font-scale));
+    line-height:1.4;
+    -webkit-font-smoothing:antialiased;
+    overscroll-behavior-y:contain;
+    /* env(safe-area-inset-*) is 0 unless the page is drawn edge-to-edge (installed
+       as a standalone PWA with viewport-fit=cover, which this app is) — so these
+       multipliers only ever add real space on notched/dynamic-island iPhones,
+       leaving desktop and ordinary mobile-browser tabs untouched. A flat inset
+       alone puts content right at the edge of the island/home-bar cutout; the
+       extra multiplier gives a bit of visible breathing room past it. */
+    padding-top:calc(env(safe-area-inset-top,0px) * 1.3);
+    padding-right:env(safe-area-inset-right,0px);
+    padding-bottom:calc(env(safe-area-inset-bottom,0px) * 1.6);
+    padding-left:env(safe-area-inset-left,0px);
+  }
+  button{font-family:inherit;cursor:pointer;color:var(--text);touch-action:manipulation}
+  h1,h2,h3{margin:0;font-weight:800;letter-spacing:-.01em}
+  .muted{color:var(--muted)}
+  .mono{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+
+  /* ---------- App shell ---------- */
+  .app{max-width:1500px;margin:0 auto;padding:10px 12px 28px}
+  .topbar{
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    padding:6px 4px 12px;
+  }
+  .brand{display:flex;align-items:center;gap:10px;margin-right:auto;min-width:0}
+  .logo{
+    width:38px;height:38px;border-radius:50%;flex:0 0 auto;
+    background:
+      radial-gradient(circle at 32% 30%, #fff 0 14%, transparent 15%),
+      conic-gradient(from 0deg, var(--col-B), var(--col-I), var(--col-N), var(--col-G), var(--col-O), var(--col-B));
+    box-shadow:inset 0 0 0 3px rgba(0,0,0,.25), var(--shadow);
+  }
+  .brand h1{font-size:1.15rem;line-height:1}
+  .brand .sub{font-size:.76rem;color:var(--muted)}
+  .iconbtn{
+    background:var(--surface);border:1px solid var(--line);border-radius:12px;
+    padding:9px 11px;font-size:.9rem;font-weight:700;display:inline-flex;align-items:center;gap:6px;
+    min-height:44px;
+  }
+  .iconbtn:hover{background:var(--surface-2)}
+  .iconbtn.on{border-color:var(--accent);color:var(--accent-fg)}
+  /* Icon-only square buttons for the topbar */
+  .topbtn{
+    background:var(--surface);border:1px solid var(--line);border-radius:12px;
+    width:44px;height:44px;flex:0 0 44px;font-size:1.25rem;
+    display:flex;align-items:center;justify-content:center;
+    touch-action:manipulation;
+  }
+  .topbtn:hover{background:var(--surface-2)}
+
+  /* ---------- Layout grid ---------- */
+  .grid{display:grid;gap:14px;grid-template-columns:1fr}
+  @media(min-width:760px){ .grid{grid-template-columns:1fr 1fr} .col-call{grid-column:1} .col-board{grid-column:2} .col-audit{grid-column:1 / -1} }
+  @media(min-width:1140px){ .grid{grid-template-columns:minmax(320px,1fr) 1.4fr minmax(300px,1fr)} .col-call{grid-column:1} .col-board{grid-column:2} .col-audit{grid-column:3} }
+  /* Phone held sideways (e.g. iPhone landscape): keep the main board to the RIGHT of the controls,
+     regardless of exact width, and shrink the ball so it fits the short height. */
+  @media (orientation:landscape) and (max-height:560px){
+    .grid{grid-template-columns:minmax(220px,.92fr) 1.25fr;gap:10px}
+    .col-call{grid-column:1} .col-board{grid-column:2} .col-audit{grid-column:1 / -1}
+    .ball{width:min(30vh,150px);height:min(30vh,150px)}
+    .ball .num{font-size:clamp(2.2rem,12vh,3.4rem)}
+    .ball .letter{font-size:clamp(1.6rem,8vh,2.6rem)}
+    .call-btn{padding:13px;min-height:54px;font-size:1.15rem;margin-top:8px}
+    .app{padding-top:6px}
+  }
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+  .card h2{font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px;justify-content:space-between}
+
+  /* ---------- Current ball ---------- */
+  .ball-wrap{display:flex;flex-direction:column;align-items:center;gap:6px}
+  .ball{
+    width:min(62vw,260px);height:min(62vw,260px);max-width:260px;border-radius:50%;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 34% 30%, rgba(255,255,255,.22), rgba(255,255,255,0) 42%), var(--surface-2);
+    border:3px solid var(--ball-color,var(--line));
+    box-shadow:var(--shadow);position:relative;
+    transition:transform .18s cubic-bezier(.2,1.4,.4,1);
+  }
+  .ball.pop{animation:pop .42s cubic-bezier(.2,1.4,.4,1)}
+  @keyframes pop{0%{transform:scale(.6) rotate(-8deg);opacity:.2}60%{transform:scale(1.08)}100%{transform:scale(1)}}
+  .ball .letter{font-size:clamp(2.6rem,16vw,4.6rem);font-weight:900;line-height:.9;color:var(--ball-text,var(--text))}
+  .ball .num{font-size:clamp(3.2rem,22vw,6.4rem);font-weight:900;line-height:.85;letter-spacing:-.03em}
+  .ball.empty{opacity:.6}
+  .ball.empty .num{font-size:1.3rem;font-weight:800}
+  .ball.empty .letter{display:none}
+  .callmeta{display:flex;gap:14px;justify-content:center;font-size:1.05rem;font-weight:600;color:var(--muted);margin-top:4px}
+  .callmeta b{color:var(--text);font-weight:800}
+  .drawscope{text-align:center;font-size:.98rem;color:var(--muted);margin-top:4px;min-height:18px;font-weight:700}
+
+  /* preview panel */
+  .preview-panel{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:10px}
+  .preview-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;gap:8px}
+  .preview-label{font-size:.76rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:flex;align-items:center;gap:7px}
+  .preview-host-tag{font-size:.7rem;background:var(--accent-badge-bg);color:var(--accent-badge-text);border:1px solid var(--accent-badge-bg);border-radius:5px;padding:1px 5px;font-weight:700;letter-spacing:.04em}
+  .preview-body{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .preview-ball-mini{font-weight:900;font-size:1.45rem;display:flex;align-items:baseline;gap:4px;min-width:56px}
+  .preview-ball-mini #previewLetter{font-size:1rem;font-weight:900;color:var(--preview-col,var(--muted))}
+  .preview-ball-mini #previewNum{color:var(--preview-col,var(--muted))}
+  .preview-callout-txt{font-size:.85rem;font-weight:700;color:var(--muted);font-style:italic;flex:1;min-width:120px;line-height:1.3}
+  .preview-panel.empty .preview-body{opacity:.4}
+  .preview-panel.hidden{display:none}
+  .callout{
+    text-align:center;font-weight:800;font-size:1.02rem;color:var(--accent-fg);
+    padding:0 8px;line-height:1.35;
+    /* reserve 2 lines so the button never shifts */
+    min-height:2.75rem;
+    display:flex;align-items:center;justify-content:center;
+  }
+  /* Height is constant whether or not there's a callout yet — only the cycle
+     button's visibility toggles. Collapsing this row's margin/display on the
+     first call (the old behavior) shoved every button below it down the
+     page the instant a host called ball #1, which is jarring and makes the
+     Call/Undo/Reset buttons move right as someone's about to tap them again. */
+  .callout-row{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:8px}
+  .callout-row:has(.callout:empty) .cyclebtn{visibility:hidden}
+  .cyclebtn-line{display:flex;justify-content:center}
+  .cyclebtn{
+    border:1px solid var(--line);background:var(--surface-2);color:var(--muted);
+    border-radius:999px;padding:9px 22px;font-size:.92rem;font-weight:700;
+    display:inline-flex;align-items:center;gap:6px;
+    min-height:44px;min-width:140px;justify-content:center;
+    touch-action:manipulation;
+  }
+  .cyclebtn:hover{color:var(--accent-fg);border-color:var(--accent)}
+  .cyclebtn:active{transform:scale(.96)}
+  .bs-callout{font-weight:800;color:var(--accent-fg);font-size:clamp(1.1rem,4.5vw,2.6rem);min-height:1.2em;padding:0 12px;text-align:center}
+  .collapser{cursor:pointer;user-select:none}
+  .caret{display:inline-block;transition:transform .2s;font-size:.85rem;color:var(--muted)}
+  .collapser.closed .caret{transform:rotate(-90deg)}
+  #patBody.closed{display:none}
+
+  /* ---------- Buttons ---------- */
+  .call-btn{
+    width:100%;margin-top:12px;border:none;border-radius:18px;
+    background:linear-gradient(180deg,var(--good),#2bbf6f);color:#06281a;
+    font-size:1.4rem;font-weight:900;letter-spacing:.01em;
+    padding:20px 16px;min-height:72px;box-shadow:var(--shadow);
+    display:flex;align-items:center;justify-content:center;gap:10px;
+  }
+  .call-btn:active{transform:translateY(1px)}
+  .call-btn:disabled{filter:grayscale(.7) brightness(.7);cursor:not-allowed}
+  .btn-row{display:flex;gap:8px;margin-top:8px}
+  .btn{
+    flex:1;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;
+    padding:12px;font-weight:700;font-size:.9rem;min-height:48px;display:flex;align-items:center;justify-content:center;gap:6px;
+  }
+  .btn:hover{background:var(--line)}
+  .btn.on{border-color:var(--accent);color:var(--accent-fg)}
+  .btn.danger{color:var(--warn)}
+
+  /* ---------- Recent strip ----------
+     Chips used to be flex items sized to their own content, so a run of
+     2-digit numbers (e.g. "N 33") vs 1-digit ones (e.g. "B 8") made each row
+     hold a different number of chips — occasionally spilling to a 3rd line.
+     A grid with a fixed column width makes every cell the same size, so
+     wrapping only ever depends on the container width, not on which balls
+     happened to get called. */
+  .recent-label{font-size:.72rem;font-weight:800;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin-top:12px}
+  .recent{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:8px;margin-top:6px;min-height:42px;align-items:center}
+  .chip{
+    display:inline-flex;align-items:baseline;justify-content:center;gap:3px;padding:6px 8px;border-radius:999px;
+    background:var(--surface-2);border:1px solid var(--line);font-weight:800;font-size:.95rem;white-space:nowrap;
+  }
+  .chip .l{font-weight:900}
+  .chip.latest{outline:2px solid var(--accent);outline-offset:1px}
+
+  /* ---------- Auto-call ---------- */
+  .auto-bar{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+  .countdown{flex:1;min-width:120px}
+  .cd-track{height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
+  .cd-fill{height:100%;width:0%;background:var(--accent);transition:width .25s linear}
+  .range{width:100%}
+  input[type=range]{accent-color:var(--accent)}
+  input[type=number],input[type=text],select{
+    background:var(--surface-2);border:1px solid var(--line);color:var(--text);border-radius:10px;
+    padding:9px 10px;font-size:.95rem;font-family:inherit;min-height:42px;
+  }
+  label.fld{display:flex;flex-direction:column;gap:5px;font-size:.84rem;color:var(--muted);font-weight:600}
+
+  /* ---------- Pattern selector ---------- */
+  .pat-head{display:flex;gap:10px;align-items:center}
+  .pat-head select{flex:1}
+  .pat-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:8px;max-height:228px;overflow:auto;padding:2px}
+  .ptile{display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 4px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);font-size:.72rem;font-weight:700;text-align:center;line-height:1.1}
+  .ptile:hover{border-color:var(--muted)}
+  .ptile.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+  .ptile .mini{width:46px;height:46px;gap:2px}
+  .ptile.add{justify-content:center;color:var(--accent-fg);font-size:.74rem}
+  .mini{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;width:62px;height:62px;flex:0 0 auto}
+  .mini i{background:var(--surface-2);border-radius:3px}
+  .mini i.on{background:var(--accent)}
+  .mini i.free{background:repeating-linear-gradient(45deg,var(--accent),var(--accent) 3px,transparent 3px,transparent 6px)}
+  .pat-preview{display:flex;gap:14px;align-items:center;margin-top:12px}
+  .mini.big{width:118px;height:118px;gap:3px}
+  .mini.big i{border-radius:5px}
+  .pat-cap{font-size:.85rem;color:var(--muted)}
+  .pat-cap b{color:var(--text);font-size:.95rem;display:block;margin-bottom:2px}
+  .opt-mini{display:inline-grid;grid-template-columns:repeat(5,4px);gap:1px;vertical-align:middle}
+
+  /* custom pattern editor */
+  .editor{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;max-width:240px;margin:10px auto}
+  .editor button{aspect-ratio:1;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--muted);margin:0;padding:0}
+  .editor button.on{background:var(--accent);border-color:var(--accent);color:var(--accent-on)}
+  .editor button.center{outline:2px dashed var(--muted)}
+
+  /* ---------- Master flashboard ---------- */
+  .board{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+  .bcol{display:flex;flex-direction:column;gap:5px;transition:opacity .2s}
+  .bcol.dim{opacity:.18}
+  .bhead{text-align:center;font-weight:900;font-size:1.4rem;padding:1px 0;border-radius:8px;background:var(--lc-bg,var(--surface-2));color:var(--lc-text,var(--text))}
+  .cell{
+    text-align:center;font-weight:700;
+    font-size:calc(var(--board-scale,0.75) * 1.45rem);
+    padding:2px 2px;
+    border-radius:7px;
+    background:var(--surface-2);color:var(--muted);border:1px solid transparent;
+    font-variant-numeric:tabular-nums;
+    transition:background .15s,color .15s,transform .15s;cursor:pointer;user-select:none;
+    line-height:1.15;
+  }
+  .cell.called{
+    background:var(--lc-bg,var(--lc,var(--accent)));
+    color:var(--lc-text,#000);
+    border-color:rgba(0,0,0,.08);
+    font-weight:900;
+    letter-spacing:-.01em;
+  }
+  /* Current-ball ring uses a dark ring + a light ring together (not one fixed
+     color) so it stays visible no matter how light or dark the active theme's
+     surface and letter-column colors are — a single color (the old solid
+     white) disappears against light themes like Daylight. Black-on-light /
+     white-on-dark guarantees a high-contrast edge on either side. */
+  .cell.current{
+    outline:2px solid #05070a;outline-offset:1px;
+    box-shadow:0 0 0 4px #fff;
+    animation:pulse 1.1s ease-in-out infinite;transform:scale(1.05);
+    position:relative;z-index:1;
+  }
+  .cell.found{outline:3px solid var(--accent);outline-offset:1px}
+  @keyframes pulse{
+    0%,100%{box-shadow:0 0 0 4px #fff,0 0 0 4px rgba(5,7,10,.5)}
+    50%{box-shadow:0 0 0 4px #fff,0 0 0 9px rgba(5,7,10,0)}
+  }
+  .board-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+  .search{display:flex;align-items:center;gap:6px}
+  .search input{width:92px}
+  .find-note{font-size:.86rem;color:var(--muted)}
+
+  /* ---------- Audit / log ---------- */
+  .stat-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+  .stat{flex:1;min-width:84px;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:9px 11px;text-align:center}
+  .stat .n{font-size:1.4rem;font-weight:900}
+  .stat .k{font-size:.74rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  .log{max-height:280px;overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+  .log table{width:100%;border-collapse:collapse;font-size:.85rem}
+  .log th{position:sticky;top:0;background:var(--surface);text-align:left;padding:7px 10px;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);z-index:1}
+  .log td{padding:7px 10px;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
+  .log tr.win td{background:rgba(61,220,132,.12);color:var(--good-fg);font-weight:700}
+  .winrec{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.85rem;padding:8px 10px;border:1px dashed var(--good);border-radius:10px;background:rgba(61,220,132,.07);margin-bottom:8px}
+  .winner-name{color:var(--good-fg);font-size:1rem}
+  .congrats-banner{background:rgba(61,220,132,.13);border:1px solid var(--good);border-radius:10px;padding:9px 12px;font-size:.88rem;font-weight:700;margin-bottom:8px;color:var(--good-fg)}
+  .modal p{color:var(--muted);font-size:.92rem;margin:0 0 10px}
+  #modalExtra{margin-bottom:12px}
+  #modalExtra input{width:100%;margin-top:4px}
+
+  /* ---------- Drawer (settings) ---------- */
+  .scrim{position:fixed;inset:0;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity .2s;z-index:40}
+  .scrim.show{opacity:1;pointer-events:auto}
+  .drawer{
+    position:fixed;top:0;right:0;height:100%;width:min(420px,92vw);background:var(--surface);
+    border-left:1px solid var(--line);box-shadow:var(--shadow);z-index:50;
+    transform:translateX(102%);transition:transform .26s cubic-bezier(.3,.8,.3,1);
+    display:flex;flex-direction:column;
+  }
+  .drawer.show{transform:translateX(0)}
+  /* Another fixed, edge-anchored overlay — its close button sits at the very
+     top of the panel, so it needs its own top safe-area clearance too. */
+  .drawer-head{display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top,0px) * 1.3 + 16px) 16px 16px;border-bottom:1px solid var(--line)}
+  .drawer-body{overflow:auto;padding:16px calc(env(safe-area-inset-right,0px) + 16px) calc(env(safe-area-inset-bottom,0px) * 1.6 + 16px) 16px;display:flex;flex-direction:column;gap:18px}
+  .sect{display:flex;flex-direction:column;gap:10px}
+  .sect>h3{font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+  .swatch-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+  .swatch{display:flex;flex-direction:column;align-items:center;gap:4px;font-weight:800;font-size:.8rem}
+  .swatch input[type=color]{width:100%;height:40px;border:1px solid var(--line);border-radius:8px;background:none;padding:2px}
+  .theme-row{display:flex;gap:8px;flex-wrap:wrap}
+  .theme-chip{padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);font-weight:700;font-size:.85rem}
+  .theme-chip.on{border-color:var(--accent);color:var(--accent-fg)}
+  .toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0}
+  .switch{position:relative;width:48px;height:28px;flex:0 0 auto}
+  .switch input{opacity:0;width:0;height:0}
+  .slider{position:absolute;inset:0;background:var(--surface-2);border:1px solid var(--line);border-radius:99px;transition:.2s}
+  .slider:before{content:"";position:absolute;width:20px;height:20px;left:3px;top:3px;background:var(--muted);border-radius:50%;transition:.2s}
+  .switch input:checked+.slider{background:var(--accent);border-color:var(--accent)}
+  .switch input:checked+.slider:before{transform:translateX(20px);background:var(--accent-on)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+  /* ---------- Big screen mode ---------- */
+  /* Full-viewport overlay (position:fixed) doesn't inherit body's padding, and
+     this is the mode most likely to be propped up as a venue display — so it
+     gets its own safe-area clearance for the exit button and ball/callout. */
+  .bigscreen{
+    position:fixed;inset:0;background:var(--bg);z-index:60;display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;
+    padding:calc(env(safe-area-inset-top,0px) * 1.3 + 16px) calc(env(safe-area-inset-right,0px) + 16px) calc(env(safe-area-inset-bottom,0px) * 1.6 + 16px) calc(env(safe-area-inset-left,0px) + 16px);
+  }
+  .bigscreen.show{display:flex}
+  .bs-ball .letter{font-size:clamp(5rem,22vw,18rem);font-weight:900;line-height:.85;color:var(--ball-text,var(--text))}
+  .bs-ball .num{font-size:clamp(7rem,40vw,30rem);font-weight:900;line-height:.8;letter-spacing:-.03em}
+  .bs-recent{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+  .bs-recent .chip{font-size:clamp(1rem,3vw,1.8rem);padding:8px 16px}
+  .bs-meta{color:var(--muted);font-size:clamp(1rem,3vw,1.6rem)}
+  .bs-exit{position:fixed;top:calc(env(safe-area-inset-top,0px) * 1.3 + 16px);right:calc(env(safe-area-inset-right,0px) + 16px);z-index:61}
+  .bs-tap{position:absolute;inset:0;background:transparent;border:none;cursor:pointer}
+
+  /* ---------- Modal confirm ---------- */
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:70;display:none;align-items:center;justify-content:center;padding:20px}
+  .modal.show{display:flex}
+  .modal .box{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;max-width:380px;width:100%;box-shadow:var(--shadow)}
+  .modal h3{margin-bottom:8px}
+  .modal p{color:var(--muted);font-size:.92rem;margin:0 0 16px}
+  .modal .btn-row .btn{padding:13px}
+
+  /* toast */
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--surface-2);border:1px solid var(--line);
+    padding:11px 16px;border-radius:12px;font-weight:700;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.25s;z-index:80;max-width:90vw;text-align:center}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  .hide{display:none !important}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  details summary{cursor:pointer;font-weight:700}
+  .kbd{font-size:.72rem;border:1px solid var(--line);border-radius:5px;padding:1px 5px;background:var(--surface-2);color:var(--muted)}
+  @media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+  :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
