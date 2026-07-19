@@ -101,7 +101,7 @@
   /* ---------- Current ball ---------- */
   .ball-wrap{display:flex;flex-direction:column;align-items:center;gap:6px}
   .ball{
-    width:min(62vw,260px);height:min(62vw,260px);max-width:260px;border-radius:50%;
+    width:min(62vw,46vh,260px);height:min(62vw,46vh,260px);max-width:260px;border-radius:50%;
     display:flex;flex-direction:column;align-items:center;justify-content:center;
     background:radial-gradient(circle at 34% 30%, rgba(255,255,255,.22), rgba(255,255,255,0) 42%), var(--surface-2);
     border:3px solid var(--ball-color,var(--line));
@@ -131,14 +131,19 @@
      first call (the old behavior) shoved every button below it down the
      page the instant a host called ball #1, which is jarring and makes the
      Call/Undo/Reset buttons move right as someone's about to tap them again. */
-  .callout-row{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:8px}
+  /* Grid (not flex+justify-center) so the callout text is centered on its
+     own and the button sits at a fixed slot to its right — a flex row with
+     justify-content:center re-centers the whole [text+button] group every
+     time the joke's length changes, which visibly shifts the button. */
+  .callout-row{display:grid;grid-template-columns:38px 1fr 38px;align-items:center;gap:8px;margin-top:8px}
   .callout-row:has(.callout:empty) .cyclebtn{visibility:hidden}
-  .cyclebtn-line{display:flex;justify-content:center}
+  .callout{grid-column:2}
   .cyclebtn{
+    grid-column:3;
     border:1px solid var(--line);background:var(--surface-2);color:var(--muted);
-    border-radius:999px;padding:9px 22px;font-size:.92rem;font-weight:700;
-    display:inline-flex;align-items:center;gap:6px;
-    min-height:44px;min-width:140px;justify-content:center;
+    border-radius:30%;font-size:1.05rem;font-weight:700;
+    display:inline-flex;align-items:center;justify-content:center;
+    width:38px;height:38px;min-width:38px;min-height:38px;
     touch-action:manipulation;
   }
   .cyclebtn:hover{color:var(--accent-fg);border-color:var(--accent)}

@@ -2,7 +2,7 @@
    with no signal/wifi once it's been opened (or installed) at least once.
    Bump CACHE_NAME whenever index.html changes so clients pick up the update
    instead of being stuck on a stale cached copy. */
-const CACHE_NAME = 'bingo-caller-v2.24';
+const CACHE_NAME = 'bingo-caller-v2.26';
 const APP_SHELL = ['./', './index.html', './styles.css', './app.js', './manifest.json'];
 
 self.addEventListener('install', event => {
