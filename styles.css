@@ -81,7 +81,7 @@
 
   /* ---------- Layout grid ---------- */
   .grid{display:grid;gap:14px;grid-template-columns:1fr}
-  @media(min-width:760px){ .grid{grid-template-columns:1fr 1fr} .col-call{grid-column:1} .col-board{grid-column:2} .col-audit{grid-column:1 / -1} }
+  @media(min-width:700px){ .grid{grid-template-columns:1fr 1fr} .col-call{grid-column:1} .col-board{grid-column:2} .col-audit{grid-column:1 / -1} }
   @media(min-width:1140px){ .grid{grid-template-columns:minmax(320px,1fr) 1.4fr minmax(300px,1fr)} .col-call{grid-column:1} .col-board{grid-column:2} .col-audit{grid-column:3} }
   /* Phone held sideways (e.g. iPhone landscape): keep the main board to the RIGHT of the controls,
      regardless of exact width, and shrink the ball so it fits the short height. */
