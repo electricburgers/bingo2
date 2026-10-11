@@ -75,7 +75,7 @@ test('9. build info carries dates and two commits', () => {
   const b = ev('BUILD_INFO');
   assert.ok(!isNaN(Date.parse(b.buildDate)) && !isNaN(Date.parse(b.deployDate)));
   assert.equal(b.commits.length, 2);
-  assert.ok(b.commits.every(c => c.hash && c.subject && Array.isArray(c.files)));
+  assert.ok(b.commits.every(c => c.hash && c.subject));
 });
 test('10. changelog has an entry for the current version', () => {
   assert.ok(read('CHANGELOG.md').includes(`## [${ev('APP_VERSION')}]`));

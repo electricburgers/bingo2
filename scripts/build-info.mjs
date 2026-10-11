@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* Generates the two files the app can't know at runtime (it has no build step):
- *   js/config/build-info.js  — build/deploy dates + the last two commits and the files they touched
+ *   js/config/build-info.js  — build/deploy dates + the last two commit subjects
  *   js/config/precache.js    — every asset index.html loads, for sw.js to precache for offline use
  *
  * Usage:  node scripts/build-info.mjs [--pending "commit message"] [--deploy YYYY-MM-DD]
@@ -17,36 +17,9 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const git = (...args) => execFileSync('git', args, { cwd: root, encoding: 'utf8' });
 const arg = n => { const i = process.argv.indexOf('--' + n); return i > -1 ? process.argv[i + 1] : null; };
 
-const GENERATED = new Set(['js/config/build-info.js', 'js/config/precache.js']);
-const MAX_FILES = 25;
-const WORD = { A: 'added', M: 'modified', D: 'deleted', R: 'renamed', C: 'copied', T: 'type changed' };
-
-function filesFrom(nameStatusOut, numstatOut) {
-  const stats = new Map();
-  for (const line of numstatOut.split('\n').filter(Boolean)) {
-    const [a, d, ...p] = line.split('\t');
-    stats.set(p[p.length - 1], a === '-' ? 'binary' : `+${a} −${d}`);
-  }
-  const files = [];
-  for (const line of nameStatusOut.split('\n').filter(Boolean)) {
-    const [st, ...p] = line.split('\t');
-    const path = p[p.length - 1];
-    if (GENERATED.has(path)) continue;
-    const word = WORD[st[0]] || st;
-    const extra = stats.get(path);
-    files.push({ path, change: extra ? `${word} (${extra})` : word });
-  }
-  const more = Math.max(0, files.length - MAX_FILES);
-  if (more) { files.length = MAX_FILES; files.push({ path: `…and ${more} more file${more > 1 ? 's' : ''}`, change: '' }); }
-  return files;
-}
-
 function committed(rev) {
   const [hash, date, subject] = git('log', '-1', '--format=%h%x00%aI%x00%s', rev).trim().split('\0');
-  const files = filesFrom(
-    git('show', '--format=', '--name-status', '-M', rev),
-    git('show', '--format=', '--numstat', '-M', rev));
-  return { hash, date, subject, files };
+  return { hash, date, subject };
 }
 
 const pendingMsg = arg('pending');
@@ -54,7 +27,6 @@ const commits = [];
 if (pendingMsg) {
   commits.push({
     hash: 'pending', date: new Date().toISOString(), subject: pendingMsg,
-    files: filesFrom(git('diff', '--cached', '--name-status', '-M'), git('diff', '--cached', '--numstat', '-M')),
   });
   commits.push(committed('HEAD'));
 } else {

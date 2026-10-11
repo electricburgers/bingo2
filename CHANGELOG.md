@@ -4,6 +4,11 @@ All notable changes to Bingo Caller. Newest first. Versions before 2.29 were bac
 history; commits that didn't carry a version bump are listed under the next version that shipped them,
 each tagged with its short hash and date. Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [2.30] — 2026-10-11
+
+### Changed
+- About now lists just each recent commit's summary, hash and date instead of every file it touched.
+
 ## [2.29] — 2026-10-11
 
 ### Changed
