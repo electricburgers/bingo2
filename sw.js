@@ -1,14 +1,21 @@
-/* Bingo Caller service worker — app-shell cache so the console keeps working
-   with no signal/wifi once it's been opened (or installed) at least once.
-   Bump CACHE_NAME whenever index.html changes so clients pick up the update
-   instead of being stuck on a stale cached copy. */
-const CACHE_NAME = 'bingo-caller-v2.28';
-const APP_SHELL = ['./', './index.html', './styles.css', './app.js', './manifest.json'];
+/* Bingo Caller service worker — makes the console fully offline after the first load.
+   - install:  precache every asset index.html loads (list generated into js/config/precache.js)
+   - activate: drop caches from older versions
+   - fetch:    navigations -> cached index.html (works offline at any URL under scope)
+               same-origin assets -> cache-first, refreshed in the background (stale-while-revalidate)
+               anything cross-origin is passed straight through (the app makes none)
+   The cache name comes from js/config/version.js, so bumping the version is all it takes to roll a
+   new cache. Both imported files are byte-checked by the browser, so changes to them update this worker. */
+importScripts('js/config/version.js', 'js/config/precache.js');
+
+const CACHE_NAME = 'bingo-caller-v' + self.APP_VERSION;
+const PRECACHE = self.PRECACHE_URLS;
 
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(APP_SHELL))
+      // cache: 'reload' bypasses the HTTP cache so a new version never precaches stale files
+      .then(cache => cache.addAll(PRECACHE.map(u => new Request(u, { cache: 'reload' }))))
       .then(() => self.skipWaiting())
   );
 });
@@ -16,27 +23,36 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
-      .then(names => Promise.all(names.filter(n => n !== CACHE_NAME).map(n => caches.delete(n))))
+      .then(names => Promise.all(names.filter(n => n.startsWith('bingo-caller-') && n !== CACHE_NAME).map(n => caches.delete(n))))
       .then(() => self.clients.claim())
   );
 });
 
-// Cache-first for the app shell (instant offline load), falling back to the
-// network for anything else and opportunistically caching same-origin GETs.
 self.addEventListener('fetch', event => {
   const req = event.request;
   if (req.method !== 'GET') return;
+  const url = new URL(req.url);
+  if (url.origin !== location.origin) return;
+
+  // Page loads: serve the cached shell instantly, ignoring query strings / start_url variants.
+  if (req.mode === 'navigate') {
+    event.respondWith(
+      caches.match('./index.html', { cacheName: CACHE_NAME })
+        .then(cached => cached || fetch(req))
+    );
+    return;
+  }
 
   event.respondWith(
-    caches.match(req).then(cached => {
-      const network = fetch(req).then(res => {
-        if (res && res.ok && new URL(req.url).origin === location.origin) {
-          const copy = res.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
-        }
-        return res;
-      }).catch(() => cached);
-      return cached || network;
-    })
+    caches.open(CACHE_NAME).then(cache =>
+      cache.match(req).then(cached => {
+        const refresh = fetch(req).then(res => {
+          if (res && res.ok) cache.put(req, res.clone());
+          return res;
+        }).catch(() => cached);
+        if (cached) { event.waitUntil(refresh); return cached; }
+        return refresh;
+      })
+    )
   );
 });

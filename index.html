@@ -87,6 +87,7 @@
             <input type="text" id="customName" placeholder="Pattern name" style="flex:1">
             <button class="btn" id="saveCustom" style="flex:0 0 auto">Save</button>
           </div>
+        </div><!-- /customEditor -->
         </div><!-- /patBody -->
       </div>
     </section>
@@ -219,8 +220,13 @@
     </div>
     <div class="sect">
       <h3>About</h3>
-      <p class="pat-cap" style="margin:0 0 6px"><strong style="color:var(--text)">Bingo Caller v2.28</strong></p>
+      <p class="pat-cap" style="margin:0 0 2px"><strong style="color:var(--text)" id="aboutVersion">Bingo Caller</strong></p>
+      <p class="pat-cap mono" style="margin:0 0 8px;font-size:.78rem" id="aboutDates"></p>
       <p class="pat-cap" style="margin:0 0 8px">Host-only caller. Everything is stored on this device — no accounts, no network needed once loaded. Tap the ⬇ install button (or your browser's "Add to Home Screen") so it keeps working with no signal.</p>
+      <details class="about-changes">
+        <summary class="muted" style="font-size:.85rem">What changed in the last two commits</summary>
+        <ul class="commit-list" id="aboutCommits"></ul>
+      </details>
       <p class="pat-cap" style="margin:0;font-size:.72rem;line-height:1.5;color:var(--muted)">⚡ Built with Claude AI (Anthropic). This application was developed using AI-assisted code generation. UI, logic, and content were created through a collaborative human–AI workflow.</p>
     </div>
   </div>
@@ -242,6 +248,46 @@
 <div class="toast" id="toast"></div>
 <div class="sr-only" id="srAnnounce" aria-live="assertive" aria-atomic="true"></div>
 
-<script src="app.js" defer></script>
+<script src="js/config/version.js" defer></script>
+<script src="js/config/build-info.js" defer></script>
+<script src="js/core/constants.js" defer></script>
+<script src="js/core/dom.js" defer></script>
+<script src="js/core/num.js" defer></script>
+<script src="js/core/time.js" defer></script>
+<script src="js/data/patterns.js" defer></script>
+<script src="js/data/calls.js" defer></script>
+<script src="js/data/my-calls.js" defer></script>
+<script src="js/data/themes.js" defer></script>
+<script src="js/core/state.js" defer></script>
+<script src="js/game/pattern.js" defer></script>
+<script src="js/game/balls.js" defer></script>
+<script src="js/game/callouts.js" defer></script>
+<script src="js/util/color.js" defer></script>
+<script src="js/ui/dialog.js" defer></script>
+<script src="js/ui/modal.js" defer></script>
+<script src="js/ui/theme.js" defer></script>
+<script src="js/ui/ball.js" defer></script>
+<script src="js/ui/recent.js" defer></script>
+<script src="js/ui/board.js" defer></script>
+<script src="js/ui/pattern-picker.js" defer></script>
+<script src="js/ui/pattern-editor.js" defer></script>
+<script src="js/ui/log.js" defer></script>
+<script src="js/game/actions.js" defer></script>
+<script src="js/game/auto.js" defer></script>
+<script src="js/io/export.js" defer></script>
+<script src="js/io/import.js" defer></script>
+<script src="js/io/report.js" defer></script>
+<script src="js/platform/pwa.js" defer></script>
+<script src="js/platform/wakelock.js" defer></script>
+<script src="js/platform/speech.js" defer></script>
+<script src="js/app/render.js" defer></script>
+<script src="js/app/migrate.js" defer></script>
+<script src="js/app/wire-calling.js" defer></script>
+<script src="js/app/wire-io.js" defer></script>
+<script src="js/app/wire-overlays.js" defer></script>
+<script src="js/app/wire-settings.js" defer></script>
+<script src="js/app/wire-keyboard.js" defer></script>
+<script src="js/app/about.js" defer></script>
+<script src="js/main.js" defer></script>
 </body>
 </html>
