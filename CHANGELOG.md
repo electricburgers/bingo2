@@ -4,6 +4,16 @@ All notable changes to Bingo Caller. Newest first. Versions before 2.29 were bac
 history; commits that didn't carry a version bump are listed under the next version that shipped them,
 each tagged with its short hash and date. Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [2.34] — 2026-10-12
+
+### Fixed
+- **Edge-to-edge on iPhone:** the app now reaches the very top and bottom of the screen. The page background is painted on the root element (so the status-bar and home-bar zones match the theme), the page fills `100dvh`, and every safe area is applied by its exact inset instead of being scaled up (the old 1.3×/1.6× padding left gaps, and the bottom inset was counted twice under the mobile dock). The dock keeps at least 8px above the home indicator.
+- **Double-tap no longer zooms:** `touch-action: manipulation` on every element (iOS ignores `user-scalable=no`). Pinch-to-zoom still works, and quick repeated taps on Call are never swallowed.
+
+### Changed
+- Sideways scrolling stays blocked through `overflow-x: hidden` + `overscroll-behavior-x: none` rather than a `pan-y` touch-action, so it no longer conflicts with the double-tap fix.
+- 16 more tests (`tests/safe-area.test.mjs`).
+
 ## [2.33] — 2026-10-12
 
 ### Changed

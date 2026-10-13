@@ -12,8 +12,9 @@ test('H1. html and body clip horizontal overflow', () => {
 test('H2. body blocks sideways rubber-banding / edge-swipe chaining', () => {
   assert.match(rule('body'), /overscroll-behavior-x:none/);
 });
-test('H3. body only allows vertical panning, but pinch-zoom still works', () => {
-  assert.match(rule('body'), /touch-action:pan-y pinch-zoom/);
+test('H3. touch-action keeps pinch-zoom (manipulation); sideways is blocked by overflow-x instead', () => {
+  assert.match(rule('html,body'), /touch-action:manipulation/);
+  assert.match(rule('html,body'), /overflow-x:hidden/);
 });
 test('H4. no scroller uses bare "overflow:auto" (that allows sideways scrolling)', () => {
   assert.doesNotMatch(css, /overflow:\s*auto/);
