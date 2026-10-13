@@ -4,6 +4,16 @@ All notable changes to Bingo Caller. Newest first. Versions before 2.29 were bac
 history; commits that didn't carry a version bump are listed under the next version that shipped them,
 each tagged with its short hash and date. Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [2.41] — 2026-10-13
+
+### Added
+- **More Garden State Parkway banter: exits that "end in" the ball.** Any Parkway exit whose number ends in a ball's number now gets a line on that ball too — "Parkway Exit 142 ends in 2 too — …" on ball 2 and "… ends in 42 too — …" on ball 42. That is 92 new lines from 61 exits (up to Exit 172, Montvale). Balls 1 and 7 get the most (8 and 9); tap ↻ to cycle through them.
+- Exits were cross-checked against two sources (Wikipedia and the eastcoastroads.com north/south exit lists). Only plain-numbered exits both agree on are used; lettered (100A, 131B…), renumbered (88/89) and single-source exits are left out.
+- 15 new tests (`tests/parkway-also.test.mjs`).
+
+### Fixed
+- **Exit 12 removed.** It is an entrance-only ramp pair, not a real exit, so it no longer has banter.
+
 ## [2.40] — 2026-10-13
 
 ### Changed

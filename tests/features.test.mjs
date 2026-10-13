@@ -10,9 +10,10 @@ const { run: ev } = loadApp();
 const reset = () => ev("S.pattern='any_line'; S.freeSpace=true; S.settings.limitDraw=true; S.called=[]; S.customPatterns=[]; save();");
 const pat = (key, free = true) => { ev(`S.pattern='${key}'; S.freeSpace=${free}; S.settings.limitDraw=true; save();`); };
 
-/* Real Garden State Parkway exits numbered 1-75 (Wikipedia exit list; exit number = milepost). */
-const EXITS = [4, 6, 9, 10, 11, 12, 13, 17, 20, 25, 29, 30, 36, 37, 38, 40, 41, 44, 48, 50, 52, 58, 63, 67, 69, 74];
-const parkwayLines = n => ev(`callVariants(${n})`).filter(s => /^Parkway Exit \d+/.test(s));
+/* Real Garden State Parkway exits numbered 1-75 (Wikipedia exit list, cross-checked with eastcoastroads.com; exit number = milepost; Exit 12 is entrance-only). */
+const EXITS = [4, 6, 9, 10, 11, 13, 17, 20, 25, 29, 30, 36, 37, 38, 40, 41, 44, 48, 50, 52, 58, 63, 67, 69, 74];
+/* a ball's OWN exit lines (the "... ends in N too" lines are covered in parkway-also.test.mjs) */
+const parkwayLines = n => ev(`callVariants(${n})`).filter(s => /^Parkway Exit \d+/.test(s) && !/ ends in \d+ too — /.test(s));
 
 // ---- NJ Parkway banter (F1-F14) ----------------------------------------------------------
 test('F1. PARKWAY_EXITS covers exactly the real exits in 1-75', () => {

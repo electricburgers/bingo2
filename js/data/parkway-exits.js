@@ -2,14 +2,14 @@
 /* Garden State Parkway banter. The exit number is the ball number, so Exit 13 rides along with B-13.
    Only real exits in 1–75 appear here (the Parkway runs 0–172; Exit 0 is Cape May).
    callVariants() adds these after the classic lingo, so ↻ cycles to them.
-   Source for exit numbers/towns: the Garden State Parkway exit list (Wikipedia). */
+   Sources for exit numbers/towns: the Garden State Parkway exit list on Wikipedia, cross-checked against the
+   eastcoastroads.com north- and south-bound exit lists. Exit 12 is entrance-only (not a real exit), so it has no line. */
 const PARKWAY_EXITS = {
   4:  "Parkway Exit 4 — Wildwood, Rio Grande, Route 47! Watch the tram car, please!",
   6:  "Parkway Exit 6 — Route 147 to North Wildwood and Whitesboro. Neon motels, here we come!",
   9:  "Parkway Exit 9 — Shell Bay Avenue, Middle Township. Sounds like seashells, mostly serves Route 9.",
   10: "Parkway Exit 10 — Cape May Court House, gateway to Stone Harbor. A town named for a courthouse!",
   11: "Parkway Exit 11 — Crest Haven Road, Cape May Court House. A crest, a haven AND a road. What a deal!",
-  12: "Parkway Exit 12 — entrance only! You can get on here, but you can't get off. Story of the Parkway.",
   13: "Parkway Exit 13 — Swainton and Avalon! Unlucky for some, but the beach doesn't care.",
   17: "Parkway Exit 17 — Sea Isle City! Pack the cooler, the beach tags and your best flip-flops.",
   20: "Parkway Exit 20 — Route 50, Upper Township. Is it above or below the Parkway? Nobody knows!",
@@ -30,4 +30,73 @@ const PARKWAY_EXITS = {
   67: "Parkway Exit 67 — Barnegat, Dutch for 'inlet of the breakers.' You're basically a linguist now.",
   69: "Parkway Exit 69 — Wells Mills Road, Waretown. Sixty-nine AND Wells Mills. I couldn't make this up.",
   74: "Parkway Exit 74 — Lacey Road, Forked River. Grab a coffee at the Celia Cruz Service Area. ¡Azúcar!",
+};
+
+/* "Also ends in" banter: any Parkway exit whose number ENDS in a ball's number gets a line on that ball too
+   (Exit 142 lands on 2 and 42; Exit 25 on 5; Exit 11 on 1). callVariants() builds "Parkway Exit E ends in B too — <blurb>".
+   Only plain-numbered exits that BOTH sources above agree on are listed — lettered (100A, 131B…), renumbered
+   (88/89) and single-source exits (118, 125, 128, 130, 139, 142, 155, 158, 165) are left out on purpose.
+   Blurbs stay <= 60 chars so the whole line fits the 100-char banter slot. */
+const PARKWAY_ALSO = {
+  11:"Crest Haven Road. A crest, a haven AND a road!",
+  13:"Swainton and Avalon. Beach bound!",
+  17:"Sea Isle City. Pack the beach tags!",
+  25:"Ocean City, where the bars are dry. Plan ahead!",
+  29:"Somers Point, last stop before Ocean City!",
+  36:"Northfield and Pleasantville. Hold your wallet!",
+  37:"Pleasantville, round two of the casino run!",
+  38:"the Atlantic City Expressway. Feeling lucky?",
+  41:"Galloway and Stockton University. Go Ospreys!",
+  44:"Pomona Road to Smithville. Candle shop alert!",
+  48:"Port Republic, a city small enough to miss!",
+  52:"New Gretna. Jersey Devil country!",
+  58:"Tuckerton. If you've been, you've been!",
+  63:"Route 72 to Long Beach Island. Bring bug spray!",
+  67:"Barnegat. Dutch for 'inlet of the breakers.'",
+  69:"Wells Mills Road, Waretown. Nice!",
+  74:"Forked River and the Celia Cruz Service Area. ¡Azúcar!",
+  77:"Berkeley Township. Not the California one!",
+  81:"Lakehurst Road, home of the famous airship hangar!",
+  82:"Route 37 to Seaside Heights. Boardwalk games ahead!",
+  83:"Toms River and Lakewood. Batter up, BlueClaws!",
+  91:"Lanes Mill Road toward Brick and Point Pleasant!",
+  98:"I-195 west or Route 138 east to Belmar. Pick one!",
+  102:"Neptune and Asbury Park. Greetings from Asbury Park!",
+  105:"Eatontown and Long Branch. Big trucks must exit here!",
+  109:"Red Bank, home of the Count Basie Theatre!",
+  114:"Holmdel, where Bell Labs heard the Big Bang!",
+  116:"PNC Bank Arts Center! Summer concerts all season.",
+  117:"Hazlet and Keyport, Routes 35 and 36!",
+  120:"Laurence Harbor and Matawan. Bayshore bound!",
+  123:"Sayreville, Jon Bon Jovi's hometown!",
+  124:"Sayreville's Main Street. More Bon Jovi territory!",
+  127:"Woodbridge and the Outerbridge Crossing to Staten Island!",
+  129:"The New Jersey Turnpike! Two famous roads, one big meetup.",
+  132:"Iselin and Metuchen on the old Lincoln Highway!",
+  135:"Clark and Westfield. Charming downtowns!",
+  136:"Linden and Roselle. Refinery skyline ahead!",
+  137:"Cranford, the 'Venice of New Jersey'!",
+  138:"Galloping Hill Road, Kenilworth. Giddy-up!",
+  140:"Hillside and Route 22, Jersey's strip-mall highway!",
+  141:"Vauxhall Road in Hillside. The road, not the car!",
+  143:"Springfield Avenue. Not the Simpsons' Springfield!",
+  144:"South Orange Avenue. The Oranges are everywhere!",
+  145:"I-280 to Newark and the Oranges. Hungry? Ironbound!",
+  147:"East Orange, Whitney Houston's hometown!",
+  148:"Bloomfield and Glen Ridge. A spur-of-the-moment exit!",
+  149:"Belleville Avenue. Belle of the ball!",
+  150:"Hoover Avenue. A clean sweep!",
+  151:"Montclair and Nutley, Martha Stewart's hometown!",
+  153:"Route 3 toward the Meadowlands and the Big Apple!",
+  154:"Clifton and US 46. Passaic County, here we come!",
+  156:"Elmwood Park on McLean Boulevard. Tree-mendous!",
+  157:"Garfield, the town. Sorry, no lasagna.",
+  159:"I-80 to Paterson and the George Washington Bridge!",
+  160:"Paramus. Remember the blue laws: closed Sundays!",
+  161:"Route 4 east, right by the Garden State Plaza!",
+  163:"Route 17 to Paramus and Mahwah. Almost New York!",
+  166:"Washington Township and Westwood. New York's next door!",
+  168:"Washington Avenue, Westwood. The finish line's close!",
+  171:"Woodcliff Lake and Saddle River. Fancy neighbors!",
+  172:"Montvale and Park Ridge, the very last exit in Jersey!",
 };
