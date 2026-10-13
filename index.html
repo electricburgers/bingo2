@@ -23,6 +23,7 @@
       </div>
     </div>
     <button class="topbtn hide" id="installBtn" title="Install app for offline use" aria-label="Install app">⬇</button>
+    <button class="topbtn" id="patViewBtn" title="Show the play style full screen (P)" aria-label="Show play style full screen">▦</button>
     <button class="topbtn" id="bigBtn" title="Big screen mode (F)" aria-label="Big screen">⛶</button>
     <button class="topbtn" id="settingsBtn" title="Settings" aria-label="Settings">⚙</button>
   </div>
@@ -163,6 +164,21 @@
   <div class="bs-meta" style="font-size:1rem;opacity:.6">Tap anywhere to call the next ball</div>
 </div>
 
+<!-- ================= PATTERN FULL SCREEN ================= -->
+<div class="patternview" id="patternview" role="dialog" aria-modal="true" aria-label="Play style, full screen" tabindex="-1">
+  <button class="iconbtn pv-exit" id="pvClose">✕ Close</button>
+  <div class="pv-kicker">Tonight we're playing</div>
+  <h2 class="pv-name" id="pvName"></h2>
+  <div class="pv-grid" id="pvGrid" role="img"></div>
+  <p class="pv-summary" id="pvSummary"></p>
+  <p class="pv-cap" id="pvCap"></p>
+  <div class="pv-legend">
+    <span><i class="pv-sw on"></i> Needs a called number</span>
+    <span><i class="pv-sw free">★</i> Free space</span>
+    <span class="pv-note" id="pvNote"></span>
+  </div>
+</div>
+
 <!-- ================= SETTINGS DRAWER ================= -->
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Settings" tabindex="-1">
@@ -256,10 +272,12 @@
 <script src="js/core/time.js" defer></script>
 <script src="js/data/patterns.js" defer></script>
 <script src="js/data/calls.js" defer></script>
+<script src="js/data/parkway-exits.js" defer></script>
 <script src="js/data/my-calls.js" defer></script>
 <script src="js/data/themes.js" defer></script>
 <script src="js/core/state.js" defer></script>
 <script src="js/game/pattern.js" defer></script>
+<script src="js/game/pattern-view.js" defer></script>
 <script src="js/game/balls.js" defer></script>
 <script src="js/game/callouts.js" defer></script>
 <script src="js/util/color.js" defer></script>
@@ -271,6 +289,7 @@
 <script src="js/ui/board.js" defer></script>
 <script src="js/ui/pattern-picker.js" defer></script>
 <script src="js/ui/pattern-editor.js" defer></script>
+<script src="js/ui/pattern-view.js" defer></script>
 <script src="js/ui/log.js" defer></script>
 <script src="js/game/actions.js" defer></script>
 <script src="js/game/auto.js" defer></script>

@@ -3,30 +3,9 @@
    tiny DOM stub, so pure logic is tested against the shipped code, not a copy. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import vm from 'node:vm';
-import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const read = p => readFileSync(join(root, p), 'utf8');
-const html = read('index.html');
-const scripts = [...html.matchAll(/<script src="([^"]+)"/g)].map(m => m[1]);
-
-function loadApp(storage = {}) {
-  const noop = () => {};
-  const sandbox = {
-    console, Intl, Math, Date, JSON, Set, Map, Array, Object, Number, String, Promise, Error,
-    localStorage: { getItem: k => storage[k] ?? null, setItem: (k, v) => { storage[k] = v; } },
-    document: { getElementById: () => null, querySelector: () => null, querySelectorAll: () => [],
-                addEventListener: noop, visibilityState: 'visible', documentElement: { style: { setProperty: noop } } },
-    addEventListener: noop, navigator: {}, setTimeout, clearTimeout,
-  };
-  sandbox.self = sandbox; sandbox.window = sandbox;
-  const ctx = vm.createContext(sandbox);
-  for (const s of scripts.filter(s => s !== 'js/main.js')) vm.runInContext(read(s), ctx, { filename: s });
-  return { run: code => vm.runInContext(code, ctx), ctx };
-}
+import { root, read, html, scripts, loadApp } from './helpers.mjs';
+import { existsSync, readdirSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 
 const app = loadApp();
 const ev = app.run;

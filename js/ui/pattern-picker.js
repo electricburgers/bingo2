@@ -70,4 +70,5 @@ function renderPattern(){
   $('#bsPattern').textContent=p.name;
   $('#freeTag').textContent = S.freeSpace?'free space on':'free space off';
   paintBoard();
+  if($('#patternview').classList.contains('show')) renderPatternView();
 }

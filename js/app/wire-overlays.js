@@ -9,6 +9,12 @@ function wireOverlays(){
   $('#bsExit').onclick=()=>{ closeDialog($('#bigscreen')); syncWakeLock(); };
   $('#bigscreen').addEventListener('keydown', e=>trapTabKey($('#bigscreen'), e));
 
+  /* pattern full screen */
+  $('#patViewBtn').onclick=openPatternView;
+  $('#pvClose').onclick=closePatternView;
+  $('#patternview').addEventListener('keydown', e=>trapTabKey($('#patternview'), e));
+  $('#patternview').addEventListener('click', e=>{ if(e.target===$('#patternview')) closePatternView(); });
+
   /* settings drawer */
   $('#settingsBtn').onclick=openDrawer; $('#closeDrawer').onclick=closeDrawer; $('#scrim').onclick=closeDrawer;
   $('#drawer').addEventListener('keydown', e=>trapTabKey($('#drawer'), e));

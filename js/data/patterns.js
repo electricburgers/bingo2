@@ -27,6 +27,7 @@ const PATTERNS = {
   inner_square:{name:'Inner Square',      cells:[[1,1],[1,2],[1,3],[2,1],[2,3],[3,1],[3,2],[3,3]], cap:'The square of 8 cells ringing the free space.'},
   frame:       {name:'Picture Frame',     cells:OUTER.slice(), cap:'The full outer border of the card.'},
   letter_t:    {name:'Letter T',          cells:rowCells(0).concat(colCells(2).filter(([r])=>r>0)), cap:'Top row plus the center (N) column.'},
+  bird:        {name:'The Bird',           cells:rowCells(3).concat(rowCells(4),colCells(2).filter(([r])=>r<3)), cap:'The bottom two rows plus the entire N column — wings, body and tail.'},
   letter_l:    {name:'Letter L',          cells:colCells(0).concat(rowCells(4).filter(([,c])=>c>0)), cap:'Left (B) column plus the bottom row.'},
 };
 const CENTER = (r,c)=>r===2&&c===2;

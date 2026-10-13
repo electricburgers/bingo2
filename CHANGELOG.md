@@ -4,6 +4,18 @@ All notable changes to Bingo Caller. Newest first. Versions before 2.29 were bac
 history; commits that didn't carry a version bump are listed under the next version that shipped them,
 each tagged with its short hash and date. Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [2.31] — 2026-10-12
+
+### Added
+- **Garden State Parkway banter** for every real Parkway exit from 1–75 (26 exits: 4, 6, 9, 10, 11, 12, 13, 17, 20, 25, 29, 30, 36, 37, 38, 40, 41, 44, 48, 50, 52, 58, 63, 67, 69, 74). The classic bingo lingo stays the default; tap ↻ to cycle to the exit line. Lines live in `js/data/parkway-exits.js`.
+- **The Bird** play style: the bottom two rows plus the entire N column.
+- **Full-screen pattern view** (▦ in the top bar, or press `P`): a big 5×5 card with B-I-N-G-O headers, the squares you need highlighted, the free space marked, and a plain-English "Fill 12 squares" summary. Patterns that mean "any one of these" (Any Line, one row, one column) are labelled as an example.
+- 50 more tests (`tests/features.test.mjs`), written test-first; the sandbox loader moved to `tests/helpers.mjs`.
+
+### Changed
+- **N column is skipped for diagonals and X** when the free space is on: the only N square those patterns touch is the free center, so no N ball is ever drawn. This works for any pattern (including custom ones) whose only N-column square is the center, and turning the free space off brings N back.
+- Corrected Parkway call-outs that had the wrong town for their exit (e.g. 13 is Avalon/Swainton, 38 is the Atlantic City Expressway, 44 is Port Republic/Smithville).
+
 ## [2.30] — 2026-10-11
 
 ### Changed

@@ -5,13 +5,16 @@
 let _defCache=null, _colsCache=undefined;
 function invalidatePatternCache(){ _defCache=null; _colsCache=undefined; }
 
-/* which B/I/N/G/O columns are involved in current pattern (null = all/any) */
+/* which B/I/N/G/O columns need balls for the current pattern (null = all/any) */
 function involvedColumns(){
   if(_colsCache!==undefined) return _colsCache;
   const p=currentPatternDef();
   if(!p || p.meta) return (_colsCache=null);   // any/row/col patterns span all columns
-  const cols=new Set(patternCells(p).map(([,c])=>c));
-  return (_colsCache = cols.size>=5 ? null : cols);
+  // With the free space on, the center square needs no ball — so a pattern that touches the N column
+  // only at the center (diagonals, X, ...) never needs an N ball.
+  const needed=patternCells(p).filter(([r,c])=>!(S.freeSpace && CENTER(r,c)));
+  const cols=new Set(needed.map(([,c])=>c));
+  return (_colsCache = (cols.size>=5 || !cols.size) ? null : cols);
 }
 
 function currentPatternDef(){

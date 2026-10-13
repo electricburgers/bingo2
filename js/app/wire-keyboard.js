@@ -9,6 +9,7 @@ function wireKeyboard(){
     else if(k==='a'){ toggleAuto(); }
     else if(k==='r'){ newGame(); }
     else if(k==='f'){ const bs=$('#bigscreen'); bs.classList.contains('show') ? closeDialog(bs) : openDialog(bs); syncWakeLock(); }
-    else if(k==='escape'){ if($('#bigscreen').classList.contains('show')){ closeDialog($('#bigscreen')); syncWakeLock(); } closeDrawer(); closeModal(); }
+    else if(k==='p'){ togglePatternView(); }
+    else if(k==='escape'){ if($('#patternview').classList.contains('show')) closePatternView(); if($('#bigscreen').classList.contains('show')){ closeDialog($('#bigscreen')); syncWakeLock(); } closeDrawer(); closeModal(); }
   });
 }

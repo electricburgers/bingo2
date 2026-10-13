@@ -16,7 +16,7 @@ function wireSettings(){
   $('#limitChk').onchange=e=>{ S.settings.limitDraw=e.target.checked; save(); renderBall(false); paintBoard(); };
   $('#speakChk').onchange=e=>{ S.settings.speakCalls=e.target.checked; save(); if(!e.target.checked && 'speechSynthesis' in window) speechSynthesis.cancel(); };
   $('#vibrateChk').onchange=e=>{ S.settings.vibrate=e.target.checked; save(); };
-  $('#freeChk').onchange=e=>{ S.freeSpace=e.target.checked; save(); renderPattern(); };
+  $('#freeChk').onchange=e=>{ S.freeSpace=e.target.checked; save(); renderPattern(); renderBall(false); };
 
   // Size sliders only change two CSS variables, so skip the full color derivation.
   $('#fontRange').oninput=e=>{ S.settings.fontScale=+e.target.value; $('#fsLabel').textContent=e.target.value+'%'; save(); applyScale(); };
