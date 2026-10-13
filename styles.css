@@ -118,31 +118,25 @@
   .ball.empty{opacity:.6}
   .ball.empty .num{font-size:1.3rem;font-weight:800}
   .ball.empty .letter{display:none}
-  .callmeta{display:flex;gap:14px;justify-content:center;font-size:1.05rem;font-weight:600;color:var(--muted);margin-top:4px}
+  .callmeta{display:flex;gap:14px;justify-content:center;align-items:center;font-size:1.05rem;font-weight:600;color:var(--muted);margin-top:2px}
   .callmeta b{color:var(--text);font-weight:800}
-  .drawscope{text-align:center;font-size:.98rem;color:var(--muted);margin-top:4px;min-height:18px;font-weight:700}
+  .drawscope{text-align:center;font-size:.98rem;color:var(--muted);margin-top:0;min-height:18px;font-weight:700}
 
+  /* Banter gets a STATIC four-line slot (4 × 1.35em), full card width. Every call-out is capped at 100
+     characters (tests enforce it), which fits four lines even on a 320px phone, so a long multi-line joke
+     never grows the box and nothing below it — Call / in play, the Call button, Auto, recents — moves.
+     Short jokes just sit centered in the same slot. */
   .callout{
     text-align:center;font-weight:800;font-size:1.02rem;color:var(--accent-fg);
     padding:0 8px;line-height:1.35;
-    /* reserve 2 lines so the button never shifts */
-    min-height:2.75rem;
+    height:5.4em;
     display:flex;align-items:center;justify-content:center;
   }
-  /* Height is constant whether or not there's a callout yet — only the cycle
-     button's visibility toggles. Collapsing this row's margin/display on the
-     first call (the old behavior) shoved every button below it down the
-     page the instant a host called ball #1, which is jarring and makes the
-     Call/Undo/Reset buttons move right as someone's about to tap them again. */
-  /* Grid (not flex+justify-center) so the callout text is centered on its
-     own and the button sits at a fixed slot to its right — a flex row with
-     justify-content:center re-centers the whole [text+button] group every
-     time the joke's length changes, which visibly shifts the button. */
-  .callout-row{display:grid;grid-template-columns:38px 1fr 38px;align-items:center;gap:8px;margin-top:8px}
-  .callout-row:has(.callout:empty) .cyclebtn{visibility:hidden}
-  .callout{grid-column:2}
+  .callout-row{display:block;width:100%;margin-top:4px}
+  /* The cycle button sits in the Call / in-play row right above Call Next Ball: it keeps its space (just
+     hides) while there is no banter yet, so the row never changes size. */
+  .ball-wrap:has(.callout:empty) .cyclebtn{visibility:hidden}
   .cyclebtn{
-    grid-column:3;
     border:1px solid var(--line);background:var(--surface-2);color:var(--muted);
     border-radius:30%;font-size:1.05rem;font-weight:700;
     display:inline-flex;align-items:center;justify-content:center;

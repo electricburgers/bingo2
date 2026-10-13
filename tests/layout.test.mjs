@@ -42,3 +42,45 @@ test('L7. the Call button is followed by the Auto row, not by a destructive cont
 test('L8. changelog documents the move', () => {
   assert.match(read('CHANGELOG.md').split('## [2.37]')[0], /Undo.*New Game|New Game.*Undo/s);
 });
+
+// ---- static banter space (v2.39) ---------------------------------------------------------------
+import { loadApp } from './helpers.mjs';
+const { run: ev } = loadApp();
+
+test('L9. every banter line is at most 100 characters, so it always fits the reserved space', () => {
+  const long = ev(`Array.from({length:75},(_,i)=>callVariants(i+1)).flat().filter(s=>s.length>100)`);
+  assert.deepEqual([...long], []);
+});
+test('L10. the banter slot has a FIXED four-line height (not just a minimum)', () => {
+  const r = rule('.callout');
+  assert.match(r, /(?:^|;)\s*height:5\.4em/);
+  assert.doesNotMatch(r, /min-height/);
+  assert.match(r, /line-height:1\.35/);
+});
+test('L11. the banter uses the full card width (no side columns reserved for the cycle button)', () => {
+  assert.doesNotMatch(rule('.callout-row'), /grid-template-columns/);
+  assert.doesNotMatch(css, /\.callout\{[^}]*grid-column/);
+});
+test('L12. the cycle button lives in the Call / in-play row, not beside the banter', () => {
+  const meta = html.slice(html.indexOf('class="callmeta"'), html.indexOf('id="drawScope"'));
+  assert.match(meta, /id="cycleBtn"/);
+  const row = html.slice(html.indexOf('id="calloutRow"'), html.indexOf('class="callmeta"'));
+  assert.doesNotMatch(row, /id="cycleBtn"/);
+});
+test('L13. order is ball, banter, Call/in-play, draw scope, Call Next Ball with nothing between', () => {
+  const order = ['ball', 'callout', 'callIdx', 'drawScope', 'callBtn'].map(at);
+  assert.deepEqual([...order].sort((a, b) => a - b), order);
+  const from = html.indexOf('</div>', at('drawScope')) + 6;
+  const gap = html.slice(from, html.indexOf('<button class="call-btn"')).replace(/<\/?div[^>]*>/g, '').trim();
+  assert.equal(gap, '');
+});
+test('L14. the Call / in-play row hugs the button: tight margins, fixed-height draw-scope line', () => {
+  assert.ok(+rule('.callmeta').match(/margin-top:(\d+)px/)[1] <= 4);
+  assert.match(rule('.drawscope'), /min-height:\d+px/);
+});
+test('L15. the cycle button hides (but keeps its space) while there is no banter', () => {
+  assert.match(css, /\.ball-wrap:has\(\.callout:empty\) \.cyclebtn\{visibility:hidden\}/);
+});
+test('L16. changelog documents the static banter space', () => {
+  assert.match(read('CHANGELOG.md').split('## [2.38]')[0], /static|fixed/i);
+});

@@ -4,6 +4,14 @@ All notable changes to Bingo Caller. Newest first. Versions before 2.29 were bac
 history; commits that didn't carry a version bump are listed under the next version that shipped them,
 each tagged with its short hash and date. Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [2.39] — 2026-10-13
+
+### Changed
+- **Static space for the bingo banter.** The banter now has a fixed four-line slot, full card width, so a long multi-line joke no longer pushes "Call N · in play", Call Next Ball, Auto and the recents up and down. (It used to reserve two lines, and the longest jokes wrapped to six on a phone.)
+- **"Call N / in play" now sits right above Call Next Ball**, with the ↻ new-joke button beside it instead of beside the text (which also frees the banter to use the full width).
+- Every call-out is capped at 100 characters (a test enforces it); five Parkway lines (exits 10, 30, 36, 40, 58) were tightened to fit.
+- 8 more layout tests.
+
 ## [2.38] — 2026-10-13
 
 ### Changed
