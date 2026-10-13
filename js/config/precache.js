@@ -16,6 +16,7 @@ self.PRECACHE_URLS = [
   "./js/data/parkway-exits.js",
   "./js/data/my-calls.js",
   "./js/data/themes.js",
+  "./js/data/recent-styles.js",
   "./js/core/state.js",
   "./js/game/pattern.js",
   "./js/game/pattern-view.js",

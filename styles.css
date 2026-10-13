@@ -177,20 +177,38 @@
   .btn.danger{color:var(--warn)}
 
   /* ---------- Recent strip ----------
-     Chips used to be flex items sized to their own content, so a run of
-     2-digit numbers (e.g. "N 33") vs 1-digit ones (e.g. "B 8") made each row
-     hold a different number of chips — occasionally spilling to a 3rd line.
-     A grid with a fixed column width makes every cell the same size, so
-     wrapping only ever depends on the container width, not on which balls
-     happened to get called. */
+     Every chip is built from the same fixed-width cells — letter, (shape), number — so a narrow "I" or a
+     1-digit number never makes a chip narrower than "G 52"; the chip's own width is fixed per style too.
+     That keeps wrapping dependent only on the container width, not on which balls were called.
+     Three looks (Settings → Recent calls): badge, solid, shape. */
   .recent-label{font-size:.72rem;font-weight:800;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin-top:12px}
-  .recent{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:8px;margin-top:6px;min-height:42px;align-items:center}
+  .recent{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;min-height:42px;align-items:center}
   .chip{
-    display:inline-flex;align-items:baseline;justify-content:center;gap:3px;padding:6px 8px;border-radius:999px;
+    --chip-w:5em;
+    display:inline-flex;align-items:center;justify-content:center;gap:.3em;box-sizing:border-box;
+    width:var(--chip-w);padding:.35em .4em;border-radius:999px;
     background:var(--surface-2);border:1px solid var(--line);font-weight:800;font-size:.95rem;white-space:nowrap;
   }
-  .chip .l{font-weight:900}
+  .chip .l{display:inline-block;width:1.5em;text-align:center;font-weight:900;border-radius:.45em}
+  .chip .n{display:inline-block;width:2.2ch;text-align:center;font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+  .chip .sh{display:inline-block;width:1em;text-align:center;font-size:.85em}
+  /* 1 · Badge: the letter sits in a colored badge (AAA text/background pair) */
+  .chip.s-badge{--chip-w:5em}
+  .chip.s-badge .l{background:var(--lc-bg);color:var(--lc-text)}
+  /* 2 · Solid: the whole chip takes the letter color */
+  .chip.s-solid{--chip-w:5em;background:var(--lc-bg);color:var(--lc-text);border-color:transparent}
+  /* 3 · Shapes: colored letter plus a per-letter shape, readable without color */
+  .chip.s-shape{--chip-w:5.8em}
+  .chip.s-shape .l{color:var(--lc-fg)}
+  .chip.s-shape .sh{color:var(--lc-fg)}
   .chip.latest{outline:2px solid var(--accent);outline-offset:1px}
+
+  /* settings picker for the three styles */
+  .style-row{display:grid;gap:8px}
+  .style-opt{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:0 12px;text-align:left;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2)}
+  .style-opt.on{border-color:var(--accent)}
+  .style-opt .so-demo{grid-row:1 / span 2}
+  .style-opt small{color:var(--muted);font-size:.74rem}
 
   /* ---------- Auto-call ---------- */
   .auto-bar{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
@@ -332,7 +350,7 @@
   .bs-ball .letter{font-size:clamp(5rem,22vw,18rem);font-weight:900;line-height:.85;color:var(--ball-text,var(--text))}
   .bs-ball .num{font-size:clamp(7rem,40vw,30rem);font-weight:900;line-height:.8;letter-spacing:-.03em}
   .bs-recent{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
-  .bs-recent .chip{font-size:clamp(1rem,3vw,1.8rem);padding:8px 16px}
+  .bs-recent .chip{font-size:clamp(1rem,3vw,1.8rem)}
   .bs-meta{color:var(--muted);font-size:clamp(1rem,3vw,1.6rem)}
   .bs-exit{position:fixed;top:calc(env(safe-area-inset-top,0px) + 16px);right:calc(env(safe-area-inset-right,0px) + 16px);z-index:61}
   .bs-tap{position:absolute;inset:0;background:transparent;border:none;cursor:pointer}

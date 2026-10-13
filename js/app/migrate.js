@@ -6,6 +6,7 @@ function normalizeState(){
   if(S.settings.callouts===undefined) S.settings.callouts=true;
   if(S.settings.limitDraw===undefined) S.settings.limitDraw=true;
   if(S.settings.patCollapsed===undefined) S.settings.patCollapsed=false;
+  if(!RECENT_STYLES[S.settings.recentStyle]) S.settings.recentStyle='badge';
   if(!S.calloutIdx) S.calloutIdx={};
   if(S.settings.boardScale===undefined) S.settings.boardScale=0.75;
   if(S.settings.speakCalls===undefined) S.settings.speakCalls=false;

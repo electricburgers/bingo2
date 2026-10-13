@@ -4,6 +4,15 @@ All notable changes to Bingo Caller. Newest first. Versions before 2.29 were bac
 history; commits that didn't carry a version bump are listed under the next version that shipped them,
 each tagged with its short hash and date. Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [2.35] — 2026-10-12
+
+### Added
+- **Three looks for the recent-calls chips** (Settings → Recent calls) so the letters are easier to tell apart: **Badge** (letter in a colored badge), **Solid** (whole chip in the letter color) and **Shapes** (letter plus its own shape — ● B, ▲ I, ■ N, ◆ G, ★ O — so it works without color). All use the AAA-contrast color pairs. The choice is remembered.
+
+### Changed
+- Every recent-call chip now has the same width no matter the ball: the letter, shape and number each sit in a fixed-width cell, so a narrow "I" or a 1-digit number is no narrower than "G 52". The big-screen strip uses the same chips.
+- 23 more tests (`tests/recent.test.mjs`).
+
 ## [2.34] — 2026-10-12
 
 ### Fixed

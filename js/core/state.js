@@ -19,6 +19,7 @@ function defaultState(){
       limitDraw:true,
       autoInterval:10,
       patCollapsed:false,
+      recentStyle:'badge', // recent-calls chip look: badge | solid | shape
     },
     customPatterns:[],
     customThemes:[],
