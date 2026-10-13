@@ -168,6 +168,8 @@
   .call-btn:active{transform:translateY(1px)}
   .call-btn:disabled{filter:grayscale(.7) brightness(.7);cursor:not-allowed}
   .btn-row{display:flex;gap:8px;margin-top:8px}
+  /* Undo / New Game sit under the recent calls, well away from Call Next Ball, so a stray tap can't hit them. */
+  .btn-row.after-recent{margin-top:18px}
   .btn{
     flex:1;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;
     padding:12px;font-weight:700;font-size:.9rem;min-height:48px;display:flex;align-items:center;justify-content:center;gap:6px;

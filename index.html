@@ -48,11 +48,6 @@
           <div class="drawscope" id="drawScope"></div>
         </div>
         <button class="call-btn" id="callBtn">🎱 Call Next Ball</button>
-        <div class="btn-row">
-          <button class="btn" id="undoBtn" title="Undo (U)">↩ Undo</button>
-          <button class="btn danger" id="resetBtn" title="New game (R)">⟲ New Game</button>
-        </div>
-
         <div class="auto-bar">
           <button class="btn" id="autoBtn" aria-pressed="false" style="flex:0 0 auto;min-width:110px">▶ Auto Call</button>
           <div style="flex:1;display:flex;flex-direction:column;gap:3px">
@@ -64,6 +59,10 @@
 
         <div class="recent-label hide" id="recentLabel">Newest → Oldest</div>
         <div class="recent" id="recent"><span class="muted">Recent calls appear here…</span></div>
+        <div class="btn-row after-recent">
+          <button class="btn" id="undoBtn" title="Undo (U)">↩ Undo</button>
+          <button class="btn danger" id="resetBtn" title="New game (R)">⟲ New Game</button>
+        </div>
       </div>
 
       <!-- pattern -->

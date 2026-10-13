@@ -4,6 +4,12 @@ All notable changes to Bingo Caller. Newest first. Versions before 2.29 were bac
 history; commits that didn't carry a version bump are listed under the next version that shipped them,
 each tagged with its short hash and date. Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [2.38] — 2026-10-13
+
+### Changed
+- **Undo and New Game moved below the recent calls**, away from Call Next Ball, so a stray tap while calling can't undo a ball or start a new game. The call card now reads Call → Auto → Recent calls → Undo / New Game. (New Game still asks to confirm; Undo is also on the phone dock and the `U` key.)
+- 8 layout tests (`tests/layout.test.mjs`).
+
 ## [2.37] — 2026-10-13
 
 ### Changed
