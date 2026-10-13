@@ -3,7 +3,8 @@
    Memoized per ball — the lists are static for the lifetime of the page. */
 const _variantCache = new Map();
 
-/* Parkway exits (any number, 4–172) whose number ENDS in this ball's number, e.g. ball 2 ← Exit 132. */
+/* Parkway exits ABOVE 75 whose number ENDS in this ball's number, e.g. ball 2 ← Exit 132. (Exits 1–75 only ever
+   go with their own ball — see PARKWAY_EXITS — so Exit 11 never shows up on ball 1.) */
 function parkwayAlso(n){
   const tail=String(n);
   return Object.keys(PARKWAY_ALSO).map(Number)

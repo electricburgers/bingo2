@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { read, loadApp } from './helpers.mjs';
 
 const { run: ev } = loadApp();
-const EXPECT = {"1": [11, 41, 81, 91, 141, 151, 161, 171], "2": [52, 82, 102, 132, 172], "3": [13, 63, 83, 123, 143, 153, 163], "4": [44, 74, 114, 124, 144, 154], "5": [25, 105, 135, 145], "6": [36, 116, 136, 156, 166], "7": [17, 37, 67, 77, 117, 127, 137, 147, 157], "8": [38, 48, 58, 98, 138, 148, 168], "9": [29, 69, 109, 129, 149, 159], "14": [114], "16": [116], "17": [117], "20": [120], "23": [123], "24": [124], "27": [127], "29": [129], "32": [132], "35": [135], "36": [136], "37": [137], "38": [138], "40": [140], "41": [141], "43": [143], "44": [144], "45": [145], "47": [147], "48": [148], "49": [149], "50": [150], "51": [151], "53": [153], "54": [154], "56": [156], "57": [157], "59": [159], "60": [160], "61": [161], "63": [163], "66": [166], "68": [168], "71": [171], "72": [172]};
+const EXPECT = {"1": [81, 91, 141, 151, 161, 171], "2": [82, 102, 132, 172], "3": [83, 123, 143, 153, 163], "4": [114, 124, 144, 154], "5": [105, 135, 145], "6": [116, 136, 156, 166], "7": [77, 117, 127, 137, 147, 157], "8": [98, 138, 148, 168], "9": [109, 129, 149, 159], "14": [114], "16": [116], "17": [117], "20": [120], "23": [123], "24": [124], "27": [127], "29": [129], "32": [132], "35": [135], "36": [136], "37": [137], "38": [138], "40": [140], "41": [141], "43": [143], "44": [144], "45": [145], "47": [147], "48": [148], "49": [149], "50": [150], "51": [151], "53": [153], "54": [154], "56": [156], "57": [157], "59": [159], "60": [160], "61": [161], "63": [163], "66": [166], "68": [168], "71": [171], "72": [172]};
 const BLANK = [10,12,15,18,19,21,22,25,26,28,30,31,33,34,39,42,46,52,55,58,62,64,65,67,69,70,73,74,75];
 const also = n => [...ev(`callVariants(${n})`)].filter(s => / ends in \d+ too — /.test(s));
 const ALL_EXITS = [...new Set(Object.values(EXPECT).flat())].sort((a, b) => a - b);
@@ -19,10 +19,19 @@ test('P1. every ball gets exactly the exits that end in its number, in ascending
     assert.deepEqual(got, exits, 'ball ' + b);
   }
 });
-test('P2. 92 lines in total across 61 exits', () => {
+test('P2. 75 lines in total across 44 exits', () => {
   const lines = Array.from({ length: 75 }, (_, i) => also(i + 1)).flat();
-  assert.equal(lines.length, 92);
-  assert.equal(ALL_EXITS.length, 61);
+  assert.equal(lines.length, 75);
+  assert.equal(ALL_EXITS.length, 44);
+});
+test('P2b. exits 1-75 stay on their own ball only: no "ends in" line uses an exit under 76', () => {
+  for (let n = 1; n <= 75; n++) for (const s of also(n)) assert.ok(+s.match(/^Parkway Exit (\d+)/)[1] > 75, s);
+  assert.ok(ev('Object.keys(PARKWAY_ALSO).every(k=>+k>75)'));
+});
+test('P2c. Exit 11 is on ball 11 only (not on ball 1); likewise 25, 38, 63, 74...', () => {
+  for (const [e, b] of [[11, 1], [13, 3], [17, 7], [25, 5], [29, 9], [36, 6], [37, 7], [38, 8], [41, 1], [44, 4], [48, 8], [52, 2], [58, 8], [63, 3], [67, 7], [69, 9], [74, 4]])
+    assert.ok(!also(b).some(s => s.startsWith(`Parkway Exit ${e} `)), `exit ${e} on ball ${b}`);
+  assert.ok(ev('callVariants(11)').some(s => /^Parkway Exit 11 — /.test(s)));
 });
 test('P3. balls with no matching exit get no "ends in" line', () => {
   for (const b of Object.keys(Array.from({ length: 75 })).map(i => +i + 1))
@@ -58,7 +67,7 @@ test('P10. classic lingo stays first, then the ball\'s own exit line, then the "
   assert.doesNotMatch(v[0], /Parkway/);
   assert.match(v[v.length - 2] + v[v.length - 1], /Parkway Exit 13 —/);
   const v7 = [...ev('callVariants(7)')];
-  assert.ok(v7.slice(-9).every(s => / ends in 7 too — /.test(s)));
+  assert.ok(v7.slice(-6).every(s => / ends in 7 too — /.test(s)));
   const i = v.findIndex(s => /^Parkway Exit 13 —/.test(s));
   assert.ok(v.slice(0, i).every(s => !/ ends in /.test(s)));
 });

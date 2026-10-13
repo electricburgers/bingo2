@@ -32,29 +32,13 @@ const PARKWAY_EXITS = {
   74: "Parkway Exit 74 — Lacey Road, Forked River. Grab a coffee at the Celia Cruz Service Area. ¡Azúcar!",
 };
 
-/* "Also ends in" banter: any Parkway exit whose number ENDS in a ball's number gets a line on that ball too
-   (Exit 142 lands on 2 and 42; Exit 25 on 5; Exit 11 on 1). callVariants() builds "Parkway Exit E ends in B too — <blurb>".
+/* "Also ends in" banter: any Parkway exit ABOVE 75 whose number ENDS in a ball's number gets a line on that ball
+   too (Exit 142 lands on 2 and 42; Exit 105 on 5). Exits 1–75 are NOT here: they stay on their own ball only
+   (Exit 11 is for ball 11, not ball 1). callVariants() builds "Parkway Exit E ends in B too — <blurb>".
    Only plain-numbered exits that BOTH sources above agree on are listed — lettered (100A, 131B…), renumbered
    (88/89) and single-source exits (118, 125, 128, 130, 139, 142, 155, 158, 165) are left out on purpose.
    Blurbs stay <= 60 chars so the whole line fits the 100-char banter slot. */
 const PARKWAY_ALSO = {
-  11:"Crest Haven Road. A crest, a haven AND a road!",
-  13:"Swainton and Avalon. Beach bound!",
-  17:"Sea Isle City. Pack the beach tags!",
-  25:"Ocean City, where the bars are dry. Plan ahead!",
-  29:"Somers Point, last stop before Ocean City!",
-  36:"Northfield and Pleasantville. Hold your wallet!",
-  37:"Pleasantville, round two of the casino run!",
-  38:"the Atlantic City Expressway. Feeling lucky?",
-  41:"Galloway and Stockton University. Go Ospreys!",
-  44:"Pomona Road to Smithville. Candle shop alert!",
-  48:"Port Republic, a city small enough to miss!",
-  52:"New Gretna. Jersey Devil country!",
-  58:"Tuckerton. If you've been, you've been!",
-  63:"Route 72 to Long Beach Island. Bring bug spray!",
-  67:"Barnegat. Dutch for 'inlet of the breakers.'",
-  69:"Wells Mills Road, Waretown. Nice!",
-  74:"Forked River and the Celia Cruz Service Area. ¡Azúcar!",
   77:"Berkeley Township. Not the California one!",
   81:"Lakehurst Road, home of the famous airship hangar!",
   82:"Route 37 to Seaside Heights. Boardwalk games ahead!",

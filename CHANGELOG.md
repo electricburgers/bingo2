@@ -4,6 +4,11 @@ All notable changes to Bingo Caller. Newest first. Versions before 2.29 were bac
 history; commits that didn't carry a version bump are listed under the next version that shipped them,
 each tagged with its short hash and date. Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [2.42] — 2026-10-13
+
+### Fixed
+- **Exits 1–75 stay on their own ball.** The new "ends in" banter now only uses Parkway exits above 75 (Exit 142 on balls 2 and 42, Exit 105 on ball 5…), so Exit 11 is only on ball 11 — not also on ball 1 — and likewise 25, 38, 63, 74 and the rest. That trims the "ends in" lines from 92 to 75 (44 exits).
+
 ## [2.41] — 2026-10-13
 
 ### Added
