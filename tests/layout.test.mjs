@@ -47,8 +47,8 @@ test('L8. changelog documents the move', () => {
 import { loadApp } from './helpers.mjs';
 const { run: ev } = loadApp();
 
-test('L9. every banter line is at most 100 characters, so it always fits the reserved space', () => {
-  const long = ev(`Array.from({length:75},(_,i)=>callVariants(i+1)).flat().filter(s=>s.length>100)`);
+test('L9. every banter line is at most 95 characters, so it always fits the reserved four-line space', () => {
+  const long = ev(`Array.from({length:75},(_,i)=>callVariants(i+1)).flat().filter(s=>s.length>95)`);
   assert.deepEqual([...long], []);
 });
 test('L10. the banter slot has a FIXED four-line height (not just a minimum)', () => {
@@ -57,15 +57,14 @@ test('L10. the banter slot has a FIXED four-line height (not just a minimum)', (
   assert.doesNotMatch(r, /min-height/);
   assert.match(r, /line-height:1\.35/);
 });
-test('L11. the banter uses the full card width (no side columns reserved for the cycle button)', () => {
-  assert.doesNotMatch(rule('.callout-row'), /grid-template-columns/);
-  assert.doesNotMatch(css, /\.callout\{[^}]*grid-column/);
+test('L11. the banter row is a grid: the text takes the remaining width, a fixed column on the right holds the button', () => {
+  assert.match(rule('.callout-row'), /grid-template-columns:1fr \d+px/);
 });
-test('L12. the cycle button lives in the Call / in-play row, not beside the banter', () => {
-  const meta = html.slice(html.indexOf('class="callmeta"'), html.indexOf('id="drawScope"'));
-  assert.match(meta, /id="cycleBtn"/);
+test('L12. the cycle button sits in the banter row, to the right of the banter text', () => {
   const row = html.slice(html.indexOf('id="calloutRow"'), html.indexOf('class="callmeta"'));
-  assert.doesNotMatch(row, /id="cycleBtn"/);
+  assert.ok(row.indexOf('id="callout"') > -1 && row.indexOf('id="cycleBtn"') > row.indexOf('id="callout"'));
+  const meta = html.slice(html.indexOf('class="callmeta"'), html.indexOf('id="drawScope"'));
+  assert.doesNotMatch(meta, /id="cycleBtn"/);
 });
 test('L13. order is ball, banter, Call/in-play, draw scope, Call Next Ball with nothing between', () => {
   const order = ['ball', 'callout', 'callIdx', 'drawScope', 'callBtn'].map(at);

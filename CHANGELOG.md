@@ -4,6 +4,17 @@ All notable changes to Bingo Caller. Newest first. Versions before 2.29 were bac
 history; commits that didn't carry a version bump are listed under the next version that shipped them,
 each tagged with its short hash and date. Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [2.43] — 2026-10-13
+
+### Changed
+- **Banter is left-aligned**, and the new-joke button moves to the right of it (a fixed 44px column, vertically centered), instead of sitting by "Call N · in play".
+- **New icon for the new-joke button:** a shuffle (two crossing arrows) inside a speech bubble, drawn as an inline SVG that takes the button's color; it replaces the ↻ arrow.
+- The banter keeps its fixed four-line slot. Because the button now takes a column again, the banter font scales down slightly on the narrowest phones (320px), and the line-length cap tightens from 100 to 95 characters (eight Parkway lines were trimmed) so the longest joke always fits.
+
+### Added
+- **More "ends in" Parkway exits:** Exits 89, 125, 130, 131, 139, 142, 155 and 165 are in, each confirmed by at least two sources (Wikipedia, eastcoastroads.com and AARoads) — e.g. Exit 142 (I-78) on balls 2 and 42, Exit 155 on 55, Exit 165 on 65, Exit 125 on 25. That makes 89 "ends in" lines from 52 exits. Still out: 88 (renumbered) and 118, 128, 158 (only one source).
+- **Vitamin banter for B-6 and B-12:** three new lines each on balls 6 and 12 (pyridoxine, bananas and chickpeas; cobalamin, the cobalt in it, fish, eggs and dairy). The classic call-outs stay first; tap ↻ to cycle to them. 11 new tests (`tests/vitamins.test.mjs`).
+
 ## [2.42] — 2026-10-13
 
 ### Fixed

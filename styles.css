@@ -123,27 +123,29 @@
   .drawscope{text-align:center;font-size:.98rem;color:var(--muted);margin-top:2px;font-weight:700}
   .drawscope:empty{display:none}
 
-  /* Banter gets a STATIC four-line slot (4 × 1.35em), full card width. Every call-out is capped at 100
-     characters (tests enforce it), which fits four lines even on a 320px phone, so a long multi-line joke
-     never grows the box and nothing below it — Call / in play, the Call button, Auto, recents — moves.
-     Short jokes just sit centered in the same slot. */
+  /* Banter gets a STATIC four-line slot (4 × 1.35em) beside the new-joke button. Text is left-aligned and starts
+     at the left edge; the button lives in a fixed 44px column on the right, vertically centred, so neither the text
+     length nor the button ever moves anything below. Every call-out is capped at 95 characters (tests enforce it).
+     The font scales down a touch on the narrowest phones (320px) so the longest line still fits four lines.
+     Short jokes just sit at the left in the same slot. */
   .callout{
-    text-align:center;font-weight:800;font-size:1.02rem;color:var(--accent-fg);
-    padding:0 8px;line-height:1.35;
+    text-align:left;font-weight:800;font-size:clamp(.9rem,3.2vw + .3rem,1.02rem);color:var(--accent-fg);
+    padding:0 2px;line-height:1.35;
     height:5.4em;
-    display:flex;align-items:center;justify-content:center;
+    display:flex;align-items:center;justify-content:flex-start;
   }
-  .callout-row{display:block;width:100%;margin-top:4px}
-  /* The cycle button sits in the Call / in-play row right above Call Next Ball: it keeps its space (just
-     hides) while there is no banter yet, so the row never changes size. */
+  .callout-row{display:grid;grid-template-columns:1fr 44px;align-items:center;gap:8px;width:100%;margin-top:4px}
+  /* The cycle button keeps its space (just hides) while there is no banter yet, so the row never changes size. */
   .ball-wrap:has(.callout:empty) .cyclebtn{visibility:hidden}
   .cyclebtn{
+    align-self:center;
     border:1px solid var(--line);background:var(--surface-2);color:var(--muted);
-    border-radius:30%;font-size:1.05rem;font-weight:700;
+    border-radius:30%;
     display:inline-flex;align-items:center;justify-content:center;
-    width:38px;height:38px;min-width:38px;min-height:38px;
+    width:44px;height:44px;min-width:44px;min-height:44px;padding:0;
     touch-action:manipulation;
   }
+  .cyclebtn svg{width:26px;height:26px;display:block}
   .cyclebtn:hover{color:var(--accent-fg);border-color:var(--accent)}
   .cyclebtn:active{transform:scale(.96)}
   .bs-callout{font-weight:800;color:var(--accent-fg);font-size:clamp(1.1rem,4.5vw,2.6rem);min-height:1.2em;padding:0 12px;text-align:center}
