@@ -177,18 +177,20 @@
   .btn.danger{color:var(--warn)}
 
   /* ---------- Recent strip ----------
-     Every chip is the same two fixed-width cells — a colored letter badge and the number — so a narrow "I"
-     or a 1-digit number never makes a chip narrower than "G 52". The chip's own width is fixed too, which
-     keeps wrapping dependent only on the container width, not on which balls were called. */
+     Five equal grid columns, so five chips always fit in one row at any width and every chip is exactly
+     the same width. Inside, each chip is the same two fixed-width cells — a colored letter badge and the
+     number — so a narrow "I" or a 1-digit number never changes its size. The chip is a rounded rectangle
+     (not a pill) to spend less width on curve, and its text scales down on narrow phones. */
   .recent-label{font-size:.72rem;font-weight:800;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin-top:12px}
-  .recent{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;min-height:42px;align-items:center}
+  .recent{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:6px;min-height:42px;align-items:center}
+  .recent .muted{grid-column:1 / -1}
   .chip{
-    display:inline-flex;align-items:center;justify-content:center;gap:.3em;box-sizing:border-box;
-    width:5em;padding:.35em .4em;border-radius:999px;
-    background:var(--surface-2);border:1px solid var(--line);font-weight:800;font-size:.95rem;white-space:nowrap;
+    display:inline-flex;align-items:center;justify-content:center;gap:.2em;box-sizing:border-box;
+    width:100%;padding:.3em .2em;border-radius:10px;
+    background:var(--surface-2);border:1px solid var(--line);font-weight:800;font-size:clamp(.72rem,3.4vw,.95rem);white-space:nowrap;
   }
-  .chip .l{display:inline-block;width:1.5em;text-align:center;font-weight:900;border-radius:.45em;background:var(--lc-bg);color:var(--lc-text)}
-  .chip .n{display:inline-block;width:2.2ch;text-align:center;font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+  .chip .l{display:inline-block;width:1.45em;text-align:center;font-weight:900;border-radius:.4em;background:var(--lc-bg);color:var(--lc-text)}
+  .chip .n{display:inline-block;width:2.1ch;text-align:center;font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
   .chip.latest{outline:2px solid var(--accent);outline-offset:1px}
 
   /* ---------- Auto-call ---------- */
@@ -330,7 +332,7 @@
   .bigscreen.show{display:flex}
   .bs-ball .letter{font-size:clamp(5rem,22vw,18rem);font-weight:900;line-height:.85;color:var(--ball-text,var(--text))}
   .bs-ball .num{font-size:clamp(7rem,40vw,30rem);font-weight:900;line-height:.8;letter-spacing:-.03em}
-  .bs-recent{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+  .bs-recent{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:clamp(6px,1.5vw,14px);width:min(92vw,640px)}
   .bs-recent .chip{font-size:clamp(1rem,3vw,1.8rem)}
   .bs-meta{color:var(--muted);font-size:clamp(1rem,3vw,1.6rem)}
   .bs-exit{position:fixed;top:calc(env(safe-area-inset-top,0px) + 16px);right:calc(env(safe-area-inset-right,0px) + 16px);z-index:61}

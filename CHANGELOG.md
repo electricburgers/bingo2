@@ -4,6 +4,12 @@ All notable changes to Bingo Caller. Newest first. Versions before 2.29 were bac
 history; commits that didn't carry a version bump are listed under the next version that shipped them,
 each tagged with its short hash and date. Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [2.37] — 2026-10-13
+
+### Changed
+- **Recent-call chips are rounded rectangles** instead of pills, laid out in a five-column grid so all five calls always fit in one row (only four fit before). Every chip is exactly the same width; the text scales down a little on narrow phones. The big-screen strip uses the same five-column layout.
+- Recent-chip tests updated for the grid layout (4 new).
+
 ## [2.36] — 2026-10-12
 
 ### Changed
