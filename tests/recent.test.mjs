@@ -1,4 +1,4 @@
-/* Recent-calls chips: three letter-discernibility styles + fixed-width cells, written test-first. */
+/* Recent-calls chips: the Badge look (letter in a colored badge) with fixed-width cells. Written test-first. */
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { read, html, scripts, loadApp } from './helpers.mjs';
@@ -6,130 +6,77 @@ import { read, html, scripts, loadApp } from './helpers.mjs';
 const { run: ev } = loadApp();
 const css = read('styles.css');
 const rule = sel => { const m = css.match(new RegExp('(?:^|\\n)\\s*' + sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\{([^}]*)\\}')); return m ? m[1] : ''; };
-const chip = (n, style, latest = false) => ev(`recentChipHTML(${n}, ${latest}, '${style}')`);
-const STYLES = ['badge', 'solid', 'shape'];
+const chip = (n, latest = false) => ev(`recentChipHTML(${n}, ${latest})`);
 
-// ---- three versions ----------------------------------------------------------------------------
-test('R1. exactly three recent-call styles: badge, solid, shape, each named and described', () => {
-  assert.equal(ev("Object.keys(RECENT_STYLES).join(',')"), 'badge,solid,shape');
-  assert.ok(ev('Object.values(RECENT_STYLES).every(s=>s.name&&s.desc)'));
+// ---- the badge chip ----------------------------------------------------------------------------
+test('R1. a chip shows the letter and the number', () => {
+  assert.match(chip(33), />N</);
+  assert.match(chip(33), />33</);
 });
-test('R2. new games default to the badge style', () => {
-  assert.equal(ev('defaultState().settings.recentStyle'), 'badge');
+test('R2. the letter sits in its own badge cell, the number in its own cell', () => {
+  assert.match(chip(8), /<span class="l">B<\/span><span class="n">8<\/span>/);
 });
-test('R3. normalizeState fills a missing style and repairs an invalid one', () => {
-  ev('delete S.settings.recentStyle; normalizeState();');
-  assert.equal(ev('S.settings.recentStyle'), 'badge');
-  ev("S.settings.recentStyle='bogus'; normalizeState();");
-  assert.equal(ev('S.settings.recentStyle'), 'badge');
-  ev("S.settings.recentStyle='shape'; normalizeState();");
-  assert.equal(ev('S.settings.recentStyle'), 'shape');
-  ev("S.settings.recentStyle='badge';");
+test('R3. only the newest chip is marked latest', () => {
+  assert.match(chip(8, true), /latest/);
+  assert.doesNotMatch(chip(8, false), /latest/);
 });
-test('R4. every style shows the letter and the number', () => {
-  for (const st of STYLES) { const h = chip(33, st); assert.match(h, />N</); assert.match(h, />33</); }
-});
-test('R5. each chip carries its style class', () => {
-  for (const st of STYLES) assert.match(chip(8, st), new RegExp(`class="chip s-${st}`));
-});
-test('R6. only the newest chip is marked latest', () => {
-  assert.match(chip(8, 'badge', true), /latest/);
-  assert.doesNotMatch(chip(8, 'badge', false), /latest/);
-});
-test('R7. each letter has its own distinct shape (readable without colour)', () => {
-  assert.equal(ev("Object.keys(LETTER_SHAPES).join('')"), 'BINGO');
-  assert.equal(ev('new Set(Object.values(LETTER_SHAPES)).size'), 5);
-});
-test('R8. only the shape style draws the shape, and it is hidden from screen readers', () => {
-  assert.match(chip(8, 'shape'), /class="sh" aria-hidden="true">●</);
-  assert.doesNotMatch(chip(8, 'badge'), /class="sh"/);
-  assert.doesNotMatch(chip(8, 'solid'), /class="sh"/);
-  assert.match(chip(40, 'shape'), /■/);
-});
-test('R9. letter colours reach the chip through the AAA-safe pairs', () => {
-  const h = chip(8, 'badge');
+test('R4. letter colours reach the badge through the AA-safe background/text pair', () => {
+  const h = chip(8);
   assert.match(h, /--lc-bg:var\(--col-B-bg\)/);
   assert.match(h, /--lc-text:var\(--col-B-text\)/);
-  assert.match(h, /--lc-fg:var\(--col-B-fg\)/);
 });
-test('R10. solid and badge pairs are AAA (7:1) for every theme letter colour', () => {
-  const bad = ev(`Object.values(THEMES).flatMap(t=>Object.values(t.letters)).filter(h=>{const b=accessibleBadge(h,7);return _contrast(b.bg,b.text)<7;})`);
+test('R5. the badge fills the letter cell with that pair', () => {
+  assert.match(rule('.chip .l'), /background:var\(--lc-bg\)/);
+  assert.match(rule('.chip .l'), /color:var\(--lc-text\)/);
+});
+test('R6. badge pairs are AA (4.5:1) for every theme letter colour', () => {
+  const bad = ev(`Object.values(THEMES).flatMap(t=>Object.values(t.letters)).filter(h=>{const b=accessibleBadge(h,AA_TARGET);return _contrast(b.bg,b.text)<4.5;})`);
   assert.equal(bad.length, 0);
 });
-test('R11. styles are CSS-distinct: badge fills the letter slot, solid fills the whole chip, shape colours text', () => {
-  assert.match(rule('.chip.s-badge .l'), /background:var\(--lc-bg\)/);
-  assert.match(rule('.chip.s-solid'), /background:var\(--lc-bg\)/);
-  assert.match(rule('.chip.s-solid'), /color:var\(--lc-text\)/);
-  assert.match(rule('.chip.s-shape .l'), /color:var\(--lc-fg\)/);
-  assert.match(rule('.chip.s-shape .sh'), /color:var\(--lc-fg\)/);
+test('R7. the extra styles are gone: no picker, no solid/shape variants, no settings key', () => {
+  assert.equal(ev('typeof RECENT_STYLES'), 'undefined');
+  assert.equal(ev('typeof LETTER_SHAPES'), 'undefined');
+  assert.doesNotMatch(html, /recentStyleRow/);
+  assert.ok(!scripts.includes('js/data/recent-styles.js'));
+  assert.doesNotMatch(css, /s-solid|s-shape|style-opt/);
+  assert.doesNotMatch(chip(40), /class="sh"|s-solid|s-shape/);
+  assert.equal(ev("'recentStyle' in defaultState().settings"), false);
 });
 
 // ---- equal-width cells -----------------------------------------------------------------------
-test('R12. every chip has the same cell structure no matter the ball', () => {
-  for (const st of STYLES) {
-    const skeleton = n => chip(n, st).replace(/>[^<]+</g, '><').replace(/--col-\w-/g, '--col-X-');
-    const first = skeleton(1);
-    for (let n = 1; n <= 75; n++) assert.equal(skeleton(n), first, `${st} ${n}`);
-  }
+test('R8. every chip has the same cell structure no matter the ball', () => {
+  const skeleton = n => chip(n).replace(/>[^<]+</g, '><').replace(/--col-\w-/g, '--col-X-');
+  const first = skeleton(1);
+  for (let n = 1; n <= 75; n++) assert.equal(skeleton(n), first, String(n));
 });
-test('R13. the chip itself has a fixed width, not a content-sized one', () => {
-  assert.match(rule('.chip'), /(?:^|;)\s*width:var\(--chip-w\)/);
-  assert.match(css, /\.chip\.s-(?:badge|solid)\{[^}]*--chip-w:[\d.]+em/);
-  assert.match(css, /\.chip\.s-shape\{[^}]*--chip-w:[\d.]+em/);
+test('R9. the chip itself has a fixed width, not a content-sized one', () => {
+  assert.match(rule('.chip'), /(?:^|;)\s*width:[\d.]+em/);
 });
-test('R14. the letter cell is a fixed-width, centred slot (I is as wide as G)', () => {
+test('R10. the letter cell is a fixed-width, centred slot (I is as wide as G)', () => {
   const r = rule('.chip .l');
   assert.match(r, /width:[\d.]+em/);
   assert.match(r, /text-align:center/);
   assert.match(r, /display:inline-block|display:inline-flex|display:flex/);
 });
-test('R15. the number cell is a fixed-width, centred slot with tabular digits', () => {
+test('R11. the number cell is a fixed-width, centred slot with tabular digits', () => {
   const r = rule('.chip .n');
   assert.match(r, /width:[\d.]+(?:em|ch)/);
   assert.match(r, /text-align:center/);
   assert.match(r, /tabular-nums/);
 });
-test('R16. the shape cell is a fixed-width, centred slot', () => {
-  const r = rule('.chip .sh');
-  assert.match(r, /width:[\d.]+em/);
-  assert.match(r, /text-align:center/);
-});
-test('R17. the big-screen strip does not re-introduce content-sized padding', () => {
+test('R12. the big-screen strip does not re-introduce content-sized padding', () => {
   assert.doesNotMatch(rule('.bs-recent .chip'), /padding/);
 });
-test('R18. recent chips wrap as fixed-size items (flex-wrap, not content-sized grid)', () => {
+test('R13. recent chips wrap as fixed-size items (flex-wrap, not content-sized grid)', () => {
   assert.match(rule('.recent'), /display:flex/);
   assert.match(rule('.recent'), /flex-wrap:wrap/);
 });
-
-// ---- wiring ------------------------------------------------------------------------------------
-test('R19. renderRecent builds chips from recentChipHTML using the saved style', () => {
+test('R14. renderRecent builds chips from recentChipHTML and flags only the first as latest', () => {
   const src = read('js/ui/recent.js');
-  assert.match(src, /recentChipHTML\(/);
-  assert.match(src, /S\.settings\.recentStyle/);
+  assert.match(src, /recentChipHTML\(n, i===0\)/);
 });
-test('R20. settings has a labelled picker for the recent-call style', () => {
-  assert.match(html, /id="recentStyleRow"[^>]*role="group"[^>]*aria-label="Recent calls style"/);
-  assert.match(read('js/ui/recent.js'), /buildRecentStyleRow/);
-  assert.match(read('js/main.js'), /buildRecentStyleRow\(\)/);
-});
-test('R21. choosing a style saves it and repaints', () => {
-  ev("S.settings.recentStyle='badge';");
-  assert.equal(ev("recentStyleKey()"), 'badge');
-  ev("S.settings.recentStyle='solid';");
-  assert.equal(ev("recentStyleKey()"), 'solid');
-  ev("S.settings.recentStyle='nope';");
-  assert.equal(ev("recentStyleKey()"), 'badge');
-  ev("S.settings.recentStyle='badge';");
-});
-test('R22. recent-styles.js is loaded before recent.js and precached', () => {
-  assert.ok(scripts.includes('js/data/recent-styles.js'));
-  assert.ok(scripts.indexOf('js/data/recent-styles.js') < scripts.indexOf('js/ui/recent.js'));
-  ev(read('js/config/precache.js'));
-  assert.ok(ev('PRECACHE_URLS').includes('./js/data/recent-styles.js'));
-});
-test('R23. changelog documents the recent-call styles and equal-width cells', () => {
-  const top = read('CHANGELOG.md').split('## [2.34]')[0];
-  assert.match(top, /recent/i);
+test('R15. changelog documents the badge-only chip and equal-width cells', () => {
+  const top = read('CHANGELOG.md').split('## [2.35]')[0];
+  assert.match(top, /badge/i);
   assert.match(top, /same width|equal width|fixed width/i);
 });

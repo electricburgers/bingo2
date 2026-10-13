@@ -17,17 +17,17 @@ function applyTheme(){
   const surfaces=[effBg, effSurface, effSurface2];
 
   // Secondary/"muted" text — shift toward the theme's own text color (not black/white)
-  // just enough to clear AAA against every surface it sits on (bg, card, chip/button fills).
-  root.style.setProperty('--muted', _shiftFor(base['--muted'], effText, surfaces, AAA_TARGET).color);
+  // just enough to clear AA against every surface it sits on (bg, card, chip/button fills).
+  root.style.setProperty('--muted', _shiftFor(base['--muted'], effText, surfaces, AA_TARGET).color);
 
-  // Accent used AS TEXT (callouts, badges, "on" states) needs its own AAA-safe variant —
+  // Accent used AS TEXT (callouts, badges, "on" states) needs its own AA-safe variant —
   // the raw --accent stays untouched for borders/fills/progress bars, which only need the
   // much looser 3:1 non-text bar and should keep the theme's intended punchy color.
-  root.style.setProperty('--accent-fg', accessibleColor(base['--accent'], surfaces, AAA_TARGET));
+  root.style.setProperty('--accent-fg', accessibleColor(base['--accent'], surfaces, AA_TARGET));
   // Icon/dot drawn ON TOP of a solid --accent fill (switch thumb, editor "on" tile).
   root.style.setProperty('--accent-on', bestTextOn(base['--accent']));
   // Solid accent badge (host-only tag) — was a low-opacity tint that vanished in several themes.
-  const accentBadge=accessibleBadge(base['--accent'], AAA_TARGET);
+  const accentBadge=accessibleBadge(base['--accent'], AA_TARGET);
   root.style.setProperty('--accent-badge-bg', accentBadge.bg);
   root.style.setProperty('--accent-badge-text', accentBadge.text);
 
@@ -39,22 +39,22 @@ function applyTheme(){
   // surfaces alone under-shifts it since the tint pulls the effective bg toward green.
   const goodTints=[_mix(effBg,'#3ddc84',0.12), _mix(effSurface,'#3ddc84',0.07),
                     _mix(effSurface,'#3ddc84',0.13), _mix(effSurface2,'#3ddc84',0.12)];
-  root.style.setProperty('--good-fg', accessibleColor('#3ddc84', [...surfaces, ...goodTints], AAA_TARGET));
-  root.style.setProperty('--warn', accessibleColor('#ff6b6b', [effSurface, effSurface2], AAA_TARGET));
+  root.style.setProperty('--good-fg', accessibleColor('#3ddc84', [...surfaces, ...goodTints], AA_TARGET));
+  root.style.setProperty('--warn', accessibleColor('#ff6b6b', [effSurface, effSurface2], AA_TARGET));
 
   // Per-letter badge: background + text chosen together so a called cell (and the column
-  // header, which reuses the same pair) always hits AAA, regardless of how saturated or
-  // pale the theme's letter color is. --col-L-fg is a separate AAA-safe text-only variant
+  // header, which reuses the same pair) always hits AA, regardless of how saturated or
+  // pale the theme's letter color is. --col-L-fg is a separate AA-safe text-only variant
   // for places that show the raw letter color as text on an existing surface (the current
   // ball, its big-screen mirror, the next-up preview, recent-call chips) rather than as a
   // matching badge — --col-L itself stays untouched for decorative uses (the ball's ring).
   LETTERS.forEach(L=>{
     const hex=S.settings.letters[L]||'#888888';
     root.style.setProperty('--col-'+L, hex);
-    const badge=accessibleBadge(hex, AAA_TARGET);
+    const badge=accessibleBadge(hex, AA_TARGET);
     root.style.setProperty('--col-'+L+'-bg', badge.bg);
     root.style.setProperty('--col-'+L+'-text', badge.text);
-    root.style.setProperty('--col-'+L+'-fg', accessibleColor(hex, surfaces, AAA_TARGET));
+    root.style.setProperty('--col-'+L+'-fg', accessibleColor(hex, surfaces, AA_TARGET));
   });
   applyScale();
 }

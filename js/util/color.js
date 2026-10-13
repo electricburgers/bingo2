@@ -1,5 +1,5 @@
 "use strict";
-/* WCAG contrast + accessible color derivation */
+/* WCAG AA contrast + accessible color derivation */
 /* WCAG 2.1 relative luminance + contrast ratio helpers. */
 function _wcagLin(c){ c/=255; return c<=0.03928?c/12.92:Math.pow((c+0.055)/1.055,2.4); }
 function _luminance(hex){
@@ -19,9 +19,9 @@ function bestTextOn(bgHex){
   catch(e){ return '#000000'; }
 }
 
-/* ---------- AAA-guaranteed color derivation ----------
-   WCAG AAA needs 7:1 for normal text. A theme's hand-picked accent/muted/
-   letter colors often don't hit that against every surface they land on
+/* ---------- AA-guaranteed color derivation ----------
+   WCAG AA needs 4.5:1 for normal text. A theme's hand-picked accent/muted/
+   letter colors can miss that against every surface they land on
    (this is exactly why the "current ball" ring and the light theme's callout
    text were unreadable before). Rather than hand-tune 7 themes × a dozen
    color pairs, every derived color below is computed: nudge the original
@@ -72,4 +72,4 @@ function accessibleBadge(hex, target){
   return res;
 }
 
-const AAA_TARGET = 7; // WCAG AAA, normal text
+const AA_TARGET = 4.5; // WCAG AA, normal text

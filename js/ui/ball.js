@@ -12,7 +12,7 @@ function renderBall(pop){
     const lt=letterFor(last);
     L.textContent=lt; N.textContent=last;
     // --ball-color is the raw, saturated letter hue (decorative border/glow only).
-    // --ball-text is a separately-computed AAA-safe variant for the letter glyph itself,
+    // --ball-text is a separately-computed AA-safe variant for the letter glyph itself,
     // since the same bright hue that looks great as a ring often can't hit 7:1 as text.
     ball.style.setProperty('--ball-color', `var(--col-${lt})`);
     ball.style.setProperty('--ball-text', `var(--col-${lt}-fg)`);

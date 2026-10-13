@@ -4,6 +4,14 @@ All notable changes to Bingo Caller. Newest first. Versions before 2.29 were bac
 history; commits that didn't carry a version bump are listed under the next version that shipped them,
 each tagged with its short hash and date. Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [2.36] — 2026-10-12
+
+### Changed
+- **WCAG AA, not AAA:** the contrast target drops from 7:1 to 4.5:1 (`AA_TARGET`), so the runtime color helpers nudge colors far less and the designed palettes stay bright.
+- **All nine themes retuned.** Each is authored to pass AA as written (text, muted text and all five letter colors ≥ 4.5:1 on the page, card and chip backgrounds; accent ≥ 3:1 against the page) while getting more colorful: Dim Bar is now a neon indigo, Velvet Night a deep plum, Bingo Hall a rich navy with gold, Daylight and Parchment use saturated letter colors, High Contrast swaps its white N for magenta, and the color-blind themes get brighter Okabe-Ito hues on a deep blue. "(AAA)" is gone from theme names.
+- **Recent-call chips are Badge-only** (letter in a colored badge, then the number). The Solid and Shapes looks and the Settings picker from 2.35 are removed; the cells keep their fixed, equal widths.
+- Tests: 18 new theme-AA tests (`tests/themes-aa.test.mjs`); recent-chip tests trimmed to the badge.
+
 ## [2.35] — 2026-10-12
 
 ### Added

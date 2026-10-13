@@ -136,16 +136,16 @@ test('23. time helpers format as expected', () => {
 });
 
 // ---- accessibility math -------------------------------------------------------------------
-test('24. contrast: black on white is 21:1; accessibleColor/Badge reach AAA (7:1)', () => {
+test('24. contrast: black on white is 21:1; accessibleColor/Badge reach AA (4.5:1)', () => {
   assert.ok(Math.abs(ev("_contrast('#000000','#ffffff')") - 21) < 1e-9);
-  assert.ok(ev("_contrast(accessibleColor('#ffd23f',['#15171c','#1f232b'],7),'#15171c')") >= 7);
-  const b = ev("accessibleBadge('#52a6f0',7)");
-  assert.ok(ev(`_contrast('${b.bg}','${b.text}')`) >= 7);
+  assert.ok(ev("_contrast(accessibleColor('#ffd23f',['#15171c','#1f232b'],AA_TARGET),'#15171c')") >= 4.5);
+  const b = ev("accessibleBadge('#52a6f0',AA_TARGET)");
+  assert.ok(ev(`_contrast('${b.bg}','${b.text}')`) >= 4.5);
 });
-test('25. every theme letter color yields an AAA-safe foreground on its surfaces', () => {
+test('25. every theme letter color yields an AA-safe foreground on its surfaces', () => {
   const fails = ev(`Object.values(THEMES).flatMap(t=>{
     const s=[t.vars['--bg'],t.vars['--surface'],t.vars['--surface-2']];
-    return Object.values(t.letters).filter(h=>Math.min(...s.map(bg=>_contrast(accessibleColor(h,s,7),bg)))<7);
+    return Object.values(t.letters).filter(h=>Math.min(...s.map(bg=>_contrast(accessibleColor(h,s,AA_TARGET),bg)))<4.5);
   })`);
   assert.deepEqual(fails, []);
 });
