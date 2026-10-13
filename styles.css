@@ -360,6 +360,27 @@
   .pv-sw.free{border-style:dashed;color:var(--accent-fg);font-size:.9em}
   .pv-note{font-weight:700}
 
+  /* ---------- Mobile dock (phones only) ---------- */
+  .dock{
+    display:none;position:fixed;left:0;right:0;bottom:0;z-index:30;gap:6px;align-items:stretch;justify-content:space-between;
+    background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -6px 24px rgba(0,0,0,.35);
+    padding:8px calc(env(safe-area-inset-right,0px) + 8px) calc(env(safe-area-inset-bottom,0px) * 1.6 + 8px) calc(env(safe-area-inset-left,0px) + 8px);
+  }
+  .dock-btn{
+    flex:1 1 0;min-width:0;min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+    background:transparent;border:1px solid transparent;border-radius:14px;font-weight:700;font-size:.72rem;
+  }
+  .dock-btn .d-icon{font-size:1.35rem;line-height:1}
+  .dock-btn:active{background:var(--surface-2)}
+  .dock-btn.on{border-color:var(--accent);color:var(--accent-fg)}
+  .dock-btn.primary{flex:1.5 1 0;background:var(--accent);color:#15171c;border-color:var(--accent-fg);min-height:60px;font-size:.8rem}
+  .dock-btn.primary:active{transform:translateY(1px)}
+  @media (max-width:699px){
+    :root{--dock-h:76px}
+    .dock{display:flex}
+    .app{padding-bottom:calc(var(--dock-h) + env(safe-area-inset-bottom,0px) * 1.6 + 16px)}
+  }
+
   /* ---------- Modal confirm ---------- */
   .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:70;display:none;align-items:center;justify-content:center;padding:20px}
   .modal.show{display:flex}
@@ -386,3 +407,8 @@
   .commit-list>li{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
   .commit-list .c-subject{font-size:.85rem;font-weight:700;color:var(--text);line-height:1.35}
   .commit-list .c-meta{font-size:.72rem;color:var(--muted);margin-top:2px}
+
+  /* Must come after the base .toast rule above. */
+  @media (max-width:699px){
+    .toast{bottom:calc(var(--dock-h) + env(safe-area-inset-bottom,0px) * 1.6 + 12px)}
+  }

@@ -18,6 +18,7 @@ function init(){
   wireIO();
   wireOverlays();
   wireKeyboard();
+  wireDock();
   registerPWA();
 }
 

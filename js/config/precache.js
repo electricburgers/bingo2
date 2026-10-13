@@ -47,6 +47,7 @@ self.PRECACHE_URLS = [
   "./js/app/wire-overlays.js",
   "./js/app/wire-settings.js",
   "./js/app/wire-keyboard.js",
+  "./js/app/dock.js",
   "./js/app/about.js",
   "./js/main.js",
   "./sw.js"

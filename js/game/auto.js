@@ -7,7 +7,7 @@ function startAuto(){
   autoOn=true; autoPaused=false;
   $('#autoBtn').textContent='⏸ Pause'; setToggle($('#autoBtn'), true);
   scheduleAuto((S.settings.autoInterval||+$('#intRange').value)*1000);
-  syncWakeLock();
+  syncWakeLock(); syncDock();
 }
 function scheduleAuto(ms){
   clearTimeout(autoTimer); cancelAnimationFrame(autoRAF);
@@ -29,19 +29,19 @@ function tickCountdown(){
 function pauseAuto(){
   autoPaused=true; autoRemain=Math.max(0,autoEnd-performance.now());
   clearTimeout(autoTimer); cancelAnimationFrame(autoRAF);
-  $('#autoBtn').textContent='▶ Resume';
+  $('#autoBtn').textContent='▶ Resume'; syncDock();
 }
 function resumeAuto(){
   if(!eligibleBalls().length){ stopAuto(); return; }
   autoPaused=false; $('#autoBtn').textContent='⏸ Pause';
-  scheduleAuto(autoRemain>200?autoRemain:200);
+  scheduleAuto(autoRemain>200?autoRemain:200); syncDock();
 }
 function stopAuto(){
   autoOn=false; autoPaused=false;
   clearTimeout(autoTimer); cancelAnimationFrame(autoRAF);
   $('#autoBtn').textContent='▶ Auto Call'; setToggle($('#autoBtn'), false);
   $('#cdFill').style.width='0%';
-  syncWakeLock();
+  syncWakeLock(); syncDock();
 }
 function toggleAuto(){
   if(!autoOn) startAuto();

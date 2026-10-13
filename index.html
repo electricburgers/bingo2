@@ -248,6 +248,15 @@
   </div>
 </aside>
 
+<!-- ================= MOBILE DOCK ================= -->
+<nav class="dock" id="dock" aria-label="Quick actions">
+  <button class="dock-btn" id="dockUndo" aria-label="Undo last call"><span class="d-icon" aria-hidden="true">↩</span><span class="d-label">Undo</span></button>
+  <button class="dock-btn" id="dockPattern" aria-label="Show play style full screen"><span class="d-icon" aria-hidden="true">▦</span><span class="d-label">Pattern</span></button>
+  <button class="dock-btn primary" id="dockCall" aria-label="Call next ball"><span class="d-icon" aria-hidden="true">🎱</span><span class="d-label">Call</span></button>
+  <button class="dock-btn" id="dockAuto" aria-pressed="false" aria-label="Auto call"><span class="d-icon" aria-hidden="true">▶</span><span class="d-label">Auto</span></button>
+  <button class="dock-btn" id="dockWinner" aria-label="Declare a winner"><span class="d-icon" aria-hidden="true">🏆</span><span class="d-label">Winner</span></button>
+</nav>
+
 <!-- confirm modal -->
 <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalText">
   <div class="box">
@@ -306,6 +315,7 @@
 <script src="js/app/wire-overlays.js" defer></script>
 <script src="js/app/wire-settings.js" defer></script>
 <script src="js/app/wire-keyboard.js" defer></script>
+<script src="js/app/dock.js" defer></script>
 <script src="js/app/about.js" defer></script>
 <script src="js/main.js" defer></script>
 </body>

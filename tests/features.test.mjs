@@ -245,8 +245,8 @@ test('F47. version was bumped to at least 2.31', () => {
   const [maj, min] = ev('APP_VERSION').split('.').map(Number);
   assert.ok(maj > 2 || (maj === 2 && min >= 31));
 });
-test('F48. changelog mentions the new features under the current version', () => {
-  const v = ev('APP_VERSION');
+test('F48. changelog mentions the v2.31 features under the 2.31 entry', () => {
+  const v = '2.31';
   const entry = read('CHANGELOG.md').split('## [').find(s => s.startsWith(v + ']'));
   assert.ok(entry, 'entry for ' + v);
   for (const w of [/Parkway/i, /N column/i, /Bird/i, /full-screen/i]) assert.match(entry, w);
@@ -255,7 +255,7 @@ test('F49. styles define the pattern view overlay', () => {
   assert.match(read('styles.css'), /\.patternview\.show/);
 });
 test('F50. README test count matches the real number of tests', () => {
-  const n = [read('tests/app.test.mjs'), read('tests/features.test.mjs')]
+  const n = ['app', 'features', 'dock'].map(f => read(`tests/${f}.test.mjs`))
     .reduce((a, s) => a + (s.match(/^test\(/gm) || []).length, 0);
   assert.match(read('README.md'), new RegExp(`${n} tests`));
 });

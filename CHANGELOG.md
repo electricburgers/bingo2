@@ -4,6 +4,11 @@ All notable changes to Bingo Caller. Newest first. Versions before 2.29 were bac
 history; commits that didn't carry a version bump are listed under the next version that shipped them,
 each tagged with its short hash and date. Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [2.32] — 2026-10-12
+
+### Added
+- **Mobile bottom dock** (phones, under 700px): Undo · Pattern · **Call** · Auto · Winner pinned to the bottom, clear of the home bar. Call is the big center button, Winner is in the far corner, and Auto shows Pause/Resume while running. Hidden on tablets and desktop.
+
 ## [2.31] — 2026-10-12
 
 ### Added
