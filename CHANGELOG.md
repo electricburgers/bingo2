@@ -4,6 +4,13 @@ All notable changes to Bingo Caller. Newest first. Versions before 2.29 were bac
 history; commits that didn't carry a version bump are listed under the next version that shipped them,
 each tagged with its short hash and date. Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [2.40] — 2026-10-13
+
+### Changed
+- **Tighter gap above Call Next Ball.** The empty "drawing from…" line no longer reserves space, and the stacked margins were trimmed, so "Call N · in play" now sits snug on top of the button (the hint only appears, and takes space, when the play style limits the columns).
+- **Bigger, easier-to-hit sliders** (auto-call interval, font size, board size): a 40px-tall touch area and a 32px accent-colored thumb with a ring, on a thicker track, instead of the tiny native handle.
+- 12 more tests (`tests/controls.test.mjs`).
+
 ## [2.39] — 2026-10-13
 
 ### Changed

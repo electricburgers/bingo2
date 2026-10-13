@@ -120,7 +120,8 @@
   .ball.empty .letter{display:none}
   .callmeta{display:flex;gap:14px;justify-content:center;align-items:center;font-size:1.05rem;font-weight:600;color:var(--muted);margin-top:2px}
   .callmeta b{color:var(--text);font-weight:800}
-  .drawscope{text-align:center;font-size:.98rem;color:var(--muted);margin-top:0;min-height:18px;font-weight:700}
+  .drawscope{text-align:center;font-size:.98rem;color:var(--muted);margin-top:2px;font-weight:700}
+  .drawscope:empty{display:none}
 
   /* Banter gets a STATIC four-line slot (4 × 1.35em), full card width. Every call-out is capped at 100
      characters (tests enforce it), which fits four lines even on a 320px phone, so a long multi-line joke
@@ -153,7 +154,7 @@
 
   /* ---------- Buttons ---------- */
   .call-btn{
-    width:100%;margin-top:12px;border:none;border-radius:18px;
+    width:100%;margin-top:8px;border:none;border-radius:18px;
     background:linear-gradient(180deg,var(--good),#2bbf6f);color:#06281a;
     font-size:1.4rem;font-weight:900;letter-spacing:.01em;
     padding:20px 16px;min-height:72px;box-shadow:var(--shadow);
@@ -195,7 +196,15 @@
   .cd-track{height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--line)}
   .cd-fill{height:100%;width:0%;background:var(--accent);transition:width .25s linear}
   .range{width:100%}
-  input[type=range]{accent-color:var(--accent)}
+  /* Big, easy-to-grab slider: a 40px-tall hit area and a 32px thumb (the native one is ~16px and hard to
+     hit on a phone). Custom-drawn, so each engine gets the same track and thumb. The thumb is centred on
+     the 12px track (10px + 1px borders) with margin-top:-10px in WebKit. */
+  input[type=range]{accent-color:var(--accent);-webkit-appearance:none;appearance:none;width:100%;height:40px;margin:0;background:transparent;cursor:pointer}
+  input[type=range]::-webkit-slider-runnable-track{height:10px;border-radius:99px;background:var(--surface-2);border:1px solid var(--line)}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:32px;height:32px;margin-top:-10px;border-radius:50%;background:var(--accent);border:3px solid var(--bg);box-shadow:0 0 0 2px var(--accent),0 2px 8px rgba(0,0,0,.45)}
+  input[type=range]::-moz-range-track{height:10px;border-radius:99px;background:var(--surface-2);border:1px solid var(--line)}
+  input[type=range]::-moz-range-thumb{width:32px;height:32px;border-radius:50%;background:var(--accent);border:3px solid var(--bg);box-shadow:0 0 0 2px var(--accent),0 2px 8px rgba(0,0,0,.45)}
+  input[type=range]:active::-webkit-slider-thumb{transform:scale(1.1)}
   input[type=number],input[type=text],select{
     background:var(--surface-2);border:1px solid var(--line);color:var(--text);border-radius:10px;
     padding:9px 10px;font-size:.95rem;font-family:inherit;min-height:42px;

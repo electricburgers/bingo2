@@ -74,9 +74,10 @@ test('L13. order is ball, banter, Call/in-play, draw scope, Call Next Ball with 
   const gap = html.slice(from, html.indexOf('<button class="call-btn"')).replace(/<\/?div[^>]*>/g, '').trim();
   assert.equal(gap, '');
 });
-test('L14. the Call / in-play row hugs the button: tight margins, fixed-height draw-scope line', () => {
+test('L14. the Call / in-play row hugs the button: tight margins, no empty draw-scope line in between', () => {
   assert.ok(+rule('.callmeta').match(/margin-top:(\d+)px/)[1] <= 4);
-  assert.match(rule('.drawscope'), /min-height:\d+px/);
+  assert.match(css, /\.drawscope:empty\{display:none\}/);
+  assert.doesNotMatch(rule('.drawscope'), /min-height/);
 });
 test('L15. the cycle button hides (but keeps its space) while there is no banter', () => {
   assert.match(css, /\.ball-wrap:has\(\.callout:empty\) \.cyclebtn\{visibility:hidden\}/);
