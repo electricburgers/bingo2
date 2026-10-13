@@ -4,6 +4,11 @@ All notable changes to Bingo Caller. Newest first. Versions before 2.29 were bac
 history; commits that didn't carry a version bump are listed under the next version that shipped them,
 each tagged with its short hash and date. Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [2.33] — 2026-10-12
+
+### Changed
+- The app no longer scrolls horizontally on phones: the page, the call log, the play-style tiles, the settings drawer and the full-screen pattern view are all vertical-scroll only, and sideways rubber-banding / edge-swipe chaining is off. Pinch-to-zoom still works.
+
 ## [2.32] — 2026-10-12
 
 ### Added

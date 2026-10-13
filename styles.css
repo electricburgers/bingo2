@@ -22,7 +22,7 @@
     --shadow:0 6px 24px rgba(0,0,0,.35);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{margin:0;height:100%}
+  html,body{margin:0;height:100%;overflow-x:hidden}
   body{
     background:var(--bg);
     color:var(--text);
@@ -31,6 +31,9 @@
     line-height:1.4;
     -webkit-font-smoothing:antialiased;
     overscroll-behavior-y:contain;
+    /* Vertical-only: no sideways scroll, rubber-band or edge-swipe chaining; pinch-zoom still works. */
+    overscroll-behavior-x:none;
+    touch-action:pan-y pinch-zoom;
     /* env(safe-area-inset-*) is 0 unless the page is drawn edge-to-edge (installed
        as a standalone PWA with viewport-fit=cover, which this app is) — so these
        multipliers only ever add real space on notched/dynamic-island iPhones,
@@ -205,7 +208,7 @@
   /* ---------- Pattern selector ---------- */
   .pat-head{display:flex;gap:10px;align-items:center}
   .pat-head select{flex:1}
-  .pat-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:8px;max-height:228px;overflow:auto;padding:2px}
+  .pat-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:8px;max-height:228px;overflow-y:auto;overflow-x:hidden;padding:2px}
   .ptile{display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 4px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2);font-size:.72rem;font-weight:700;text-align:center;line-height:1.1}
   .ptile:hover{border-color:var(--muted)}
   .ptile.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
@@ -274,7 +277,7 @@
   .stat{flex:1;min-width:84px;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:9px 11px;text-align:center}
   .stat .n{font-size:1.4rem;font-weight:900}
   .stat .k{font-size:.74rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
-  .log{max-height:280px;overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+  .log{max-height:280px;overflow-y:auto;overflow-x:hidden;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
   .log table{width:100%;border-collapse:collapse;font-size:.85rem}
   .log th{position:sticky;top:0;background:var(--surface);text-align:left;padding:7px 10px;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);z-index:1}
   .log td{padding:7px 10px;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
@@ -299,7 +302,7 @@
   /* Another fixed, edge-anchored overlay — its close button sits at the very
      top of the panel, so it needs its own top safe-area clearance too. */
   .drawer-head{display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top,0px) * 1.3 + 16px) 16px 16px;border-bottom:1px solid var(--line)}
-  .drawer-body{overflow:auto;padding:16px calc(env(safe-area-inset-right,0px) + 16px) calc(env(safe-area-inset-bottom,0px) * 1.6 + 16px) 16px;display:flex;flex-direction:column;gap:18px}
+  .drawer-body{overflow-y:auto;overflow-x:hidden;padding:16px calc(env(safe-area-inset-right,0px) + 16px) calc(env(safe-area-inset-bottom,0px) * 1.6 + 16px) 16px;display:flex;flex-direction:column;gap:18px}
   .sect{display:flex;flex-direction:column;gap:10px}
   .sect>h3{font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
   .swatch-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
@@ -336,10 +339,9 @@
 
   /* ---------- Pattern full screen ---------- */
   .patternview{
-    position:fixed;inset:0;background:var(--bg);z-index:60;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;
+    position:fixed;inset:0;background:var(--bg);z-index:60;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;overflow-y:auto;overflow-x:hidden;
     padding:calc(env(safe-area-inset-top,0px) * 1.3 + 16px) calc(env(safe-area-inset-right,0px) + 16px) calc(env(safe-area-inset-bottom,0px) * 1.6 + 16px) calc(env(safe-area-inset-left,0px) + 16px);
   }
-  .patternview{overflow-y:auto}
   .patternview.show{display:flex}
   .pv-exit{position:fixed;top:calc(env(safe-area-inset-top,0px) * 1.3 + 16px);right:calc(env(safe-area-inset-right,0px) + 16px)}
   .pv-kicker{color:var(--muted);font-weight:700;font-size:clamp(.9rem,2.6vw,1.4rem);text-transform:uppercase;letter-spacing:.08em}

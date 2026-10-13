@@ -2,7 +2,9 @@
    The Bird pattern, and the full-screen pattern view.  Run with: node --test tests/ */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { read, html, scripts, loadApp } from './helpers.mjs';
+import { read, html, scripts, loadApp, root } from './helpers.mjs';
+import { readdirSync } from 'node:fs';
+import { join } from 'node:path';
 
 const { run: ev } = loadApp();
 const reset = () => ev("S.pattern='any_line'; S.freeSpace=true; S.settings.limitDraw=true; S.called=[]; S.customPatterns=[]; save();");
@@ -255,7 +257,7 @@ test('F49. styles define the pattern view overlay', () => {
   assert.match(read('styles.css'), /\.patternview\.show/);
 });
 test('F50. README test count matches the real number of tests', () => {
-  const n = ['app', 'features', 'dock'].map(f => read(`tests/${f}.test.mjs`))
+  const n = readdirSync(join(root, 'tests')).filter(f => f.endsWith('.test.mjs')).map(f => read('tests/' + f))
     .reduce((a, s) => a + (s.match(/^test\(/gm) || []).length, 0);
   assert.match(read('README.md'), new RegExp(`${n} tests`));
 });

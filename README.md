@@ -21,7 +21,7 @@ CHANGELOG.md
 
 ## Tests
 
-`node --test tests/` — 94 tests that load the real scripts into a sandbox (no dependencies).
+`node --test tests/` — 102 tests that load the real scripts into a sandbox (no dependencies).
 
 ## Releasing
 
