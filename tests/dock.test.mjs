@@ -86,3 +86,39 @@ test('D19. toasts lift above the dock (the mobile override comes after the base 
   const lift = css.lastIndexOf('.toast{bottom:calc(var(--dock-h');
   assert.ok(base > -1 && lift > base);
 });
+
+// ---- bigger, thumb-friendly Call button (v2.45) ------------------------------------------------
+const pr = () => css.match(/\.dock-btn\.primary\{([^}]*)\}/)[1];
+const num = (s, re) => +s.match(re)[1];
+
+test('D20. the Call button is at least 70px tall (up from 60) for a thumb', () => {
+  assert.ok(num(pr(), /min-height:(\d+)px/) >= 70);
+});
+test('D21. the Call button is clearly wider than the others (flex >= 1.8 vs 1)', () => {
+  assert.ok(num(pr(), /flex:([\d.]+)/) >= 1.8);
+});
+test('D22. the Call button rises above the dock edge so it stands out (negative top margin)', () => {
+  const m = num(pr(), /margin-top:-(\d+)px/);
+  assert.ok(m >= 8 && m <= 20, 'rise ' + m);
+});
+test('D23. its icon and label are bigger than the other dock buttons', () => {
+  assert.ok(num(css.match(/\.dock-btn\.primary \.d-icon\{([^}]*)\}/)[1], /font-size:([\d.]+)rem/) >= 1.7);
+  assert.ok(num(pr(), /font-size:([\d.]+)rem/) >= .85);
+});
+test('D24. it has a soft shadow and a rounder shape so it reads as the main button', () => {
+  assert.match(pr(), /box-shadow:/);
+  assert.ok(num(pr(), /border-radius:(\d+)px/) >= 18);
+});
+test('D25. raising it does not grow the dock: effective height still fits --dock-h', () => {
+  const h = num(pr(), /min-height:(\d+)px/) - num(pr(), /margin-top:-(\d+)px/);
+  const dockH = num(css, /--dock-h:(\d+)px/);
+  assert.ok(h + 16 <= dockH, `${h}+16 vs ${dockH}`);
+});
+test('D26. the other dock buttons keep their size (>= 48px) so nothing else shrinks', () => {
+  assert.ok(num(css.match(/\.dock-btn\{([^}]*)\}/)[1], /min-height:(\d+)px/) >= 48);
+});
+test('D27. changelog documents the bigger Call button', () => {
+  const top = read('CHANGELOG.md').split('## [2.44]')[0];
+  assert.match(top, /Call button/i);
+  assert.match(top, /dock/i);
+});

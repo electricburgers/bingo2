@@ -4,6 +4,12 @@ All notable changes to Bingo Caller. Newest first. Versions before 2.29 were bac
 history; commits that didn't carry a version bump are listed under the next version that shipped them,
 each tagged with its short hash and date. Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [2.45] — 2026-10-14
+
+### Changed
+- **Bigger Call button on the mobile dock**, so the button you tap all game stands out and is easier to hit with a thumb: wider (about 30% more width), taller (74px, up from 60), raised a little above the dock edge, rounder, with a ring and shadow and a larger ball icon. The other dock buttons and the dock's height are unchanged.
+- 8 more dock tests.
+
 ## [2.44] — 2026-10-14
 
 ### Added

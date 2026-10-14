@@ -390,7 +390,11 @@
   .dock-btn .d-icon{font-size:1.35rem;line-height:1}
   .dock-btn:active{background:var(--surface-2)}
   .dock-btn.on{border-color:var(--accent);color:var(--accent-fg)}
-  .dock-btn.primary{flex:1.5 1 0;background:var(--accent);color:#15171c;border-color:var(--accent-fg);min-height:60px;font-size:.8rem}
+  /* The Call button is the one you tap all game: wider, taller (74px), raised 16px above the dock edge, rounder, with a
+     ring and shadow, and a big ball icon — easy to find and hit with a thumb. Raising it (negative margin) keeps the
+     dock's own height unchanged. */
+  .dock-btn.primary{flex:1.9 1 0;background:var(--accent);color:#15171c;border-color:var(--accent-fg);min-height:74px;margin-top:-16px;border-radius:22px;font-size:.9rem;box-shadow:0 0 0 3px var(--surface),0 6px 16px rgba(0,0,0,.5)}
+  .dock-btn.primary .d-icon{font-size:1.9rem}
   .dock-btn.primary:active{transform:translateY(1px)}
   @media (max-width:699px){
     :root{--dock-h:76px}
