@@ -4,6 +4,21 @@ All notable changes to Bingo Caller. Newest first. Versions before 2.29 were bac
 history; commits that didn't carry a version bump are listed under the next version that shipped them,
 each tagged with its short hash and date. Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [2.44] — 2026-10-14
+
+### Added
+- **Themed banter packs** (Settings → Banter packs): **Classic**, **Jersey**, **Nerd** and **Sports**, each with its own switch. A host can turn kinds of banter on or off for the crowd; at least one stays on, and a ball with nothing in the enabled packs falls back to its classic line so the banner is never blank. The old NJ-flavored classics (Exit One, the Route lines, Sinatra, "Born to Run") and all the Parkway lines moved into Jersey; the B-6 / B-12 vitamin lines moved into Nerd.
+- **A random banter line on every call**, shuffled like a bag: each ball shows all of its lines once before any repeat, and a new round never starts with the line it just showed. ↻ still steps through the rest in order.
+- **New Jersey history by day of the month and by year** (the ball is the day, or the last two digits of the year): Princeton 1777, Trenton and Monmouth, the 3rd state to ratify, the first drive-in (1933) and baseball game (1846) and Rutgers–Princeton football game (1869), the Boardwalk (1870), Miss America (1921), Edison at Menlo Park, the War of the Worlds at Grover's Mill, the Holland Tunnel, Pulaski Skyway, Hadrosaurus, Sandy Hook Light, Great Adventure and more.
+- **Einstein in New Jersey:** he arrived on October 17, 1933 (ball 17) and joined the Institute for Advanced Study (33), moved into 112 Mercer Street in 1935 (35), became a citizen in Trenton in 1940 (40), was offered Israel's presidency in 1952 (52) and died in Princeton on April 18, 1955 (18 and 55). Plus his March 14 birthday on Pi Day (14) and the 1921 Nobel (21).
+- **NJ people by birth year** (Bon Jovi 62, Whitney Houston 63, Meryl Streep, Lauryn Hill, Queen Latifah, Jack Nicholson, Buzz Aldrin, Gandolfini, Frankie Valli, Paul Simon and others) and **Turnpike service areas named for famous New Jerseyans** (Lombardi, Hamilton, Pitcher, Edison, Wilson, Cleveland, Barton, Whitman, Stockton, Cooper, Fenwick).
+- **Sports numbers:** the Devils' (3, 4, 26, 27, 30), Giants' and Jets' retired numbers, Jason Kidd's #5, Gotham FC's titles (2009, 2023, 2025) and numbers 15 and 16, the New York Sirens (a New York team that plays at Prudential Center in Newark; Sarah Fillier wears #10), and the Super Bowl numerals (XXI, XXV, XLII, XLVI and XLVIII at MetLife, plus III and its January 12 date).
+- **Nerd pack:** chemical elements by atomic number (carbon 6, oxygen 8, iron 26, copper 29, silver 47...), Fibonacci and perfect squares, Pi Day, and freezing at 32°F.
+- Tests: new files for packs, the random pick and the new banter (`tests/packs.test.mjs`, `tests/random-banter.test.mjs`, `tests/nj-banter.test.mjs`).
+
+### Notes
+- Facts were checked against sources where I could (retired numbers, Super Bowl years and Gotham titles from the clubs' Wikipedia pages; the dates above from several history sources). The Revolutionary War battle dates, Prudential 1875, Campbell's 1869, the 1947 transistor and the birthdays are from well-known history and were not re-checked against a source this round. Left out because they could not be confirmed: Ali Krieger #11, Carli Lloyd #10 and Einstein's exact citizenship day.
+
 ## [2.43] — 2026-10-13
 
 ### Changed

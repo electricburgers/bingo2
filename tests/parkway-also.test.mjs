@@ -69,14 +69,18 @@ test('P9. Exit 12 (entrance-only, not a real exit) no longer has its own banter'
   assert.equal(ev('PARKWAY_EXITS[12]'), undefined);
   assert.equal(ev('callVariants(12).some(s=>/Parkway Exit 12\\b/.test(s))'), false);
 });
-test('P10. classic lingo stays first, then the ball\'s own exit line, then the "ends in" lines', () => {
+test('P10. classic lingo stays first; within the Jersey pack a ball\'s own exit line comes before its "ends in" lines', () => {
   const v = [...ev('callVariants(13)')];
   assert.doesNotMatch(v[0], /Parkway/);
-  assert.match(v[v.length - 2] + v[v.length - 1], /Parkway Exit 13 —/);
+  const own = v.findIndex(s => /^Parkway Exit 13 —/.test(s));
+  assert.ok(own > 0);
+  assert.ok(v.slice(0, own).every(s => !/ ends in /.test(s)));
   const v7 = [...ev('callVariants(7)')];
-  assert.ok(v7.slice(-6).every(s => / ends in 7 too — /.test(s)));
-  const i = v.findIndex(s => /^Parkway Exit 13 —/.test(s));
-  assert.ok(v.slice(0, i).every(s => !/ ends in /.test(s)));
+  const firstEnds = v7.findIndex(s => / ends in 7 too — /.test(s));
+  const ends = v7.filter(s => / ends in 7 too — /.test(s));
+  assert.equal(ends.length, 6);
+  assert.deepEqual(v7.slice(firstEnds, firstEnds + 6), ends);          // contiguous, ascending exits
+  assert.ok(v7.slice(0, firstEnds).every(s => !/ ends in /.test(s)));
 });
 test('P11. your own MY_CALLS still go first', () => {
   ev("MY_CALLS[7]=['Mine first']; _variantCache.clear();");

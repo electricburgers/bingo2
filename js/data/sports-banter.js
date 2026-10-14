@@ -1,0 +1,33 @@
+"use strict";
+/* Sports pack: NJ team numbers and big games — Devils, Giants, Jets, Nets, Gotham FC and the New York Sirens (who play in
+   Newark) — plus Super Bowl numerals (ball = the numeral). Retired numbers come from the clubs' Wikipedia pages. */
+const SPORTS_LINES = {
+  1:["The Giants retired #1 for Ray Flaherty. Number one in their hearts!"],
+  3:["The Devils retired #3 for Ken Daneyko in 2006. Mr. Devil himself!","Super Bowl III — Jets 16, Colts 7. Broadway Joe delivered!"],
+  4:["The Devils retired #4 for Scott Stevens, the captain who hit hard!","The Giants retired #4 for Tuffy Leemans!"],
+  5:["Jason Kidd's #5 led the New Jersey Nets to two NBA Finals!"],
+  7:["The Giants retired #7 for Mel Hein, a center for the ages!"],
+  9:["Gotham FC's first title came in 2009, back when the club was Sky Blue FC!"],
+  10:["Eli Manning's #10 is retired by the Giants. Two Super Bowl wins, two MVPs!","Sarah Fillier wears #10 for the New York Sirens, who play at Prudential Center in Newark!","2010 — MetLife Stadium opened in East Rutherford, home of the Giants and Jets!"],
+  11:["Phil Simms' #11 is retired by the Giants. Super Bowl XXI MVP!"],
+  12:["Joe Namath's #12 is retired by the Jets. Broadway Joe!","January 12, 1969 — Super Bowl III! Namath guaranteed it, and the Jets won!"],
+  13:["Don Maynard's #13 is retired by the Jets. Unlucky? Not for him!"],
+  14:["The Giants retired #14 for two men: Ward Cuff and Y. A. Tittle!"],
+  15:["Tierna Davidson wears #15 and captains Gotham FC in Harrison!"],
+  16:["Frank Gifford's #16 is retired by the Giants!","Rose Lavelle wears #16 for Gotham FC in Harrison, NJ!"],
+  21:["Super Bowl XXI — the Giants won the first of their four titles!"],
+  23:["2023 — Gotham FC won its first NWSL championship!"],
+  25:["Super Bowl XXV — the Giants edged the Bills 20–19!","2025 — Gotham FC won its second NWSL championship!"],
+  26:["The Devils retired #26 for Patrik Eliáš, a Devils legend!"],
+  27:["Scott Niedermayer's #27 is retired by the Devils. Three Stanley Cups in Jersey!"],
+  28:["Curtis Martin's #28 is retired by the Jets!"],
+  30:["Martin Brodeur's #30 is retired by the Devils. The winningest goalie ever!"],
+  32:["The Giants retired #32 for Al Blozis."],
+  40:["The Giants retired #40 for Joe Morrison."],
+  42:["Charlie Conerly's #42 is retired by the Giants!","Super Bowl XLII — the Giants upset the unbeaten Patriots!"],
+  46:["Super Bowl XLVI — the Giants beat the Patriots again, with Eli as MVP!"],
+  48:["Super Bowl XLVIII was played at MetLife Stadium, right here in New Jersey!"],
+  50:["The Giants retired #50 for Ken Strong."],
+  56:["Lawrence Taylor's #56 is retired by the Giants. L.T. changed the game!"],
+  73:["Joe Klecko's #73 is retired by the Jets."],
+};

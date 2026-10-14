@@ -9,7 +9,8 @@ function defaultState(){
     called:[],
     callTimes:[],
     callPatterns:[], // play-style name active at the moment each ball was called
-    calloutIdx:{}, // { ballNumber: variantIndex } — remembers your cycled choice per number
+    calloutIdx:{}, // { ballNumber: variantIndex } — the banter line currently showing for each number
+    calloutSeen:{}, // { ballNumber: [lines already shown this round] } — the shuffle bag behind the random banter
     winners:[],
     settings:{
       theme:'dark',
@@ -19,6 +20,7 @@ function defaultState(){
       limitDraw:true,
       autoInterval:10,
       patCollapsed:false,
+      packs:{classic:true,jersey:true,nerd:true,sports:true}, // which banter packs are on
     },
     customPatterns:[],
     customThemes:[],

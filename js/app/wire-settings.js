@@ -36,7 +36,7 @@ function wireSettings(){
       '🗑 Clear all history?',
       'This erases every called ball, winner record, and archived game on this device — a true clean slate. Your settings, themes, and custom patterns are kept.',
       ()=>{
-        S.called=[]; S.callTimes=[]; S.callPatterns=[]; S.winners=[]; S.calloutIdx={};
+        S.called=[]; S.callTimes=[]; S.callPatterns=[]; S.winners=[]; S.calloutIdx={}; S.calloutSeen={};
         S.history=[];
         S.session={id:Date.now(), started:new Date().toISOString(), games:1};
         save(); fullRender();

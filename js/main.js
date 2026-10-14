@@ -6,7 +6,7 @@ function init(){
   buildBoard();
   wireBoardClicks();
   buildPatternTiles();
-  buildThemeRow(); buildSwatches();
+  buildThemeRow(); buildSwatches(); buildPackRow();
   buildEditor();
   fullRender();
   reflectSettings();

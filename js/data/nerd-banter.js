@@ -1,0 +1,31 @@
+"use strict";
+/* Nerd pack: chemical elements (ball = atomic number), maths and number trivia, and the B-6 / B-12 vitamin lines.
+   Every line is capped at 95 characters. */
+const NERD_LINES = {
+  1:["Element 1 — hydrogen. The lightest bingo number you'll ever call!"],
+  2:["Element 2 — helium. Say it in a squeaky voice, I dare you!"],
+  3:["Three — pi's first digit: 3.14159... Get the pie!"],
+  4:["Two squared is four — nice and tidy!"],
+  5:["Five — a Fibonacci number. Flower petals love it!"],
+  6:["Element 6 — carbon. Your pencil lead and your diamond ring!","B-6, the vitamin! Bananas and chickpeas have it. Snack time!","B-6, or pyridoxine if you're fancy. Try saying that three times fast!","B-6! Your brain's favorite vitamin, and a fine bingo number too"],
+  7:["Element 7 — nitrogen, most of the air you're breathing right now!"],
+  8:["Element 8 — oxygen. Breathe in, daub on!"],
+  9:["Three squared — nine!"],
+  11:["Element 11 — sodium, the salt in saltwater taffy!"],
+  12:["B-12, the vitamin! Fish, eggs and dairy have it. Eat up and win!","B-12, cobalamin — the only vitamin with a metal in it. Cobalt, baby!","B-12, the vitamin bacteria make and tuna carries. Bingo fans love it!"],
+  13:["Thirteen — a Fibonacci number, the one sunflowers love!"],
+  14:["Fourteen — 3.14, Pi Day! Get a slice and a daubing marker."],
+  16:["Four squared — sixteen!"],
+  21:["Twenty-one — Fibonacci, and blackjack's magic number!"],
+  25:["Five squared — twenty-five!"],
+  26:["Element 26 — iron, the metal behind every steel bridge you crossed to get here!"],
+  29:["Element 29 — copper, the green skin of the Statue of Liberty!"],
+  32:["Thirty-two degrees Fahrenheit — water freezes. Stay in and play bingo!"],
+  34:["Thirty-four — another Fibonacci. Look at a sunflower spiral!"],
+  36:["Six squared — thirty-six!"],
+  47:["Element 47 — silver, as shiny as a freshly daubed card!"],
+  49:["Seven squared — forty-nine!"],
+  55:["Fifty-five — Fibonacci again. Nature loves a pattern!"],
+  64:["Eight squared — sixty-four, like the squares on a chessboard!"],
+  74:["Element 74 — tungsten, the glowing wire inside later light bulbs!"],
+};

@@ -146,6 +146,13 @@
     touch-action:manipulation;
   }
   .cyclebtn svg{width:26px;height:26px;display:block}
+
+  /* Settings → Banter packs */
+  .style-row{display:grid;gap:4px}
+  .pack-opt{padding:8px 0;border-bottom:1px solid var(--line)}
+  .pack-opt:last-child{border-bottom:none}
+  .pack-txt{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .pack-txt small{color:var(--muted);font-size:.78rem;font-weight:600}
   .cyclebtn:hover{color:var(--accent-fg);border-color:var(--accent)}
   .cyclebtn:active{transform:scale(.96)}
   .bs-callout{font-weight:800;color:var(--accent-fg);font-size:clamp(1.1rem,4.5vw,2.6rem);min-height:1.2em;padding:0 12px;text-align:center}

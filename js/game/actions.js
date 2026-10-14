@@ -17,6 +17,7 @@ function callNext(){
   ensureTimes();
   const n = elig[Math.floor(Math.random()*elig.length)];
   S.called.push(n);
+  S.calloutIdx[n]=pickVariantIndex(n);   // a fresh random banter line for this call
   S.callTimes.push(new Date().toISOString());
   S.callPatterns.push(currentPatternDef().name);
   save();
