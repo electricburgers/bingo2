@@ -396,10 +396,21 @@
   .dock-btn.primary{flex:1.9 1 0;background:var(--accent);color:#15171c;border-color:var(--accent-fg);min-height:74px;margin-top:-16px;border-radius:22px;font-size:.9rem;box-shadow:0 0 0 3px var(--surface),0 6px 16px rgba(0,0,0,.5)}
   .dock-btn.primary .d-icon{font-size:1.9rem}
   .dock-btn.primary:active{transform:translateY(1px)}
-  @media (max-width:699px){
+  /* The dock shows on portrait phones (under 700px wide) AND on phones held sideways — a short, touch-screen landscape
+     viewport. pointer:coarse keeps it off short desktop windows. */
+  @media (max-width:699px), (orientation:landscape) and (max-height:560px) and (pointer:coarse){
     :root{--dock-h:76px}
     .dock{display:flex}
     .app{padding-bottom:calc(var(--dock-h) + 16px)}
+  }
+  /* Landscape is short, so the dock is more compact there: smaller buttons and Call, same raised look. */
+  @media (orientation:landscape) and (max-height:560px) and (pointer:coarse){
+    :root{--dock-h:58px}
+    .dock{padding-top:6px}
+    .dock-btn{min-height:44px;flex-direction:row;gap:6px;font-size:.78rem}
+    .dock-btn .d-icon{font-size:1.15rem}
+    .dock-btn.primary{min-height:54px;margin-top:-10px;font-size:.85rem}
+    .dock-btn.primary .d-icon{font-size:1.5rem}
   }
 
   /* ---------- Modal confirm ---------- */
@@ -430,6 +441,6 @@
   .commit-list .c-meta{font-size:.72rem;color:var(--muted);margin-top:2px}
 
   /* Must come after the base .toast rule above. */
-  @media (max-width:699px){
+  @media (max-width:699px), (orientation:landscape) and (max-height:560px) and (pointer:coarse){
     .toast{bottom:calc(var(--dock-h) + env(safe-area-inset-bottom,0px) + 12px)}
   }

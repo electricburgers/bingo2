@@ -36,7 +36,7 @@ test('D7. dock buttons carry aria-labels in the markup', () => {
 });
 test('D8. dock is hidden by default and only shown below the 700px two-column breakpoint', () => {
   assert.match(css, /\.dock\{[^}]*display:none/);
-  assert.match(css, /@media\s*\(max-width:699px\)\s*\{[^@]*\.dock\{[^}]*display:flex/);
+  assert.match(css, /@media[^{]*\(max-width:699px\)[^{]*\{[^@]*\.dock\{[^}]*display:flex/);
 });
 test('D9. dock is pinned to the bottom and clears the iPhone home bar', () => {
   assert.match(css, /\.dock\{[^}]*position:fixed[^}]*bottom:0/);
@@ -47,7 +47,7 @@ test('D10. dock sits below the overlays (z-index < 60) so big screen / drawer co
   assert.ok(z < 60 && z > 0);
 });
 test('D11. page reserves room under the content so the dock never hides the last card', () => {
-  assert.match(css, /@media\s*\(max-width:699px\)\s*\{[^@]*\.app\{[^}]*padding-bottom:calc\(var\(--dock-h/);
+  assert.match(css, /@media[^{]*\(max-width:699px\)[^{]*\{[^@]*\.app\{[^}]*padding-bottom:calc\(var\(--dock-h/);
 });
 test('D12. touch targets are at least 48px tall and Call is larger', () => {
   const h = +css.match(/\.dock-btn\{[^}]*min-height:(\d+)px/)[1];
@@ -121,4 +121,40 @@ test('D27. changelog documents the bigger Call button', () => {
   const top = read('CHANGELOG.md').split('## [2.44]')[0];
   assert.match(top, /Call button/i);
   assert.match(top, /dock/i);
+});
+
+// ---- dock on landscape phones (v2.46) ----------------------------------------------------------
+const LAND = '\\(orientation:landscape\\)\\s+and\\s+\\(max-height:560px\\)\\s+and\\s+\\(pointer:coarse\\)';
+test('D28. the dock shows on landscape phones: a media query for landscape + short + touch turns it on', () => {
+  assert.match(css, new RegExp('@media[^{]*' + LAND + '[^{]*\\{[^@]*\\.dock\\{[^}]*display:flex'));
+});
+test('D29. the same rule still covers portrait phones (max-width 699px) in one combined query', () => {
+  assert.match(css, new RegExp('@media[^{]*\\(max-width:699px\\)\\s*,\\s*' + LAND));
+});
+test('D30. touch is required, so a short desktop window does not get the dock', () => {
+  assert.match(css, /\(pointer:coarse\)/);
+  // the landscape clause always carries pointer:coarse
+  for (const m of css.matchAll(/@media[^{]*\(orientation:landscape\)[^{]*\{[^@]*\.dock\{/g)) assert.match(m[0], /pointer:coarse/);
+});
+test('D31. content and toasts clear the dock in landscape too (same combined query)', () => {
+  assert.match(css, new RegExp('@media[^{]*' + LAND + '[^{]*\\{[^@]*\\.app\\{[^}]*padding-bottom:calc\\(var\\(--dock-h'));
+  assert.match(css, new RegExp('@media[^{]*' + LAND + '[^{]*\\{\\s*\\.toast\\{bottom:calc\\(var\\(--dock-h'));
+});
+test('D32. the landscape dock is compact: shorter --dock-h (<= 64px) and 44px+ buttons', () => {
+  const m = css.match(new RegExp('@media\\s*' + LAND + '\\s*\\{([^@]*?)\\n  \\}'))[1];
+  assert.ok(+m.match(/--dock-h:(\d+)px/)[1] <= 64);
+  assert.ok(+m.match(/\.dock-btn\{[^}]*min-height:(\d+)px/)[1] >= 44);
+  assert.ok(+m.match(/\.dock-btn\.primary\{[^}]*min-height:(\d+)px/)[1] >= 54);
+});
+test('D33. the compact landscape Call button still fits the dock (height minus rise + 8 <= --dock-h)', () => {
+  const m = css.match(new RegExp('@media\\s*' + LAND + '\\s*\\{([^@]*?)\\n  \\}'))[1];
+  const h = +m.match(/\.dock-btn\.primary\{[^}]*min-height:(\d+)px/)[1] - +m.match(/\.dock-btn\.primary\{[^}]*margin-top:-(\d+)px/)[1];
+  assert.ok(h + 16 <= +m.match(/--dock-h:(\d+)px/)[1] + 8, 'effective ' + h);
+});
+test('D34. side safe areas are respected so the notch / home bar never hides a dock button', () => {
+  assert.match(css.match(/\.dock\{[^}]*\}/)[0], /safe-area-inset-left/);
+  assert.match(css.match(/\.dock\{[^}]*\}/)[0], /safe-area-inset-right/);
+});
+test('D35. the changelog documents the landscape dock', () => {
+  assert.match(read('CHANGELOG.md').split('## [2.45]')[0], /landscape/i);
 });

@@ -4,6 +4,12 @@ All notable changes to Bingo Caller. Newest first. Versions before 2.29 were bac
 history; commits that didn't carry a version bump are listed under the next version that shipped them,
 each tagged with its short hash and date. Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [2.46] — 2026-10-14
+
+### Changed
+- **The mobile dock now shows on landscape phones** too (a touch screen in landscape with a short viewport, e.g. an iPhone turned sideways), not only in portrait. Short desktop windows still don't get it. In landscape the dock is more compact (58px, with side-by-side icon and label) so it leaves room for the game, and the page and toasts clear it as in portrait.
+- 8 more dock tests.
+
 ## [2.45] — 2026-10-14
 
 ### Changed

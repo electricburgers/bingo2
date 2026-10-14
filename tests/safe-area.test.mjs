@@ -47,7 +47,7 @@ test('S9. the dock keeps a minimum gap above the home indicator via max()', () =
   assert.match(rule('.dock'), /max\([^)]*safe-area-inset-bottom/);
 });
 test('S10. mobile content padding does not add the bottom inset a second time', () => {
-  const m = css.match(/@media \(max-width:699px\)\{\s*:root[\s\S]*?\.app\{([^}]*)\}/)[1];
+  const m = css.match(/@media[^{]*\(max-width:699px\)[^{]*\{\s*:root[\s\S]*?\.app\{([^}]*)\}/)[1];
   assert.doesNotMatch(m, /safe-area-inset/);
   assert.match(m, /var\(--dock-h/);
 });
