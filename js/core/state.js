@@ -16,6 +16,7 @@ function defaultState(){
       theme:'dark',
       letters:{...THEMES.dark.letters},
       vars:{}, fontScale:100, boardScale:0.75,
+      ballSize:'medium', ballFontSize:'medium', // called-ball circle size and its letter/number size
       callouts:true,
       limitDraw:true,
       autoInterval:10,

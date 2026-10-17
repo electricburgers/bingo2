@@ -11,6 +11,31 @@ function reflectSettings(){
   $('#intRange').value=S.settings.autoInterval; $('#intLabel').textContent=S.settings.autoInterval;
 }
 
+/* Called-ball size chips. The main row sets ball and font together; the Advanced rows set each on its own. */
+function reflectBallSizes(){
+  const rows=[['#ballSizeRow',k=>S.settings.ballSize===k&&S.settings.ballFontSize===k],
+              ['#ballOnlyRow',k=>S.settings.ballSize===k],
+              ['#ballFontRow',k=>S.settings.ballFontSize===k]];
+  rows.forEach(([sel,isOn])=>$(sel).querySelectorAll('.theme-chip').forEach(b=>setToggle(b,isOn(b.dataset.size))));
+}
+function buildBallSizeRows(){
+  const set={
+    '#ballSizeRow':k=>{ S.settings.ballSize=k; S.settings.ballFontSize=k; },
+    '#ballOnlyRow':k=>{ S.settings.ballSize=k; },
+    '#ballFontRow':k=>{ S.settings.ballFontSize=k; },
+  };
+  Object.entries(set).forEach(([sel,apply])=>{
+    const row=$(sel); row.innerHTML='';
+    Object.keys(BALL_SIZES).forEach(k=>{
+      const b=document.createElement('button'); b.className='theme-chip'; b.dataset.size=k;
+      b.textContent=BALL_SIZE_LABELS[k]+(k==='medium'?' (default)':'');
+      b.onclick=()=>{ apply(k); save(); applyScale(); reflectBallSizes(); };
+      row.appendChild(b);
+    });
+  });
+  reflectBallSizes();
+}
+
 function wireSettings(){
   $('#calloutChk').onchange=e=>{ S.settings.callouts=e.target.checked; save(); renderBall(false); };
   $('#limitChk').onchange=e=>{ S.settings.limitDraw=e.target.checked; save(); renderBall(false); paintBoard(); };

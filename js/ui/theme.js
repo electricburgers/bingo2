@@ -63,6 +63,8 @@ function applyScale(){
   const root=document.documentElement;
   root.style.setProperty('--font-scale', (S.settings.fontScale/100));
   root.style.setProperty('--board-scale', S.settings.boardScale??0.75);
+  root.style.setProperty('--ball-mult', BALL_SIZES[S.settings.ballSize]||1);
+  root.style.setProperty('--ball-font-mult', BALL_SIZES[S.settings.ballFontSize]||1);
 }
 function buildThemeRow(){
   const row=$('#themeRow'); row.innerHTML='';

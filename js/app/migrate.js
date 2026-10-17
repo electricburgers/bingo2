@@ -19,4 +19,6 @@ function normalizeState(){
   S.settings.autoInterval=clampNum(S.settings.autoInterval,3,60,10);
   S.settings.fontScale=clampNum(S.settings.fontScale,80,180,100);
   S.settings.boardScale=clampNum(S.settings.boardScale,0.45,1.3,0.75);
+  if(!BALL_SIZES[S.settings.ballSize]) S.settings.ballSize='medium';
+  if(!BALL_SIZES[S.settings.ballFontSize]) S.settings.ballFontSize='medium';
 }

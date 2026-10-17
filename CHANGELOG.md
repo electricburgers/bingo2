@@ -4,6 +4,12 @@ All notable changes to Bingo Caller. Newest first. Versions before 2.29 were bac
 history; commits that didn't carry a version bump are listed under the next version that shipped them,
 each tagged with its short hash and date. Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [2.47] — 2026-10-16
+
+### Added
+- **Called ball size** (Settings → Display): Small, Medium (default) or Large, which resizes the called ball and the letter and number on it together. An **Advanced** section under it sets the ball size and the ball font size separately.
+- 6 more tests (`tests/ball-size.test.mjs`).
+
 ## [2.46] — 2026-10-14
 
 ### Changed
